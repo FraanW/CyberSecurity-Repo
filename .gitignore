@@ -1,0 +1,49 @@
+# Secrets — NEVER commit these
+*.env
+.env*
+*.pem
+*.key
+*.p12
+*.pfx
+credentials*
+secrets*
+*_rsa
+*_rsa.pub
+config.local.*
+
+# Lab artifacts / captures
+*.pcap
+*.pcapng
+*.raw
+*.mem
+loot/
+*.hccapx
+*.hash
+
+# VM & tooling
+*.vmdk
+*.ova
+*.iso
+
+# OS / editor
+Thumbs.db
+.DS_Store
+*.swp
+.vscode/
+.idea/
+
+# Claude Code runtime & leftover cruft from the original monorepo copy
+# (kept on disk so the session still works, but not part of the learning repo)
+.claude/worktrees/
+.claude/skills/
+.claude/settings.json
+.claude/settings.local.json
+.claude/scheduled_tasks.lock
+.claude/*.lock
+.archive/
+
+# Keep the cybersecurity agent squad tracked
+!.claude/agents/
+
+# Keep folder placeholders
+!.gitkeep

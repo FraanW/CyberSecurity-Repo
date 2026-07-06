@@ -1,0 +1,589 @@
+<meta charset="utf-8">
+<title>SAML Question Bank</title>
+<style>
+  body{font-family:'Segoe UI',system-ui,-apple-system,Roboto,Arial,sans-serif;color:#1a2030;background:#ffffff;line-height:1.55;max-width:860px;margin:0 auto;padding:24px}
+  h1{font-size:1.95rem;color:#1a2030;border-bottom:3px solid #8a6a22;padding-bottom:8px;margin:18px 0 10px}
+  h2{font-size:1.4rem;color:#8a6a22;margin:30px 0 10px;border-bottom:1px solid #d4d9e1;padding-bottom:5px}
+  h3{font-size:1.14rem;color:#2e3550;margin:22px 0 8px}
+  h4{font-size:1rem;color:#2e3550;margin:16px 0 6px}
+  p{margin:9px 0}
+  a{color:#8a6a22}
+  strong,b{color:#12182a}
+  em{color:#3a4056}
+  code{font-family:Consolas,'Cascadia Mono',monospace;font-size:.9em;background:#f0f2f6;border:1px solid #e0e4ea;border-radius:3px;padding:0 3px;color:#8a3a2a}
+  pre{font-family:Consolas,'Cascadia Mono',monospace;font-size:.85rem;line-height:1.5;background:#f6f7f9;border:1px solid #d4d9e1;border-radius:6px;padding:14px 16px;overflow-x:auto;color:#2b3350;white-space:pre}
+  pre code{background:none;border:0;padding:0;color:inherit;font-size:1em}
+  table{border-collapse:collapse;width:100%;margin:12px 0;font-size:.9rem}
+  th,td{border:1px solid #c4ccd8;padding:8px 11px;text-align:left;vertical-align:top}
+  th{background:#eef0f4;font-weight:600;color:#1a2030}
+  blockquote{margin:12px 0;padding:11px 16px;background:#faf6ec;border-left:4px solid #8a6a22;border-radius:0 6px 6px 0;color:#3a4056}
+  blockquote p{margin:6px 0}
+  ul,ol{margin:8px 0;padding-left:24px}
+  li{margin:4px 0}
+  hr{border:0;border-top:1px solid #d4d9e1;margin:26px 0}
+  .note-banner{background:#eef4fb;border:1px solid #b8d0ea;border-radius:6px;padding:12px 16px;font-size:.9rem;color:#2b4a6b;margin-bottom:22px}
+  .qa{border:1px solid #d4d9e1;border-radius:6px;margin:10px 0;overflow:hidden}
+  .qa .q{background:#f0f2f6;padding:11px 14px;font-weight:600;color:#12182a}
+  .qa .a{padding:12px 14px}
+  .qa .a .alabel{display:inline-block;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:#8a6a22;font-weight:700;margin-right:6px}
+</style>
+
+<div class="note-banner">📋 <strong>OneNote copy-paste:</strong> Open this file in a browser, press <strong>Ctrl+A</strong> then <strong>Ctrl+C</strong>, and paste into a OneNote page. All questions and answers are shown expanded so they carry over. Delete this banner after pasting.</div>
+
+<h1>SAML Question Bank — from "warm-up" to "senior Ping expert"</h1>
+
+<blockquote>
+<p><strong>Janus's QnA drill.</strong> Everything a senior — especially a <strong>Ping stack expert</strong> — could reasonably grill you on in a SAML deep-dive session. Ordered <strong>easy → very hard</strong>, every question with a <strong>model answer</strong> hidden in a spoiler so you can self-test: <em>read the question, answer out loud, then expand to check.</em></p>
+<p><strong>Prereqs:</strong> <a href="02-saml-deep-dive.md">SAML deep dive #1</a> and <a href="13-saml-mastery-session2.md">SAML mastery session 2</a>. <strong>How to use:</strong> cover the answers, go tier by tier, and say answers <em>aloud</em> — interviews are spoken, not written.</p>
+</blockquote>
+
+<hr>
+
+<h2>How this bank is organized</h2>
+
+<table>
+<thead>
+<tr><th>Tier</th><th>Level</th><th>What it tests</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>1</strong></td><td>Warm-up (easy)</td><td>Definitions, the three actors, "what is SSO" — the stuff you must never fumble</td></tr>
+<tr><td><strong>2</strong></td><td>Core (medium)</td><td>Flow, assertion anatomy, mandatory fields, EntityID, SP-init vs IdP-init, SSO vs federation</td></tr>
+<tr><td><strong>3</strong></td><td>Hard</td><td>Certificates, signing vs encryption, what's encrypted, clock skew, validation order, SLO</td></tr>
+<tr><td><strong>4</strong></td><td>Very hard / expert</td><td>Attacks &amp; defenses, Ping-specific mechanics, design trade-offs, spec edge cases</td></tr>
+<tr><td><strong>R</strong></td><td>Rapid-fire</td><td>One-line answers to drill until they're reflex</td></tr>
+<tr><td><strong>S</strong></td><td>Scenarios</td><td>"Here's a ticket — diagnose it." The real job</td></tr>
+<tr><td><strong>↩</strong></td><td>Reverse</td><td>Sharp questions <em>you</em> ask the senior — engagement points</td></tr>
+</tbody>
+</table>
+
+<p><strong>Legend in answers:</strong> ★ = say-this-and-you-sound-senior · ⚠ = common wrong answer to avoid.</p>
+
+<hr>
+
+<h2>Tier 1 — Warm-up (easy)</h2>
+
+<div class="qa">
+  <div class="q">Q1.1 — What does SAML stand for, and in one sentence, what is it for?</div>
+  <div class="a"><span class="alabel">Model answer</span>
+  <p><strong>Security Assertion Markup Language.</strong> It's an <strong>XML-based standard for browser-based Single Sign-On</strong>, letting an <strong>Identity Provider</strong> make a <strong>signed statement</strong> ("I authenticated this user; here are their attributes") that a <strong>Service Provider</strong> trusts instead of collecting a password itself. ★ Add: "It's <em>authentication + federation</em>, carried through the browser, secured by XML digital signatures — 2005-era, so XML and verbose."</p>
+  </div>
+</div>
+
+<div class="qa">
+  <div class="q">Q1.2 — Name the three actors in a SAML flow.</div>
+  <div class="a"><span class="alabel">Model answer</span>
+  <ol>
+    <li><strong>Principal</strong> (the user/subject) — the human trying to reach an app.</li>
+    <li><strong>Identity Provider (IdP)</strong> — authenticates the user, issues the signed assertion (Ping, Okta, Entra, Keycloak, ADFS).</li>
+    <li><strong>Service Provider (SP)</strong> — the app the user wants; trusts the IdP's assertion (Workday, Salesforce, an internal app).</li>
+  </ol>
+  <p>★ "And the <strong>browser is the courier</strong> — the IdP and SP normally never talk directly during login."</p>
+  </div>
+</div>
+
+<div class="qa">
+  <div class="q">Q1.3 — What is Single Sign-On (SSO) in plain terms?</div>
+  <div class="a"><span class="alabel">Model answer</span>
+  <p><strong>Log in once, then reach many apps without logging in again.</strong> The mechanism: after your first login the <strong>IdP holds a session</strong> (a cookie at the IdP), so every later app gets a fresh assertion silently — no new password prompt. ★ "SSO is the <em>experience</em>; SAML/OIDC is the <em>machinery</em> that delivers it."</p>
+  </div>
+</div>
+
+<div class="qa">
+  <div class="q">Q1.4 — Is SAML authentication or authorization?</div>
+  <div class="a"><span class="alabel">Model answer</span>
+  <p>Primarily <strong>authentication</strong> (proving <em>who</em> you are) plus <strong>federation</strong>. It <em>can</em> carry authorization data as <strong>attributes</strong> (groups/roles in the <code>AttributeStatement</code>), which the SP uses for its own access decisions — but the protocol's core job is authN. ⚠ Don't say "it's like OAuth" — OAuth is authorization/delegated access, a different job.</p>
+  </div>
+</div>
+
+<div class="qa">
+  <div class="q">Q1.5 — What's the SAML equivalent of OIDC's ID token?</div>
+  <div class="a"><span class="alabel">Model answer</span>
+  <p>The <strong><code>&lt;Assertion&gt;</code></strong> — specifically an assertion carrying an <code>AuthnStatement</code>. Both are the signed "proof of authentication" the SP consumes. (SAML = XML assertion; OIDC = JWT ID token — same job, different format.)</p>
+  </div>
+</div>
+
+<div class="qa">
+  <div class="q">Q1.6 — What file do two parties exchange to set up a SAML trust, and what's in it?</div>
+  <div class="a"><span class="alabel">Model answer</span>
+  <p><strong>Metadata</strong> (an XML document — the "business card"). It declares the <strong>EntityID</strong>, the <strong>endpoints</strong> (IdP SSO URL, SP ACS URL, SLO URL), the <strong>signing/encryption certificates</strong> (public keys), and supported <strong>NameID formats &amp; bindings</strong>. ★ "Setting up a new SAML app is basically <em>'exchange metadata, agree on attributes.'</em>"</p>
+  </div>
+</div>
+
+<hr>
+
+<h2>Tier 2 — Core (medium)</h2>
+
+<div class="qa">
+  <div class="q">Q2.1 — Walk me through an SP-initiated SSO flow, end to end.</div>
+  <div class="a"><span class="alabel">Model answer</span>
+  <ol>
+    <li>User hits a protected URL at the <strong>SP</strong>.</li>
+    <li>SP has no session → builds an <strong>AuthnRequest</strong> (its EntityID as Issuer, its ACS URL, a NameIDPolicy, a unique <code>ID</code>), sets <strong>RelayState</strong> = where the user wanted to go.</li>
+    <li>SP <strong>redirects</strong> the browser to the IdP's SSO URL with <code>?SAMLRequest=</code> (deflate+base64+URL-encoded).</li>
+    <li>Browser delivers it to the <strong>IdP</strong>.</li>
+    <li>IdP validates the request (known Issuer? ACS matches config?); if no IdP session, it <strong>authenticates</strong> the user (password + MFA + policy). If a session already exists, it skips this — <em>that's the SSO moment.</em></li>
+    <li>IdP <strong>mints the assertion</strong> (NameID, attributes, Conditions/Audience), <strong>signs</strong> it (its private key), optionally <strong>encrypts</strong> it (SP's public key), wraps it in a <strong>Response</strong> with <code>InResponseTo</code> = the request ID.</li>
+    <li>IdP returns an <strong>auto-submitting HTML form</strong> (HTTP-POST binding) → browser POSTs the <code>SAMLResponse</code> to the SP's <strong>ACS URL</strong>.</li>
+    <li>SP <strong>validates</strong> (signature, Status, Issuer, Audience, Recipient, time window, InResponseTo, replay), maps NameID→account and attributes→roles, and <strong>creates its own session cookie</strong>.</li>
+    <li>SP redirects the user to the original page (from RelayState).</li>
+  </ol>
+  <p>★ Emphasize the <strong>two sessions</strong>: one long-ish <strong>IdP session</strong> + one <strong>SP session per app</strong>. That pair is the engine of SSO.</p>
+  </div>
+</div>
+
+<div class="qa">
+  <div class="q">Q2.2 — SP-initiated vs IdP-initiated: what's the concrete difference?</div>
+  <div class="a"><span class="alabel">Model answer</span>
+  <table>
+    <thead>
+      <tr><th></th><th>SP-initiated</th><th>IdP-initiated</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>User starts at</td><td>the <strong>app</strong></td><td>the <strong>IdP portal</strong> (clicks an app tile)</td></tr>
+      <tr><td><strong>AuthnRequest</strong></td><td>Yes (SP sends it)</td><td><strong>No</strong> — the Response is <em>unsolicited</em></td></tr>
+      <tr><td><strong><code>InResponseTo</code></strong></td><td>Present, must match the request</td><td><strong>Absent</strong> (nothing to match)</td></tr>
+      <tr><td>Deep-linking</td><td>Natural via RelayState</td><td>Needs a target parameter</td></tr>
+      <tr><td>Security</td><td>Stronger (response bound to a request)</td><td>Weaker (replay / login-CSRF easier)</td></tr>
+      <tr><td>Typical use</td><td>~95% of real logins</td><td><strong>Onboarding &amp; testing</strong>, legacy portals, "click-the-tile" UX</td></tr>
+    </tbody>
+  </table>
+  <p>★ "The single fastest tell is <strong><code>InResponseTo</code></strong>: present = SP-init, absent = IdP-init."</p>
+  </div>
+</div>
+
+<div class="qa">
+  <div class="q">Q2.3 — What are the mandatory fields of a SAML Response/Assertion? What's <em>the</em> one that must always be there?</div>
+  <div class="a"><span class="alabel">Model answer</span>
+  <p>The headline: <strong><code>&lt;Subject&gt;</code> with a <code>&lt;NameID&gt;</code></strong> — the <strong>unique identifier for the user</strong>, present <strong>irrespective of whatever else</strong> the Response carries. Without it the SP can't map the login to an account.</p>
+  <p>Then, by level:</p>
+  <ul>
+    <li><strong>Schema-mandatory:</strong> <code>ID</code>, <code>Version</code>, <code>IssueInstant</code> on the Response <em>and</em> Assertion; a <code>&lt;Status&gt;</code> in the Response; an <code>&lt;Issuer&gt;</code> on the Assertion.</li>
+    <li><strong>Profile-mandatory (Web Browser SSO):</strong> <code>&lt;Issuer&gt;</code> on the AuthnRequest; <code>&lt;Subject&gt;</code>+<code>NameID</code>; a bearer <code>&lt;SubjectConfirmation&gt;</code> with <code>Recipient</code> + <code>NotOnOrAfter</code>; <code>&lt;Conditions&gt;</code> with <code>&lt;AudienceRestriction&gt;</code>; at least one <code>&lt;AuthnStatement&gt;</code>; and a <strong>signature on the Assertion or the Response</strong>.</li>
+    <li><strong>Optional:</strong> <code>&lt;AttributeStatement&gt;</code> (common, but a bare-NameID assertion is legal).</li>
+  </ul>
+  <p>★ Naming the <strong>three levels</strong> (schema vs profile vs practical) is what separates a junior from a senior answer.</p>
+  </div>
+</div>
+
+<div class="qa">
+  <div class="q">Q2.4 — How do you tell an AuthnRequest from a Response just by looking?</div>
+  <div class="a"><span class="alabel">Model answer</span>
+  <ul>
+    <li><code>&lt;samlp:AuthnRequest&gt;</code> → the <strong>login request</strong>, SP→IdP.</li>
+    <li><code>&lt;samlp:Response&gt;</code> → the <strong>answer envelope</strong>, IdP→SP; it <em>contains</em> a <code>&lt;saml:Assertion&gt;</code> (or <code>&lt;saml:EncryptedAssertion&gt;</code> if you can't read it).</li>
+    <li>Namespace prefix tells you the layer: <strong><code>samlp:</code></strong> = protocol messages; <strong><code>saml:</code></strong> = assertion vocabulary.</li>
+  </ul>
+  <p>★ "And <code>&lt;EncryptedAssertion&gt;</code> means I need the SP's private key to read it."</p>
+  </div>
+</div>
+
+<div class="qa">
+  <div class="q">Q2.5 — What is the ACS URL and why does it cause so many tickets?</div>
+  <div class="a"><span class="alabel">Model answer</span>
+  <p><strong>Assertion Consumer Service URL</strong> — the SP endpoint that <em>receives</em> the SAML Response (the POST lands here). It's declared in SP metadata and echoed in the assertion's <code>Recipient</code>. It causes tickets because a wrong/typo'd/changed ACS means the response is delivered nowhere, or the SP rejects it because <code>Recipient</code> ≠ its configured ACS. ★ "It's one of the two things the SP puts in its AuthnRequest — EntityID and ACS URL."</p>
+  </div>
+</div>
+
+<div class="qa">
+  <div class="q">Q2.6 — Where does the EntityID appear, and whose is it in each place?</div>
+  <div class="a"><span class="alabel">Model answer</span>
+  <p>Three load-bearing places:</p>
+  <ol>
+    <li><strong>AuthnRequest <code>&lt;Issuer&gt;</code></strong> → the <strong>SP's</strong> EntityID ("this request is from me").</li>
+    <li><strong>Response &amp; Assertion <code>&lt;Issuer&gt;</code></strong> → the <strong>IdP's</strong> EntityID ("I minted this") — the SP uses it to pick the verification cert.</li>
+    <li><strong><code>&lt;Audience&gt;</code></strong> (in Conditions) → the <strong>SP's</strong> EntityID ("this assertion is <em>for</em> me only").</li>
+  </ol>
+  <p>★ "<code>Issuer</code> = <em>who sent it</em>; <code>Audience</code> = <em>who may consume it</em>. It's just a unique name — usually a URL, but it need not resolve to anything."</p>
+  </div>
+</div>
+
+<div class="qa">
+  <div class="q">Q2.7 — SSO vs Federated SSO — what's the difference, and how does SAML give you each?</div>
+  <div class="a"><span class="alabel">Model answer</span>
+  <ul>
+    <li><strong>SSO</strong> = one login → many apps. Can be done <em>within one domain</em> with a shared cookie — no federation needed.</li>
+    <li><strong>Federation</strong> = two <strong>different security domains</strong> (companies / identity systems) agree to <strong>trust each other's logins</strong> via a signed contract of <strong>metadata + certificates</strong>.</li>
+    <li><strong>Federated SSO</strong> = SSO achieved <strong>across</strong> that boundary, using SAML/OIDC.</li>
+  </ul>
+  <p>SAML delivers both: the IdP authenticates you <strong>once</strong> (→ SSO via the IdP session), and the <strong>metadata + certificate</strong> trust lets SPs in <em>other</em> organizations accept the assertion without ever seeing your password (→ federation). ★ "All federated SSO is SSO; not all SSO is federated."</p>
+  </div>
+</div>
+
+<div class="qa">
+  <div class="q">Q2.8 — What are the SAML bindings, and which message uses which?</div>
+  <div class="a"><span class="alabel">Model answer</span>
+  <ul>
+    <li><strong>HTTP-Redirect</strong> — XML deflated→base64→URL-encoded into a query string. Used for the small <strong>AuthnRequest</strong>. Length-limited.</li>
+    <li><strong>HTTP-POST</strong> — base64 XML in an auto-submitting HTML form. Used for the large, signed <strong>Response</strong>. The workhorse.</li>
+    <li><strong>HTTP-Artifact</strong> — the browser carries only a small reference ("artifact"); the SP fetches the real assertion over a <strong>back-channel</strong> SOAP call. More secure (assertion never in the browser) but more complex; less common.</li>
+  </ul>
+  <p>★ "Redirect for the request, POST for the response — because the response is big and signed."</p>
+  </div>
+</div>
+
+<div class="qa">
+  <div class="q">Q2.9 — What is RelayState?</div>
+  <div class="a"><span class="alabel">Model answer</span>
+  <p>An <strong>opaque round-trip value</strong> that preserves "where the user was going" so the SP can return them to the exact page after login (e.g., <code>/reports</code> instead of the home page). In IdP-initiated flows it's often used to carry the <strong>target app/resource</strong>. ⚠ It's not signed and not secret — validate/allow-list it (open-redirect risk).</p>
+  </div>
+</div>
+
+<div class="qa">
+  <div class="q">Q2.10 — What's inside an <code>&lt;AttributeStatement&gt;</code> and why do you care?</div>
+  <div class="a"><span class="alabel">Model answer</span>
+  <p>The user's <strong>attributes/claims</strong> — email, <code>groups</code>, roles, department, employee ID — as <code>&lt;saml:Attribute&gt;</code> elements. The SP maps them to <strong>authorization</strong> (which roles/permissions the user gets). ★ "When a user <em>logs in fine but has no access</em>, it's almost always attribute mapping — the SP expected <code>groups</code> but the IdP sent <code>memberOf</code>, or the values don't match."</p>
+  </div>
+</div>
+
+<hr>
+
+<h2>Tier 3 — Hard</h2>
+
+<div class="qa">
+  <div class="q">Q3.1 — Certificates in SAML do two different jobs. Name them and say whose keys each uses.</div>
+  <div class="a"><span class="alabel">Model answer</span>
+  <ol>
+    <li><strong>Signing (authenticity + integrity)</strong> — uses the <strong>IdP's</strong> keypair. IdP signs with its <strong>private</strong> key; SP verifies with the IdP's <strong>public</strong> cert (from metadata).</li>
+    <li><strong>Encryption (confidentiality)</strong> — uses the <strong>SP's</strong> keypair. IdP encrypts with the SP's <strong>public</strong> cert; only the SP's <strong>private</strong> key can decrypt.</li>
+  </ol>
+  <p>★ The direction flips: <em>"you <strong>sign with your own</strong> key; you <strong>encrypt with the reader's</strong> key."</em> ⚠ Common mistake: thinking encryption uses the IdP's cert — it uses the SP's.</p>
+  </div>
+</div>
+
+<div class="qa">
+  <div class="q">Q3.2 — Walk me through how the SP verifies the signature. What must it never do?</div>
+  <div class="a"><span class="alabel">Model answer</span>
+  <p>The IdP embeds a <code>&lt;ds:Signature&gt;</code> whose <code>Reference URI</code> points at the exact element it covers (e.g., the Assertion). The SP <strong>recomputes the hash</strong> of that element (after canonicalization) and verifies the signature using the <strong>pre-configured IdP certificate from metadata</strong>. Any changed byte → hash mismatch → reject.</p>
+  <p><strong>It must NEVER</strong> trust a certificate <strong>embedded in the message</strong> (<code>&lt;KeyInfo&gt;/&lt;X509Certificate&gt;</code>). If it validates against the attacker-supplied cert, the attacker just signs with their own key and walks in. ★ "Pin the cert from metadata; ignore in-message certs."</p>
+  </div>
+</div>
+
+<div class="qa">
+  <div class="q">Q3.3 — How does SAML encryption actually work mechanically?</div>
+  <div class="a"><span class="alabel">Model answer</span>
+  <p><strong>Hybrid encryption</strong> (XML-Encryption): a random <strong>symmetric key (AES)</strong> encrypts the assertion XML (fast); that AES key is itself encrypted with the SP's <strong>RSA public key</strong> and shipped alongside as <code>&lt;xenc:EncryptedKey&gt;</code>. The SP uses its <strong>RSA private key</strong> to unwrap the AES key, then AES-decrypts the assertion. ★ "Symmetric for the payload, asymmetric to deliver the key — same pattern as TLS and PGP."</p>
+  </div>
+</div>
+
+<div class="qa">
+  <div class="q">Q3.4 — When both signing and encryption are used, what's the order of operations?</div>
+  <div class="a"><span class="alabel">Model answer</span>
+  <p>IdP: <strong>sign first, then encrypt.</strong> SP: <strong>decrypt first, then verify</strong> the signature inside. If you verified before decrypting you'd be verifying ciphertext (impossible), and if the IdP encrypted before signing you'd be signing something the SP can't check without decrypting. ★ "Sign-then-encrypt on the way out; decrypt-then-verify on the way in."</p>
+  </div>
+</div>
+
+<div class="qa">
+  <div class="q">Q3.5 — "Encrypt the Response" vs "encrypt the Assertion" — explain precisely.</div>
+  <div class="a"><span class="alabel">Model answer</span>
+  <p>★ <strong>There is no <code>EncryptedResponse</code> element in SAML.</strong> When people say "encrypt the Response," they almost always mean <strong><code>&lt;EncryptedAssertion&gt;</code></strong> — the whole assertion (NameID, attributes, conditions) is encrypted, while the <strong>outer Response envelope</strong> (Status, Destination, Issuer) stays <strong>readable</strong> so the SP can route and read Status <em>before</em> decrypting.</p>
+  <p>Finer granularities also exist: <strong><code>&lt;EncryptedID&gt;</code></strong> (just the NameID) and <strong><code>&lt;EncryptedAttribute&gt;</code></strong> (individual attributes). ⚠ So "the Response is encrypted" is loose talk — pin them down to <em>which element</em>.</p>
+  </div>
+</div>
+
+<div class="qa">
+  <div class="q">Q3.6 — In the whole SAML process, what is encrypted and what is not?</div>
+  <div class="a"><span class="alabel">Model answer</span>
+  <p>Three independent layers:</p>
+  <ul>
+    <li><strong>TLS (transport):</strong> every hop is HTTPS, so on the wire <em>everything</em> is encrypted — but TLS <strong>terminates at each endpoint</strong> (decrypted at the browser, re-encrypted onward). Protects the <em>pipe</em>, not the <em>parcel</em>.</li>
+    <li><strong>XML signature (integrity):</strong> <strong>not encryption</strong> — a signed assertion is fully <strong>readable</strong>; the signature only makes tampering detectable.</li>
+    <li><strong>XML encryption (confidentiality):</strong> <em>optional</em>, and the only thing that hides content <strong>from the browser itself</strong> (<code>&lt;EncryptedAssertion&gt;</code> etc.).</li>
+  </ul>
+  <p>So by default the AuthnRequest, Response envelope, and assertion are all <strong>readable</strong> (base64 is <em>encoding</em>, not encryption) — only TLS protects them, and only until the browser. ★ <strong>"Base64 is not encryption — anyone who captures the POST reads the assertion unless it's <code>EncryptedAssertion</code>."</strong></p>
+  </div>
+</div>
+
+<div class="qa">
+  <div class="q">Q3.7 — What is clock skew and why is it the sneakiest SAML ticket?</div>
+  <div class="a"><span class="alabel">Model answer</span>
+  <p>The assertion is valid only between <code>NotBefore</code> and <code>NotOnOrAfter</code> (~5-min window), checked against <strong>each server's own clock</strong>. If IdP and SP clocks disagree beyond the tolerance (often ±3–5 min), the SP sees a perfectly good assertion as <strong>"not yet valid"</strong> or <strong>"expired"</strong> and rejects the login. Root cause: <strong>NTP drift</strong> or a paused/resumed VM. Fix: NTP on both sides + a small configurable <strong>skew tolerance</strong>. ★ "It produces <em>intermittent</em> 'sometimes login fails' tickets — recognizing the pattern instantly makes you look sharp."</p>
+  </div>
+</div>
+
+<div class="qa">
+  <div class="q">Q3.8 — In what order does the SP validate a SAML Response? Give the checklist.</div>
+  <div class="a"><span class="alabel">Model answer</span>
+  <ol>
+    <li>Decode &amp; <strong>parse safely</strong> (hardened XML parser — no external entities).</li>
+    <li><strong>Status</strong> = Success? (else read the error code.)</li>
+    <li><strong>Issuer</strong> = the expected IdP?</li>
+    <li><strong>Signature</strong> present, and verifies against the <strong>pinned</strong> IdP cert (not expired)?</li>
+    <li><strong>Decrypt</strong> the assertion if <code>&lt;EncryptedAssertion&gt;</code> (SP private key).</li>
+    <li><strong>Destination / Recipient</strong> = my ACS URL?</li>
+    <li><strong>Audience</strong> = my EntityID?</li>
+    <li><strong>NotBefore / NotOnOrAfter</strong> inside the window (± skew)?</li>
+    <li><strong>InResponseTo</strong> matches an outstanding AuthnRequest (SP-init)?</li>
+    <li><strong>Replay check</strong> — assertion <code>ID</code> never seen before (one-time use)?</li>
+    <li>Then map NameID→account, attributes→roles, create session.</li>
+  </ol>
+  <p>★ "This is also the fastest <em>debugging</em> order — walk it top-down and you find the failing check quickly."</p>
+  </div>
+</div>
+
+<div class="qa">
+  <div class="q">Q3.9 — What is Single Logout (SLO) and why is it always broken?</div>
+  <div class="a"><span class="alabel">Model answer</span>
+  <p><strong>SLO</strong> tries to log the user out of <em>all</em> SP sessions at once — the IdP sends a <code>LogoutRequest</code> to every SP that has a live session (front- or back-channel). It's fragile because many SPs don't implement it, back-channel calls fail silently, and SP sessions linger. ★ "SLO is <strong>best-effort, not guaranteed</strong> — expect 'logout didn't actually log me out' tickets, and know that killing the IdP session ≠ killing every SP session."</p>
+  </div>
+</div>
+
+<div class="qa">
+  <div class="q">Q3.10 — Why does SAML trust self-signed certificates when HTTPS won't?</div>
+  <div class="a"><span class="alabel">Model answer</span>
+  <p>Because SAML trust <strong>doesn't come from a CA chain</strong> — it comes from the <strong>explicit metadata exchange at onboarding</strong> ("here is my exact certificate; pin it"). The metadata swap <em>is</em> the trust ceremony, so a self-signed cert is fine as long as both sides pinned it. ★ "It's <em>direct trust / cert pinning</em>, not <em>transitive PKI trust</em> like the web. That's also why cert <strong>rotation</strong> is a manual, scheduled operation, not automatic."</p>
+  </div>
+</div>
+
+<div class="qa">
+  <div class="q">Q3.11 — Why is certificate rotation such a big deal, and how do you do it with zero downtime?</div>
+  <div class="a"><span class="alabel">Model answer</span>
+  <p>If the IdP's <strong>signing cert expires</strong>, <em>every</em> SP fails signature validation <strong>simultaneously</strong> → company-wide "SSO is down." Zero-downtime rotation: publish <strong>both</strong> the old and new signing certs in metadata (a <strong>primary + secondary</strong> cert) so SPs trust the new one <em>before</em> the old one retires; roll SPs over; then remove the old cert. ★ "In Ping you stage the new cert as secondary, re-distribute metadata, then promote — never a hard cutover. Fintechs track cert expiry like a production incident waiting to happen."</p>
+  </div>
+</div>
+
+<hr>
+
+<h2>Tier 4 — Very hard / expert (attacks, Ping, edge cases)</h2>
+
+<div class="qa">
+  <div class="q">Q4.1 — Explain XML Signature Wrapping (XSW). Why is it devastating, and how do you defend?</div>
+  <div class="a"><span class="alabel">Model answer</span>
+  <p><strong>Attack:</strong> the attacker takes a legitimately-signed assertion and <strong>wraps</strong> the XML so the SP <strong>verifies the signature on the original element</strong> but <strong>reads identity/attributes from an injected, unsigned copy</strong> (exploiting a gap between the code that <em>validates</em> and the code that <em>reads</em>). Result: forge any user.</p>
+  <p><strong>Defenses:</strong> use a <strong>hardened, maintained SAML library</strong>; ensure the element that's <strong>validated is exactly the element that's processed</strong> (verify-then-extract on the <em>same</em> node); <strong>schema-hardening</strong>; reject messages with <strong>multiple assertions</strong>; process only the signed element by secure ID reference. ★ Pair with <strong>Heimdall</strong>: SIEM-alert on multiple <code>&lt;Assertion&gt;</code>/<code>&lt;Signature&gt;</code> nodes or signature-validation anomalies; walk the mechanics only on your <strong>local Keycloak lab</strong>.</p>
+  </div>
+</div>
+
+<div class="qa">
+  <div class="q">Q4.2 — An SP accepts an assertion where only the outer Response is signed but the inner Assertion isn't. What's wrong?</div>
+  <div class="a"><span class="alabel">Model answer</span>
+  <p>Signature scope confusion. If the SP <strong>trusts the inner Assertion</strong> but only the <strong>outer Response</strong> signature was verified (or vice-versa), an attacker can swap in an unsigned/forged assertion. <strong>Rule: the security-critical element — the Assertion — must itself be signed</strong>, and the SP must require it. Best practice: <strong>sign the Assertion</strong> (and ideally the Response too), and <strong>reject unsigned assertions</strong>. ⚠ "Signed Response, unsigned Assertion" is a classic misconfiguration that enables tampering.</p>
+  </div>
+</div>
+
+<div class="qa">
+  <div class="q">Q4.3 — Why is IdP-initiated SSO considered less secure, specifically?</div>
+  <div class="a"><span class="alabel">Model answer</span>
+  <p>The Response is <strong>unsolicited</strong> — there's <strong>no <code>InResponseTo</code></strong> to bind it to a request the SP actually made. That enables:</p>
+  <ul>
+    <li><strong>Assertion replay</strong> (a captured still-valid assertion can be re-POSTed).</li>
+    <li><strong>Login-CSRF</strong> — an attacker injects an assertion <strong>for their own account</strong> into the victim's browser, silently logging the victim into <em>the attacker's</em> account (then the victim's actions/data go to the attacker).</li>
+  </ul>
+  <p><strong>Mitigations:</strong> prefer SP-init; short assertion lifetimes; <strong>one-time-use</strong> assertion IDs; disable unsolicited SSO on SPs that don't need it. ★ "The missing <code>InResponseTo</code> is the whole story."</p>
+  </div>
+</div>
+
+<div class="qa">
+  <div class="q">Q4.4 — (Ping) In PingFederate, what is an IdP connection vs an SP connection, and where do certs live?</div>
+  <div class="a"><span class="alabel">Model answer</span>
+  <ul>
+    <li>When PingFederate acts as the <strong>IdP</strong>, each partner app is configured as an <strong>SP connection</strong>; when it acts as the <strong>SP</strong>, each partner IdP is an <strong>IdP connection</strong>.</li>
+    <li>Each connection has a <strong>Credentials</strong> section: the <strong>signing certificate</strong> (your private key to sign outgoing messages), the partner's <strong>signature verification certificate</strong> (their public cert to verify incoming), and an optional <strong>encryption certificate</strong> (the partner SP's public cert used to encrypt the assertion).</li>
+    <li>The connection also pins the <strong>partner's EntityID</strong>, endpoints (ACS/SSO/SLO), SAML profile (IdP-init/SP-init), and attribute contract.</li>
+  </ul>
+  <p>★ Mentioning <strong>"attribute contract"</strong> and <strong>"connection Credentials"</strong> signals real PingFederate familiarity.</p>
+  </div>
+</div>
+
+<div class="qa">
+  <div class="q">Q4.5 — (Ping) What are adapters in PingFederate, and why do they matter?</div>
+  <div class="a"><span class="alabel">Model answer</span>
+  <p>Adapters bridge SAML to the actual authentication/session:</p>
+  <ul>
+    <li><strong>IdP adapter</strong> — <em>how the user authenticates</em> (e.g., <strong>HTML Form Adapter</strong>, Kerberos/IWA, X.509, or a composite with MFA). Its output populates the assertion.</li>
+    <li><strong>SP adapter</strong> — <em>how the identity is handed to the target app</em> after validation (e.g., OpenToken, Reference ID / agentless) so the app can create its session.</li>
+  </ul>
+  <p>★ "So the SAML connection defines the <em>federation contract</em>, and adapters define the <em>local</em> authentication and session hand-off on each side." Attribute mapping flows <strong>adapter → assertion (IdP side)</strong> and <strong>assertion → adapter/app (SP side)</strong>.</p>
+  </div>
+</div>
+
+<div class="qa">
+  <div class="q">Q4.6 — (Ping) How would you trigger an IdP-initiated SSO for a smoke test, and how do you deep-link?</div>
+  <div class="a"><span class="alabel">Model answer</span>
+  <p>PingFederate exposes an IdP-init SSO endpoint roughly:</p>
+  <p><code>https://&lt;pf-host&gt;/idp/startSSO.ping?PartnerSpId=&lt;SP-EntityID&gt;&amp;TargetResource=&lt;landing-url&gt;</code></p>
+  <ul>
+    <li><code>PartnerSpId</code> selects which <strong>SP connection</strong> to fire.</li>
+    <li><code>TargetResource</code> is the deep-link (Ping's equivalent of carrying RelayState to a specific page).</li>
+  </ul>
+  <p>For SP-init the mirror is <code>/sp/startSSO.ping?PartnerIdpId=&lt;IdP-EntityID&gt;</code>. ★ "IdP-init via <code>startSSO.ping</code> is exactly why we call IdP-init the <em>onboarding/testing</em> flow — you can fire SSO from the IdP side before the app's own login is wired up."</p>
+  </div>
+</div>
+
+<div class="qa">
+  <div class="q">Q4.7 — The signature verified but the login still fails with "audience mismatch." What happened?</div>
+  <div class="a"><span class="alabel">Model answer</span>
+  <p>The assertion is <strong>authentic and untampered</strong> (signature is fine) but its <strong><code>&lt;Audience&gt;</code> doesn't equal this SP's EntityID</strong> — it was minted <strong>for a different SP</strong>, or the SP's configured EntityID/Audience value doesn't match what the IdP put in. Fix: align the <strong>Audience/EntityID</strong> on both sides (a frequent cause is a trailing slash or http-vs-https difference in the EntityID string). ★ "Signature valid + audience wrong = <em>right IdP, wrong intended app</em> — it's a config mismatch, not a trust failure."</p>
+  </div>
+</div>
+
+<div class="qa">
+  <div class="q">Q4.8 — Is the AuthnRequest signed? When would it need to be?</div>
+  <div class="a"><span class="alabel">Model answer</span>
+  <p>Often <strong>not</strong> signed. It's signed when the IdP <strong>requires</strong> signed requests (to stop forged/tampered AuthnRequests — e.g., someone tampering with the requested ACS URL or NameIDPolicy). On the <strong>HTTP-Redirect</strong> binding the signature is a <strong>separate URL parameter</strong> (<code>Signature</code> + <code>SigAlg</code>) over the query string, <em>not</em> an enveloped XML signature, because the deflated request has no room for embedded XML-DSig. ★ "Request signing uses the <strong>SP's</strong> signing key; the IdP verifies with the SP's public cert from metadata."</p>
+  </div>
+</div>
+
+<div class="qa">
+  <div class="q">Q4.9 — What's the difference between <code>Destination</code>, <code>Recipient</code>, and <code>Audience</code>? They all look like URLs.</div>
+  <div class="a"><span class="alabel">Model answer</span>
+  <ul>
+    <li><strong><code>Destination</code></strong> (on Request/Response) — the <strong>URL this message was sent to</strong>; guards against it being redirected/replayed to a different endpoint.</li>
+    <li><strong><code>Recipient</code></strong> (in <code>SubjectConfirmationData</code>) — the <strong>ACS URL</strong> the assertion must be delivered to; the SP checks it equals its own ACS.</li>
+    <li><strong><code>Audience</code></strong> (in Conditions) — the <strong>EntityID of the SP</strong> the assertion is <em>for</em> (a logical identity, not an endpoint).</li>
+  </ul>
+  <p>★ "<code>Destination</code>/<code>Recipient</code> are <em>where it goes</em> (endpoints); <code>Audience</code> is <em>who it's for</em> (an identity). Confusing them is a classic mistake."</p>
+  </div>
+</div>
+
+<div class="qa">
+  <div class="q">Q4.10 — What does <code>SubjectConfirmation Method="bearer"</code> mean, and what's the risk?</div>
+  <div class="a"><span class="alabel">Model answer</span>
+  <p><strong>Bearer</strong> = "whoever bears (holds) this assertion is treated as the subject" — like cash. Whoever presents it within its short validity is accepted. <strong>Risk:</strong> if intercepted before expiry, it can be <strong>replayed</strong>. That's why bearer assertions have a <strong>short <code>NotOnOrAfter</code></strong>, a pinned <strong><code>Recipient</code></strong>, <code>InResponseTo</code> binding, and <strong>one-time-use</strong> enforcement — and why TLS everywhere matters. (The stronger, rarely-used alternative is <strong>holder-of-key</strong>, which binds the assertion to a key the presenter must prove they hold.)</p>
+  </div>
+</div>
+
+<div class="qa">
+  <div class="q">Q4.11 — Design question: an app supports both SAML and OIDC. How do you choose?</div>
+  <div class="a"><span class="alabel">Model answer</span>
+  <ul>
+    <li><strong>SAML</strong> if: it's an enterprise/legacy SaaS that standardized on it, you need it to match existing federation, or the vendor's SAML integration is more mature. XML, browser-only.</li>
+    <li><strong>OIDC</strong> if: it's modern web/mobile/SPA, you need <strong>API access tokens</strong> (OAuth) alongside login, or you want lighter JSON/JWT and discovery. Better for native mobile (no browser-POST gymnastics).</li>
+  </ul>
+  <p>★ "Same job (federated authN); I'd default to <strong>OIDC for new/mobile</strong>, <strong>SAML for enterprise/legacy</strong> — and note many shops run both for years. I'd also weigh which one our IdP + the vendor support <em>best</em>, not just in theory."</p>
+  </div>
+</div>
+
+<div class="qa">
+  <div class="q">Q4.12 — What stops a valid assertion for App A being replayed to App B?</div>
+  <div class="a"><span class="alabel">Model answer</span>
+  <p>The <strong><code>&lt;AudienceRestriction&gt;</code></strong> — the assertion names App A's EntityID as its audience, and App B <strong>rejects</strong> an assertion whose Audience isn't itself. Reinforced by the <strong><code>Recipient</code></strong> (App A's ACS, not App B's) and by <strong>encryption to App A's key</strong> if used (App B can't even decrypt it). ★ "Audience + Recipient + short lifetime + one-time-use together kill cross-SP replay."</p>
+  </div>
+</div>
+
+<div class="qa">
+  <div class="q">Q4.13 — What is the <code>AuthnContextClassRef</code>, and how is it used for step-up/MFA?</div>
+  <div class="a"><span class="alabel">Model answer</span>
+  <p>It states <strong>how the user authenticated</strong> (e.g., <code>PasswordProtectedTransport</code>, or a stronger MFA class). The SP can <strong>demand</strong> a level via <code>&lt;RequestedAuthnContext&gt;</code> in the AuthnRequest; the IdP must satisfy it (possibly <strong>stepping up</strong> to MFA) and echoes the achieved class in the assertion. ★ "It's how a high-value app forces MFA even if the base session was password-only — the SP asks for a stronger context, the IdP steps up."</p>
+  </div>
+</div>
+
+<hr>
+
+<h2>Tier R — Rapid-fire (drill until reflex)</h2>
+
+<p>The full rapid-fire set — question and answer, back to back:</p>
+
+<table>
+<thead>
+<tr><th>#</th><th>Question</th><th>Answer</th></tr>
+</thead>
+<tbody>
+<tr><td>R1</td><td>SAML version in use?</td><td><strong>2.0</strong> (2005).</td></tr>
+<tr><td>R2</td><td>Data format?</td><td><strong>XML.</strong></td></tr>
+<tr><td>R3</td><td>The "login proof" element?</td><td><strong><code>&lt;Assertion&gt;</code>.</strong></td></tr>
+<tr><td>R4</td><td>Binding for the request?</td><td><strong>HTTP-Redirect.</strong></td></tr>
+<tr><td>R5</td><td>Binding for the response?</td><td><strong>HTTP-POST.</strong></td></tr>
+<tr><td>R6</td><td>The most secure binding?</td><td><strong>HTTP-Artifact</strong> (back-channel).</td></tr>
+<tr><td>R7</td><td>Fastest SP-init vs IdP-init tell?</td><td>Presence of <strong><code>InResponseTo</code>.</strong></td></tr>
+<tr><td>R8</td><td>The always-present user field?</td><td><strong><code>&lt;Subject&gt;</code> / <code>&lt;NameID&gt;</code>.</strong></td></tr>
+<tr><td>R9</td><td>"For which SP" field?</td><td><strong><code>&lt;Audience&gt;</code>.</strong></td></tr>
+<tr><td>R10</td><td>"Where to deliver" field?</td><td><strong><code>Recipient</code> / ACS URL.</strong></td></tr>
+<tr><td>R11</td><td>Validity-window fields?</td><td><strong><code>NotBefore</code> / <code>NotOnOrAfter</code>.</strong></td></tr>
+<tr><td>R12</td><td>Signing uses whose key?</td><td><strong>IdP's private key.</strong></td></tr>
+<tr><td>R13</td><td>Encryption uses whose key?</td><td><strong>SP's public key.</strong></td></tr>
+<tr><td>R14</td><td>Is base64 encryption?</td><td><strong>No — encoding.</strong></td></tr>
+<tr><td>R15</td><td>Element for an encrypted assertion?</td><td><strong><code>&lt;EncryptedAssertion&gt;</code>.</strong></td></tr>
+<tr><td>R16</td><td>Is there an <code>EncryptedResponse</code>?</td><td><strong>No.</strong></td></tr>
+<tr><td>R17</td><td>#1 sneaky outage cause?</td><td><strong>Clock skew</strong> (NTP).</td></tr>
+<tr><td>R18</td><td>#1 total-outage cause?</td><td><strong>Signing cert expiry.</strong></td></tr>
+<tr><td>R19</td><td>Logout standard?</td><td><strong>SLO</strong> (best-effort).</td></tr>
+<tr><td>R20</td><td>Trust source (not a CA)?</td><td><strong>Metadata exchange / pinned cert.</strong></td></tr>
+<tr><td>R21</td><td>Classic tampering attack?</td><td><strong>XML Signature Wrapping (XSW).</strong></td></tr>
+<tr><td>R22</td><td>"Logged in, no access" cause?</td><td><strong>Attribute mapping.</strong></td></tr>
+<tr><td>R23</td><td>SAML's OIDC counterpart token?</td><td><strong>ID token (JWT).</strong></td></tr>
+<tr><td>R24</td><td>What carries "return to this page"?</td><td><strong>RelayState.</strong></td></tr>
+<tr><td>R25</td><td>Unique name of a party?</td><td><strong>EntityID.</strong></td></tr>
+</tbody>
+</table>
+
+<hr>
+
+<h2>Tier S — Scenarios (diagnose the ticket)</h2>
+
+<div class="qa">
+  <div class="q">S1 — "Login works in the morning but randomly fails midday with 'assertion expired.' Sometimes a retry works."</div>
+  <div class="a"><span class="alabel">Model answer</span>
+  <p><strong>Clock skew.</strong> The SP and IdP clocks are drifting apart; when the offset exceeds the skew tolerance the (valid) assertion falls outside <code>NotBefore</code>/<code>NotOnOrAfter</code>. Retry sometimes works because the window is borderline. <strong>Fix:</strong> sync <strong>NTP</strong> on both hosts (suspect a paused/resumed VM), and confirm the SP's skew tolerance. First thing to capture: the assertion timestamps vs both servers' current time.</p>
+  </div>
+</div>
+
+<div class="qa">
+  <div class="q">S2 — "Every SP broke at 2 a.m., all at once, 'signature validation failed.'"</div>
+  <div class="a"><span class="alabel">Model answer</span>
+  <p><strong>IdP signing certificate expired</strong> (or was rotated without redistributing metadata). All SPs verify against the same IdP cert, so they all fail together. <strong>Fix:</strong> roll out the new signing cert to all SPs (ideally you'd have staged it as a <strong>secondary</strong> cert beforehand). <strong>Prevent:</strong> track cert expiry, rotate with primary+secondary overlap.</p>
+  </div>
+</div>
+
+<div class="qa">
+  <div class="q">S3 — "The user authenticates at the IdP (MFA prompt and all), but the app shows 'access denied / no roles.'"</div>
+  <div class="a"><span class="alabel">Model answer</span>
+  <p>Authentication succeeded, <strong>authorization data is wrong</strong> — i.e., <strong>attribute mapping</strong>. The SP expects e.g. a <code>groups</code> attribute with specific values, but the IdP sent a different <strong>name</strong> (<code>memberOf</code>), <strong>format</strong>, or <strong>values</strong>. <strong>Fix:</strong> capture the assertion, read the <code>&lt;AttributeStatement&gt;</code>, compare to what the SP's role mapping expects. This is the "logged in but no access" pattern.</p>
+  </div>
+</div>
+
+<div class="qa">
+  <div class="q">S4 — "A brand-new SP connection: the browser POSTs the response but the SP says 'Recipient/Destination mismatch.'"</div>
+  <div class="a"><span class="alabel">Model answer</span>
+  <p>The <strong>ACS URL</strong> the IdP is sending to (in <code>Destination</code>/<code>Recipient</code>) doesn't match the SP's <strong>actual ACS endpoint</strong> — a typo, http-vs-https, trailing slash, or wrong environment (test URL in prod config). <strong>Fix:</strong> align the ACS URL in the IdP's SP connection with the SP's real ACS from its metadata.</p>
+  </div>
+</div>
+
+<div class="qa">
+  <div class="q">S5 — "Signature verifies, timestamps are fine, but the SP rejects with 'audience/issuer not recognized.'"</div>
+  <div class="a"><span class="alabel">Model answer</span>
+  <p><strong>EntityID mismatch.</strong> Either the assertion's <code>&lt;Issuer&gt;</code> (IdP EntityID) isn't what the SP has configured for trust, or the <code>&lt;Audience&gt;</code> doesn't equal the SP's EntityID — commonly a <strong>string mismatch</strong> (trailing slash, case, http/https) rather than a real trust problem. <strong>Fix:</strong> make the EntityID strings <strong>byte-identical</strong> on both sides. ★ "Authentic message, wrong <em>name</em> — config, not crypto."</p>
+  </div>
+</div>
+
+<div class="qa">
+  <div class="q">S6 — "SAML-tracer shows the assertion in plain text with all the user's attributes. Is that a vulnerability?"</div>
+  <div class="a"><span class="alabel">Model answer</span>
+  <p>By itself, <strong>no — that's normal</strong>: base64 is <em>encoding</em>, and the assertion is only signed (readable), protected on the wire by <strong>TLS</strong>. It becomes a concern if <strong>sensitive attributes</strong> (PII, internal IDs) shouldn't be exposed to the browser/logs/screenshots — then enable <strong><code>&lt;EncryptedAssertion&gt;</code></strong>, <strong>minimize attributes</strong> to what the SP needs, and never paste raw assertions into tickets/chat. ★ "Readable ≠ broken; but readable + sensitive = encrypt the assertion and trim the claims."</p>
+  </div>
+</div>
+
+<hr>
+
+<h2>Tier ↩ — Reverse questions (ask the senior — earn respect)</h2>
+
+<p>Sharp questions that show you're thinking like an operator:</p>
+
+<ul>
+<li>"On our Ping stack, do we default new SP connections to <strong>SP-init only</strong>, or do we allow <strong>unsolicited (IdP-init)</strong> — and if so, how do we mitigate login-CSRF?"</li>
+<li>"What's our <strong>signing-cert rotation</strong> runbook — do we stage a secondary cert, and how far ahead of expiry?"</li>
+<li>"Do we <strong>encrypt assertions</strong> by default, or only for connections carrying sensitive attributes? What's the policy?"</li>
+<li>"How do we handle <strong>attribute contracts</strong> — is there a standard mapping, or is it per-connection bespoke?"</li>
+<li>"What's our <strong>clock-skew tolerance</strong>, and how do we monitor IdP/SP time drift?"</li>
+<li>"Do we bother with <strong>SLO</strong>, or do we rely on short session lifetimes since SLO is flaky?"</li>
+<li>"Where do we <strong>draw the line between SAML and OIDC</strong> for new integrations?"</li>
+<li>"What does our <strong>detection</strong> look like for XSW / malformed assertions — is Heimdall's SIEM watching for multiple-assertion or signature-failure patterns?"</li>
+</ul>
+
+<hr>
+
+<h2>What you learned</h2>
+
+<ul>
+<li>You can now field <strong>easy → expert</strong> SAML questions: definitions, the full SP-init and IdP-init flows, assertion anatomy, the <strong>three levels of mandatory</strong>, EntityID's three homes, certificate sign-vs-encrypt (and the key-direction flip), the encryption-scope precision (<strong>no <code>EncryptedResponse</code></strong>), what's encrypted vs merely encoded, clock skew, cert rotation, SLO, the headline <strong>attacks + defenses</strong> (XSW, replay, login-CSRF, cert injection), and <strong>Ping-specific</strong> mechanics (connections, credentials, adapters, <code>startSSO.ping</code>).</li>
+<li>You have <strong>scenario reflexes</strong> — the exact patterns behind the most common SAML tickets.</li>
+</ul>
+
+<h2>Next</h2>
+
+<ul>
+<li><strong>Narrate it live:</strong> re-run <a href="../labs/02-saml-assertion-anatomy/README.md">Lab 02</a> and speak the <a href="13-saml-mastery-session2.md#5e-the-60-second-speed-read-drill-say-it-out-loud">60-second read</a> over a real decoded assertion.</li>
+<li><strong>Cross-train:</strong> the <a href="03-oauth-oidc-deep-dive.md">OAuth/OIDC deep dive</a> — interviewers love "SAML vs OIDC," and you'll want the same fluency there.</li>
+<li><strong>Purple-team:</strong> ask <strong>Heimdall</strong> what a SIEM would detect for each Tier-4 attack, and <strong>Loki</strong> to demo XSW on your <strong>local Keycloak lab only</strong>.</li>
+</ul>
+
+<p><em>— Janus 🔐, sparring partner for your senior's QnA</em></p>

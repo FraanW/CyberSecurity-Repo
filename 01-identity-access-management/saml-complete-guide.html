@@ -1,0 +1,819 @@
+<title>SAML — The Gatekeeper's Field Manual, Vol. II</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  *,*::before,*::after{box-sizing:border-box}
+  body{margin:0}
+
+  /* ---------- palette (inherited from Vol. I: antique brass + verdigris on slate) ---------- */
+  :root{
+    --bg:#E9EBEF; --panel:#FBFBFD; --panel-2:#F0F2F6; --raised:#FFFFFF;
+    --ink:#1A2030; --ink-2:#56617B; --ink-3:#808AA0; --hair:#D4D9E1; --hair-2:#E4E7EC;
+    --accent:#8A6A22; --accent-bright:#B08A34; --accent-soft:rgba(138,106,34,.10);
+    --teal:#2E6A62; --teal-soft:rgba(46,106,98,.10);
+    --red:#A94C43; --red-soft:rgba(169,76,67,.10);
+    --green:#3B7A57; --green-soft:rgba(59,122,87,.10);
+    --info:#3C6C97; --info-soft:rgba(60,108,151,.10);
+    --shadow:0 1px 2px rgba(20,26,40,.06),0 8px 24px rgba(20,26,40,.07);
+    --shadow-lift:0 2px 6px rgba(20,26,40,.10),0 18px 44px rgba(20,26,40,.13);
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,"Times New Roman",serif;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --mono:"Cascadia Code","Cascadia Mono","SFMono-Regular","SF Mono","JetBrains Mono",Consolas,"Roboto Mono",ui-monospace,monospace;
+    --maxw:1120px; --radius:12px; --radius-s:8px;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --bg:#12161F; --panel:#191F2B; --panel-2:#202836; --raised:#232B3A;
+      --ink:#E9ECF2; --ink-2:#9AA4B8; --ink-3:#6E7891; --hair:#2C3444; --hair-2:#232A38;
+      --accent:#C8A24B; --accent-bright:#E0BC63; --accent-soft:rgba(200,162,75,.13);
+      --teal:#4FA093; --teal-soft:rgba(79,160,147,.14);
+      --red:#D07E72; --red-soft:rgba(208,126,114,.14);
+      --green:#6FB58E; --green-soft:rgba(111,181,142,.13);
+      --info:#7BA8D0; --info-soft:rgba(123,168,208,.14);
+      --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.36);
+      --shadow-lift:0 2px 8px rgba(0,0,0,.4),0 22px 54px rgba(0,0,0,.5);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#12161F; --panel:#191F2B; --panel-2:#202836; --raised:#232B3A;
+    --ink:#E9ECF2; --ink-2:#9AA4B8; --ink-3:#6E7891; --hair:#2C3444; --hair-2:#232A38;
+    --accent:#C8A24B; --accent-bright:#E0BC63; --accent-soft:rgba(200,162,75,.13);
+    --teal:#4FA093; --teal-soft:rgba(79,160,147,.14);
+    --red:#D07E72; --red-soft:rgba(208,126,114,.14);
+    --green:#6FB58E; --green-soft:rgba(111,181,142,.13);
+    --info:#7BA8D0; --info-soft:rgba(123,168,208,.14);
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.36);
+    --shadow-lift:0 2px 8px rgba(0,0,0,.4),0 22px 54px rgba(0,0,0,.5);
+  }
+  :root[data-theme="light"]{
+    --bg:#E9EBEF; --panel:#FBFBFD; --panel-2:#F0F2F6; --raised:#FFFFFF;
+    --ink:#1A2030; --ink-2:#56617B; --ink-3:#808AA0; --hair:#D4D9E1; --hair-2:#E4E7EC;
+    --accent:#8A6A22; --accent-bright:#B08A34; --accent-soft:rgba(138,106,34,.10);
+    --teal:#2E6A62; --teal-soft:rgba(46,106,98,.10);
+    --red:#A94C43; --red-soft:rgba(169,76,67,.10);
+    --green:#3B7A57; --green-soft:rgba(59,122,87,.10);
+    --info:#3C6C97; --info-soft:rgba(60,108,151,.10);
+    --shadow:0 1px 2px rgba(20,26,40,.06),0 8px 24px rgba(20,26,40,.07);
+    --shadow-lift:0 2px 6px rgba(20,26,40,.10),0 18px 44px rgba(20,26,40,.13);
+  }
+
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.62;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;overflow-x:hidden}
+  body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+    background:radial-gradient(120% 80% at 50% -10%,var(--accent-soft),transparent 60%),
+      repeating-linear-gradient(90deg,transparent 0 96px,color-mix(in oklab,var(--hair) 40%,transparent) 96px 97px);
+    opacity:.5}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+  a{color:var(--accent);text-underline-offset:2px}
+  ::selection{background:var(--accent-soft)}
+  :focus-visible{outline:2px solid var(--accent-bright);outline-offset:2px;border-radius:4px}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;text-wrap:balance;line-height:1.14;letter-spacing:-.01em}
+
+  .eyebrow{font-family:var(--mono);font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);font-weight:600;display:inline-flex;align-items:center;gap:.5em}
+  .eyebrow .num{color:var(--ink-3)}
+
+  /* nav */
+  header.nav{position:sticky;top:0;z-index:50;background:color-mix(in oklab,var(--bg) 86%,transparent);backdrop-filter:blur(10px) saturate(1.1);border-bottom:1px solid var(--hair)}
+  .nav-inner{display:flex;align-items:center;gap:20px;height:58px}
+  .brand{display:flex;align-items:center;gap:11px;font-family:var(--serif);font-size:1.02rem;font-weight:600;color:var(--ink);text-decoration:none;white-space:nowrap}
+  .brand .gate{color:var(--accent);width:24px;height:28px;flex:none}
+  .brand small{font-family:var(--mono);font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);display:block;margin-top:2px}
+  .nav-links{margin-left:auto;display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}
+  .nav-links::-webkit-scrollbar{display:none}
+  .nav-links a{font-family:var(--mono);font-size:.73rem;letter-spacing:.03em;color:var(--ink-2);text-decoration:none;padding:7px 10px;border-radius:7px;white-space:nowrap;transition:color .15s,background .15s}
+  .nav-links a:hover{color:var(--ink);background:var(--panel-2)}
+  @media (max-width:900px){.brand small{display:none}.nav-links{display:none}}
+
+  /* hero */
+  .hero{padding:clamp(52px,8vw,92px) 0 34px}
+  .hero .kicker{margin-bottom:20px}
+  .hero h1{font-size:clamp(2.1rem,5.4vw,3.7rem);margin:0 0 18px}
+  .hero .lede{font-size:clamp(1.04rem,1.6vw,1.24rem);color:var(--ink-2);max-width:62ch;margin:0 0 30px}
+  .hero .lede b{color:var(--ink);font-weight:600}
+  .hero-meta{display:flex;flex-wrap:wrap;gap:8px}
+
+  /* the two faces plate */
+  .faces{display:grid;grid-template-columns:1fr auto 1fr;align-items:stretch;border:1px solid var(--hair);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);background:var(--panel);margin-top:34px}
+  .face{padding:26px clamp(18px,3vw,34px)}
+  .face .tag{font-family:var(--mono);font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;color:var(--accent)}
+  .face.b .tag{color:var(--teal)}
+  .face .q{font-family:var(--serif);font-size:clamp(1.35rem,2.6vw,1.85rem);color:var(--ink);margin:8px 0 6px}
+  .face p{color:var(--ink-2);margin:8px 0 0;font-size:.93rem}
+  .threshold{width:60px;position:relative;display:grid;place-items:center;background:linear-gradient(180deg,transparent,var(--accent-soft),transparent)}
+  .threshold::before{content:"";position:absolute;top:16px;bottom:16px;width:1px;background:linear-gradient(180deg,transparent,var(--accent),transparent)}
+  .threshold .glyph{width:30px;height:36px;color:var(--accent);position:relative;z-index:1;background:var(--panel);border-radius:50%;padding:3px}
+  @media (max-width:640px){.faces{grid-template-columns:1fr}.threshold{width:auto;height:52px}.threshold::before{top:auto;bottom:auto;left:16px;right:16px;height:1px;width:auto;background:linear-gradient(90deg,transparent,var(--accent),transparent)}}
+
+  /* sections */
+  section{padding:clamp(44px,6.5vw,78px) 0;border-top:1px solid var(--hair-2)}
+  .sec-head{max-width:70ch;margin-bottom:30px}
+  .sec-head h2{font-size:clamp(1.55rem,3.2vw,2.3rem);margin:12px 0 12px}
+  .sec-head p{color:var(--ink-2);margin:0;font-size:1.01rem}
+
+  .reveal{opacity:0;transform:translateY(14px);transition:opacity .6s ease,transform .6s ease}
+  .reveal.in{opacity:1;transform:none}
+  @media (prefers-reduced-motion:reduce){.reveal{opacity:1!important;transform:none!important;transition:none}}
+
+  .card{background:var(--panel);border:1px solid var(--hair);border-radius:var(--radius);box-shadow:var(--shadow)}
+  .grid{display:grid;gap:16px}
+  .cols-2{grid-template-columns:repeat(2,1fr)}
+  .cols-3{grid-template-columns:repeat(3,1fr)}
+  @media (max-width:820px){.cols-3{grid-template-columns:1fr}}
+  @media (max-width:620px){.cols-2{grid-template-columns:1fr}}
+  .block{padding:20px}
+  .block h3{font-size:1.14rem;margin:0 0 6px;color:var(--ink)}
+  .block h3 .k{font-family:var(--mono);font-size:.68rem;color:var(--accent);display:block;letter-spacing:.1em;margin-bottom:5px;text-transform:uppercase}
+  .block p{margin:6px 0 0;color:var(--ink-2);font-size:.93rem}
+  .list{list-style:none;padding:0;margin:10px 0 0;display:grid;gap:7px}
+  .list li{display:flex;gap:10px;color:var(--ink-2);font-size:.9rem}
+  .list li::before{content:"▸";color:var(--accent);flex:none}
+
+  .chip{display:inline-flex;align-items:center;gap:.4em;font-family:var(--mono);font-size:.71rem;padding:3px 9px;border-radius:999px;border:1px solid var(--hair);color:var(--ink-2);background:var(--panel-2);white-space:nowrap}
+  .chip.brass{color:var(--accent);border-color:color-mix(in oklab,var(--accent) 40%,var(--hair));background:var(--accent-soft)}
+  .chip.teal{color:var(--teal);border-color:color-mix(in oklab,var(--teal) 40%,var(--hair));background:var(--teal-soft)}
+
+  .callout{display:flex;gap:14px;padding:17px 19px;border-radius:var(--radius);border:1px solid color-mix(in oklab,var(--accent) 34%,var(--hair));background:var(--accent-soft)}
+  .callout .mark{font-family:var(--serif);font-size:1.45rem;color:var(--accent);flex:none;line-height:1}
+  .callout p{margin:0;color:var(--ink);font-size:.95rem}
+  .callout b{color:var(--ink)}
+
+  /* tables */
+  .table-wrap{overflow-x:auto;border:1px solid var(--hair);border-radius:var(--radius);box-shadow:var(--shadow)}
+  table{border-collapse:collapse;width:100%;min-width:560px;font-size:.9rem}
+  th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--hair-2);vertical-align:top}
+  thead th{font-family:var(--mono);font-size:.68rem;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3);background:var(--panel-2)}
+  tbody tr:last-child td{border-bottom:0}
+  td.k{font-family:var(--mono);color:var(--ink);font-weight:600;white-space:nowrap}
+  td .s{color:var(--accent);font-family:var(--mono);font-size:.82rem}
+  td .s.teal{color:var(--teal)}
+  .yes{color:var(--green);font-weight:600}
+  .no{color:var(--red);font-weight:600}
+  .maybe{color:var(--accent);font-weight:600}
+
+  /* flow stepper */
+  .flow-tabs{display:inline-flex;gap:4px;padding:4px;background:var(--panel-2);border:1px solid var(--hair);border-radius:999px;margin-bottom:20px}
+  .flow-tabs button{font-family:var(--mono);font-size:.76rem;letter-spacing:.02em;border:0;background:transparent;color:var(--ink-2);padding:8px 15px;border-radius:999px;cursor:pointer;transition:.15s}
+  .flow-tabs button[aria-selected="true"]{background:var(--raised);color:var(--ink);box-shadow:var(--shadow)}
+  .flow-tabs button .k{color:var(--accent)}
+  .flow-tabs button.idp[aria-selected="true"] .k{color:var(--teal)}
+  .stage{padding:20px clamp(12px,2vw,22px) 22px}
+  .pillars{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;min-width:0}
+  .pillar{border:1px solid var(--hair);border-radius:var(--radius-s);background:var(--panel-2);padding:12px 8px;text-align:center;transition:.3s}
+  .pillar .p-role{font-family:var(--mono);font-size:.8rem;color:var(--ink);font-weight:600}
+  .pillar .p-sub{font-size:.64rem;color:var(--ink-3);font-family:var(--mono);margin-top:2px}
+  .pillar.src{border-color:var(--accent);background:var(--accent-soft);box-shadow:0 0 0 1px var(--accent)}
+  .pillar.dst{border-color:var(--teal);background:var(--teal-soft);box-shadow:0 0 0 1px var(--teal)}
+  .hop{display:flex;align-items:center;gap:12px;padding:15px 17px;border:1px solid var(--hair);border-left:3px solid var(--accent);border-radius:var(--radius-s);background:var(--raised);box-shadow:var(--shadow)}
+  .hop.self{border-left-color:var(--info)}
+  .hop.rev{border-left-color:var(--teal)}
+  .hop .arrow{font-family:var(--mono);color:var(--accent);font-size:1.1rem;flex:none}
+  .hop.rev .arrow{color:var(--teal)}.hop.self .arrow{color:var(--info)}
+  .hop .route{font-family:var(--mono);font-size:.74rem;color:var(--ink-2);white-space:nowrap}
+  .hop .route b{color:var(--ink)}
+  .hop .msg{font-family:var(--mono);font-size:.8rem;color:var(--ink);font-weight:600}
+  .hop-detail{margin:14px 2px 0;color:var(--ink-2);font-size:.96rem;min-height:3.4em}
+  .hop-detail b{color:var(--ink)}
+  .stepper-bar{display:flex;align-items:center;gap:12px;margin-top:18px;flex-wrap:wrap}
+  .btn{font-family:var(--mono);font-size:.79rem;border:1px solid var(--hair);background:var(--panel-2);color:var(--ink);padding:8px 14px;border-radius:8px;cursor:pointer;transition:.15s}
+  .btn:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+  .btn:disabled{opacity:.4;cursor:not-allowed}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+  :root[data-theme="dark"] .btn.primary{color:#1a1400}
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .btn.primary{color:#1a1400}}
+  .dots{display:flex;gap:6px;margin-left:auto}
+  .dots i{width:8px;height:8px;border-radius:50%;background:var(--hair);transition:.2s;cursor:pointer}
+  .dots i.on{background:var(--accent);transform:scale(1.25)}
+  .dots i.done{background:color-mix(in oklab,var(--accent) 50%,var(--hair))}
+  .step-count{font-family:var(--mono);font-size:.78rem;color:var(--ink-3);font-variant-numeric:tabular-nums}
+
+  /* dissector */
+  .dissect{display:grid;grid-template-columns:1.35fr 1fr;gap:16px;align-items:start}
+  @media (max-width:840px){.dissect{grid-template-columns:1fr}}
+  .xml{font-family:var(--mono);font-size:.79rem;line-height:1.85;padding:18px;overflow-x:auto;color:var(--ink-2);white-space:pre}
+  .xml .t{color:var(--ink-3)}
+  .xml .a{color:var(--teal)}
+  .tok{font:inherit;color:var(--accent);background:var(--accent-soft);border:1px dashed color-mix(in oklab,var(--accent) 50%,transparent);border-radius:4px;padding:0 3px;cursor:pointer;transition:.12s}
+  .tok:hover{background:var(--accent);color:var(--panel);border-style:solid}
+  .tok.sel{background:var(--accent);color:var(--panel);border-style:solid}
+  .panel-info{padding:18px;position:sticky;top:72px}
+  .panel-info .pi-key{font-family:var(--mono);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+  .panel-info h4{font-size:1.2rem;margin:6px 0 6px;color:var(--ink)}
+  .panel-info p{margin:0 0 12px;color:var(--ink-2);font-size:.93rem}
+  .pi-badges{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 12px}
+  .badge{font-family:var(--mono);font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;padding:2px 8px;border-radius:999px;border:1px solid var(--hair)}
+  .badge.must{color:var(--red);border-color:color-mix(in oklab,var(--red) 40%,var(--hair));background:var(--red-soft)}
+  .badge.opt{color:var(--ink-3)}
+  .panel-info .whenwrong{border-top:1px dashed var(--hair);padding-top:12px}
+  .panel-info .whenwrong .lbl{font-family:var(--mono);font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;color:var(--red)}
+  .panel-info .whenwrong p{color:var(--ink);font-size:.9rem;margin-top:4px;margin-bottom:0}
+
+  /* key-direction (certs) */
+  .keyflip{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--hair);border-radius:var(--radius);overflow:hidden}
+  @media (max-width:620px){.keyflip{grid-template-columns:1fr}}
+  .kf{padding:20px}
+  .kf.sign{background:var(--accent-soft)}
+  .kf.enc{background:var(--teal-soft);border-left:1px solid var(--hair)}
+  @media (max-width:620px){.kf.enc{border-left:0;border-top:1px solid var(--hair)}}
+  .kf .kf-h{font-family:var(--mono);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px}
+  .kf.sign .kf-h{color:var(--accent)}.kf.enc .kf-h{color:var(--teal)}
+  .kf h4{font-size:1.12rem;margin:0 0 8px;color:var(--ink)}
+  .kf p{margin:0 0 6px;color:var(--ink-2);font-size:.92rem}
+  .kf .who{font-family:var(--mono);font-size:.82rem;color:var(--ink);font-weight:600;margin-top:8px}
+
+  /* encryption layers */
+  .layers{display:grid;gap:0;border-radius:var(--radius);overflow:hidden;border:1px solid var(--hair)}
+  .layer{padding:16px 18px;position:relative}
+  .layer.l1{background:var(--info-soft)}
+  .layer.l2{background:var(--accent-soft);border-top:1px solid var(--hair)}
+  .layer.l3{background:var(--teal-soft);border-top:1px solid var(--hair)}
+  .layer .l-tag{font-family:var(--mono);font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;font-weight:600}
+  .layer.l1 .l-tag{color:var(--info)}.layer.l2 .l-tag{color:var(--accent)}.layer.l3 .l-tag{color:var(--teal)}
+  .layer h4{font-size:1.05rem;margin:4px 0 4px;color:var(--ink)}
+  .layer p{margin:0;color:var(--ink-2);font-size:.9rem}
+
+  /* question bank */
+  .qtabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px}
+  .qtabs button{font-family:var(--mono);font-size:.76rem;border:1px solid var(--hair);background:var(--panel);color:var(--ink-2);padding:9px 14px;border-radius:999px;cursor:pointer;transition:.15s}
+  .qtabs button[aria-selected="true"]{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+  .qpanel{display:none}
+  .qpanel.on{display:grid;gap:10px}
+  details.q{border:1px solid var(--hair);border-radius:var(--radius-s);background:var(--panel);overflow:hidden}
+  details.q>summary{list-style:none;cursor:pointer;padding:15px 17px;display:flex;gap:12px;align-items:flex-start;color:var(--ink);font-size:.97rem;font-weight:500}
+  details.q>summary::-webkit-details-marker{display:none}
+  details.q>summary .qm{font-family:var(--serif);color:var(--accent);font-size:1.3rem;line-height:1;flex:none}
+  details.q>summary .plus{margin-left:auto;font-family:var(--mono);color:var(--ink-3);flex:none;transition:transform .2s}
+  details.q[open]>summary .plus{transform:rotate(45deg);color:var(--accent)}
+  details.q[open]>summary{border-bottom:1px solid var(--hair-2)}
+  .ans{padding:14px 17px 17px 42px;color:var(--ink-2);font-size:.93rem}
+  .ans p{margin:0 0 9px}.ans p:last-child{margin:0}
+  .ans b{color:var(--ink)}
+  .ans .star{color:var(--accent);font-weight:600}
+  .ans code{font-family:var(--mono);font-size:.86em;background:var(--panel-2);border:1px solid var(--hair-2);border-radius:4px;padding:0 4px;color:var(--ink)}
+  .qtier-note{color:var(--ink-3);font-size:.86rem;margin:0 0 14px;font-family:var(--mono)}
+
+  /* footer */
+  footer{border-top:1px solid var(--hair);padding:40px 0 56px}
+  .foot-grid{display:grid;grid-template-columns:1.5fr 1fr;gap:26px}
+  @media (max-width:680px){.foot-grid{grid-template-columns:1fr;gap:18px}}
+  footer h4{font-family:var(--mono);font-size:.7rem;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3);margin:0 0 12px}
+  .checklist{list-style:none;padding:0;margin:0;display:grid;gap:6px}
+  .checklist li{display:flex;gap:9px;color:var(--ink-2);font-size:.9rem;font-family:var(--mono)}
+  .checklist li b{color:var(--ink);font-weight:600}
+  .checklist li::before{content:"›";color:var(--accent)}
+  footer .sig{font-family:var(--serif);font-size:1.1rem;color:var(--ink)}
+  footer .fine{color:var(--ink-3);font-size:.8rem;margin-top:8px}
+  .path{font-family:var(--mono);font-size:.78rem;color:var(--ink-2);display:block;padding:4px 0}
+  .path b{color:var(--accent)}
+</style>
+
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="#top">
+      <svg class="gate" viewBox="0 0 24 30" fill="none" aria-hidden="true">
+        <path d="M3 29V11a9 9 0 0 1 18 0v18" stroke="currentColor" stroke-width="1.6"/>
+        <path d="M12 3v26" stroke="currentColor" stroke-width="1.2" opacity=".7"/>
+        <circle cx="12" cy="14" r="1.9" stroke="currentColor" stroke-width="1.3"/>
+        <path d="M12 15.6V19" stroke="currentColor" stroke-width="1.3"/>
+        <path d="M3 29h18" stroke="currentColor" stroke-width="1.6"/>
+      </svg>
+      <span>Janus · SAML<small>Field Manual — Vol. II</small></span>
+    </a>
+    <nav class="nav-links" aria-label="Sections">
+      <a href="#sso">SSO vs Federation</a>
+      <a href="#cast">Cast &amp; EntityID</a>
+      <a href="#flows">SP vs IdP init</a>
+      <a href="#assertion">Assertion</a>
+      <a href="#certs">Certificates</a>
+      <a href="#crypto">What's encrypted</a>
+      <a href="#bank">Question bank</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+  <div class="wrap">
+    <section class="hero" style="border-top:0">
+      <div class="kicker eyebrow"><span class="num">SAML 2.0</span> · The gatekeeper's second volume</div>
+      <h1>A signed note, carried by the browser, that opens every door at once.</h1>
+      <p class="lede">SAML is old (2005), verbose (XML), and full of sharp edges — but underneath it does one elegant thing: an <b>Identity Provider</b> vouches for you <b>once</b>, and every <b>Service Provider</b> that trusts it lets you in without a password. This is that mechanism, taken apart piece by piece — the two flows, the assertion, the certificates, and exactly what is and isn't encrypted. Then a <b>question bank</b> to prove you own it.</p>
+      <div class="hero-meta">
+        <span class="chip brass">SP-init &amp; IdP-init</span>
+        <span class="chip">Assertion anatomy</span>
+        <span class="chip teal">Sign vs encrypt</span>
+        <span class="chip">30+ QnA, easy → expert</span>
+      </div>
+
+      <div class="faces reveal">
+        <div class="face a">
+          <div class="tag">Mode I · starts at the app</div>
+          <div class="q">SP-initiated</div>
+          <p>You hit a URL, the app has no session, and it sends you to the IdP with an <b>AuthnRequest</b>. The response is bound to that request. The default — ~95% of logins.</p>
+        </div>
+        <div class="threshold" aria-hidden="true">
+          <svg class="glyph" viewBox="0 0 24 30" fill="none">
+            <path d="M3 29V11a9 9 0 0 1 18 0v18" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M12 3v26" stroke="currentColor" stroke-width="1.1" opacity=".6"/>
+            <circle cx="12" cy="14" r="1.9" stroke="currentColor" stroke-width="1.3"/>
+            <path d="M12 15.6V19" stroke="currentColor" stroke-width="1.3"/>
+          </svg>
+        </div>
+        <div class="face b">
+          <div class="tag">Mode II · starts at the IdP</div>
+          <div class="q">IdP-initiated</div>
+          <p>You're already in the IdP portal and click an app tile. The IdP pushes an <b>unsolicited</b> response — no AuthnRequest, no binding. Great for onboarding &amp; testing, weaker for security.</p>
+        </div>
+      </div>
+      <p class="hop-detail" style="min-height:0;margin-top:14px">Two faces, like the god of doorways — the same protocol looking out from the app, or in from the portal.</p>
+    </section>
+  </div>
+
+  <!-- SSO vs FEDERATION -->
+  <section id="sso">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <div class="eyebrow">The words people blur in meetings</div>
+        <h2>SSO is the experience. Federation is the machinery.</h2>
+        <p>Get this distinction right and half of SAML falls into place. SAML is one common way to deliver <em>federated</em> SSO — SSO that reaches across company boundaries.</p>
+      </div>
+      <div class="grid cols-3" style="margin-bottom:16px">
+        <div class="card block reveal">
+          <h3><span class="k">Single Sign-On</span>Log in once, reach many</h3>
+          <p>One authentication, then every app opens without a new prompt. Says nothing about <em>how</em> — a single company can do it with one shared cookie.</p>
+        </div>
+        <div class="card block reveal">
+          <h3><span class="k" style="color:var(--teal)">Federation</span>Cross-domain trust</h3>
+          <p>Two <b>different</b> security domains agree to trust each other's logins, anchored by a signed contract of <b>metadata + certificates</b> exchanged up front.</p>
+        </div>
+        <div class="card block reveal">
+          <h3><span class="k">Federated SSO</span>The two, combined</h3>
+          <p>SSO achieved <b>across</b> the boundary via SAML/OIDC — one corporate login opens 40 third-party SaaS apps that never saw your password.</p>
+        </div>
+      </div>
+      <div class="callout reveal">
+        <span class="mark">⚿</span>
+        <p><b>The memory hook:</b> <em>all federated SSO is SSO; not all SSO is federated.</em> The moment the apps live in <b>someone else's</b> security domain — a SaaS vendor, a partner bank — you need federation. That's exactly the problem SAML was built to solve.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CAST + ENTITYID -->
+  <section id="cast">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <div class="eyebrow">Who's who — and the one name that identifies everybody</div>
+        <h2>Three actors, and the EntityID's three homes</h2>
+        <p>Every SAML message passes between three parties, <b>through the browser</b>. And every party has one globally-unique name — its <b>EntityID</b> — that shows up in exactly three load-bearing places.</p>
+      </div>
+      <div class="grid cols-3 reveal" style="margin-bottom:16px">
+        <div class="card block">
+          <h3><span class="k">The user</span>Principal / Subject</h3>
+          <p>The human trying to reach an app. Identified inside the assertion by the <b>NameID</b>.</p>
+        </div>
+        <div class="card block">
+          <h3><span class="k">The IdP</span>Identity Provider</h3>
+          <p>Authenticates the user and <b>issues the signed assertion</b>. Ping, Okta, Entra, Keycloak, ADFS.</p>
+        </div>
+        <div class="card block">
+          <h3><span class="k" style="color:var(--teal)">The SP</span>Service Provider</h3>
+          <p>The app the user wants. <b>Trusts</b> the IdP's assertion instead of asking for a password.</p>
+        </div>
+      </div>
+      <div class="table-wrap reveal">
+        <table>
+          <thead><tr><th>Where you see it</th><th>Whose EntityID</th><th>What it means</th></tr></thead>
+          <tbody>
+            <tr><td class="k">AuthnRequest &lt;Issuer&gt;</td><td><span class="s">the SP's</span></td><td>"This login request is from me, app X" — the IdP looks up the right connection</td></tr>
+            <tr><td class="k">Response / Assertion &lt;Issuer&gt;</td><td><span class="s">the IdP's</span></td><td>"I minted this" — the SP uses it to pick which certificate to verify against</td></tr>
+            <tr><td class="k">&lt;Audience&gt;</td><td><span class="s">the SP's</span></td><td>"This assertion is <b>only for</b> app X" — stops replay to a different app</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="hop-detail reveal" style="min-height:0"><b>Speed-read trick:</b> <code style="font-family:var(--mono)">Issuer</code> answers <em>who sent this</em>; <code style="font-family:var(--mono)">Audience</code> answers <em>who may consume this</em>. It's just a name — usually a URL, but it need not resolve to anything.</p>
+    </div>
+  </section>
+
+  <!-- FLOWS -->
+  <section id="flows">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <div class="eyebrow">The whiteboard, made steppable</div>
+        <h2>Step through both flows — one hop at a time</h2>
+        <p>The two initiation modes, hop by hop. Watch where the <b>AuthnRequest</b> appears (or doesn't), and where every validation happens. Use the buttons, the dots, or your ← → arrow keys.</p>
+      </div>
+      <div class="card reveal" style="padding:20px clamp(12px,2vw,22px)">
+        <div class="flow-tabs" role="tablist" aria-label="Choose a flow">
+          <button role="tab" data-flow="sp" aria-selected="true"><span class="k">SP-initiated</span> · starts at the app</button>
+          <button role="tab" class="idp" data-flow="idp" aria-selected="false"><span class="k">IdP-initiated</span> · starts at the portal</button>
+        </div>
+        <div class="stage">
+          <div class="pillars" id="pillars">
+            <div class="pillar" data-party="user"><div class="p-role">Browser</div><div class="p-sub">the user</div></div>
+            <div class="pillar" data-party="sp"><div class="p-role">SP</div><div class="p-sub">app.example.com</div></div>
+            <div class="pillar" data-party="idp"><div class="p-role">IdP</div><div class="p-sub">Ping / Okta</div></div>
+          </div>
+          <div class="hop" id="hop">
+            <span class="arrow" id="hopArrow">→</span>
+            <span class="route" id="hopRoute"></span>
+            <span class="msg" id="hopMsg"></span>
+          </div>
+          <p class="hop-detail" id="hopDetail"></p>
+          <div class="stepper-bar">
+            <button class="btn" id="prevBtn">← Prev</button>
+            <button class="btn primary" id="nextBtn">Next →</button>
+            <span class="step-count" id="stepCount"></span>
+            <span class="dots" id="dots" role="tablist" aria-label="Jump to step"></span>
+          </div>
+        </div>
+      </div>
+      <p class="hop-detail reveal" style="min-height:0;margin-top:14px">Brass = a message leaving a party · teal = the response returning · blue = a party working internally (authenticating, validating). The internal-work steps are where the real failures live.</p>
+    </div>
+  </section>
+
+  <!-- ASSERTION DISSECTOR -->
+  <section id="assertion">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <div class="eyebrow">The document a SAML ticket lives in</div>
+        <h2>Dissect a real assertion — click any highlighted field</h2>
+        <p>A trimmed version of the exact XML an SP receives. <b>Click the brass fields</b> to see what each means, whether it's mandatory, and the ticket it causes when it's wrong. The one that must always be there: the <b>Subject → NameID</b>.</p>
+      </div>
+      <div class="dissect reveal">
+        <div class="card xml" id="xml" aria-label="SAML Response, interactive">
+<span class="t">&lt;samlp:Response</span> <span class="a">InResponseTo</span>=<button class="tok" data-key="inresponseto">"_abc123"</button><span class="t">&gt;</span>
+  <span class="t">&lt;saml:Issuer&gt;</span><button class="tok" data-key="issuer">https://idp…/metadata</button><span class="t">&lt;/saml:Issuer&gt;</span>
+  <span class="t">&lt;samlp:Status&gt;</span><button class="tok" data-key="status">&lt;StatusCode "…Success"/&gt;</button><span class="t">&lt;/samlp:Status&gt;</span>
+  <span class="t">&lt;saml:Assertion&gt;</span>
+    <button class="tok" data-key="signature">&lt;ds:Signature&gt; … &lt;/ds:Signature&gt;</button>
+    <span class="t">&lt;saml:Subject&gt;</span>
+      <span class="t">&lt;saml:NameID&gt;</span><button class="tok" data-key="nameid">farhaan@finco.com</button><span class="t">&lt;/saml:NameID&gt;</span>
+      <span class="t">&lt;saml:SubjectConfirmationData</span>
+          <span class="a">Recipient</span>=<button class="tok" data-key="recipient">"…/saml/acs"</button><span class="t">/&gt;</span>
+    <span class="t">&lt;saml:Conditions</span>
+        <span class="a">NotBefore</span>=<button class="tok" data-key="window">"10:02:35Z"</button> <span class="a">NotOnOrAfter</span>=<button class="tok" data-key="window">"10:08:05Z"</button><span class="t">&gt;</span>
+      <span class="t">&lt;saml:Audience&gt;</span><button class="tok" data-key="audience">https://app…/metadata</button><span class="t">&lt;/saml:Audience&gt;</span>
+    <span class="t">&lt;saml:AuthnStatement</span> <span class="a">AuthnContext</span>=<button class="tok" data-key="authn">"…Password…"</button><span class="t">/&gt;</span>
+    <span class="t">&lt;saml:AttributeStatement&gt;</span>
+      <span class="t">&lt;saml:Attribute</span> <span class="a">Name</span>="groups"<span class="t">&gt;</span><button class="tok" data-key="attrs">iam-team, payments-ro</button>
+    <span class="t">&lt;/saml:AttributeStatement&gt;</span>
+  <span class="t">&lt;/saml:Assertion&gt;</span>
+<span class="t">&lt;/samlp:Response&gt;</span>
+        </div>
+        <div class="card panel-info" id="pinfo">
+          <div class="pi-key" id="piKey">Pick a field</div>
+          <h4 id="piTitle">The fields that cause most SAML tickets</h4>
+          <div class="pi-badges" id="piBadges" hidden></div>
+          <p id="piBody">Click any highlighted value on the left. This is the exact muscle memory that closes tickets: decode the blob → read these fields → find the one that's wrong.</p>
+          <div class="whenwrong" id="piWrongWrap" hidden>
+            <span class="lbl">The ticket when it's wrong</span>
+            <p id="piWrong"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CERTIFICATES -->
+  <section id="certs">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <div class="eyebrow">Two jobs, two keypairs, one flip</div>
+        <h2>Certificates: signing proves it; encryption hides it</h2>
+        <p>The part everyone gets backwards. Signing and encryption use <b>different keypairs</b>, and the key direction <b>flips</b> between them.</p>
+      </div>
+      <div class="keyflip reveal">
+        <div class="kf sign">
+          <div class="kf-h">Job 1 · Signing</div>
+          <h4>Authenticity + integrity</h4>
+          <p>The IdP signs the assertion with <b>its own private key</b>. The SP verifies with the IdP's <b>public certificate</b> (pinned from metadata). Any changed byte → hash mismatch → rejected.</p>
+          <p>Proves it's <em>really from this IdP</em> and <em>unmodified</em>. Does <b>not</b> hide anything — a signed assertion is fully readable.</p>
+          <div class="who">🔑 uses the IdP's keypair</div>
+        </div>
+        <div class="kf enc">
+          <div class="kf-h">Job 2 · Encryption</div>
+          <h4>Confidentiality</h4>
+          <p>The IdP encrypts using the <b>SP's public certificate</b>; only the SP's <b>private key</b> can decrypt. A random AES key encrypts the XML; that key is wrapped with the SP's RSA key.</p>
+          <p>Hides the assertion's contents from the browser and anything in between. Optional — off by default.</p>
+          <div class="who">🔒 uses the SP's keypair</div>
+        </div>
+      </div>
+      <div class="callout reveal" style="margin-top:16px">
+        <span class="mark">↹</span>
+        <p><b>The mnemonic:</b> you <b>sign with your own</b> hand; you <b>encrypt for the reader</b> — with the reader's lock. On the way out the IdP <b>signs then encrypts</b>; on the way in the SP <b>decrypts then verifies</b>. And SAML trust isn't a CA chain — it's the <b>pinned cert from metadata</b>, which is why cert rotation is a scheduled, primary-plus-secondary operation, not an automatic one.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- WHAT'S ENCRYPTED -->
+  <section id="crypto">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <div class="eyebrow">The layer question your senior saves for last</div>
+        <h2>What's encrypted, and what's just… readable</h2>
+        <p>Three independent layers. Confuse them and you'll either panic at a normal assertion or miss a real exposure.</p>
+      </div>
+      <div class="layers reveal" style="margin-bottom:16px">
+        <div class="layer l1">
+          <div class="l-tag">Layer 1 · TLS (transport)</div>
+          <h4>Encrypts the pipe, not the parcel</h4>
+          <p>Every hop is HTTPS, so on the wire everything is encrypted — but TLS <b>terminates at each endpoint</b> (decrypted at the browser, re-encrypted onward). Protects transit; protects nothing once it's sitting in the browser.</p>
+        </div>
+        <div class="layer l2">
+          <div class="l-tag">Layer 2 · XML signature (integrity)</div>
+          <h4>Not encryption at all</h4>
+          <p>A signed assertion is fully <b>readable</b> — the signature only makes tampering <em>detectable</em>. Like a hologram sticker on a <b>transparent</b> envelope.</p>
+        </div>
+        <div class="layer l3">
+          <div class="l-tag">Layer 3 · XML encryption (confidentiality)</div>
+          <h4>The only thing that hides content from the browser</h4>
+          <p>Optional. <code style="font-family:var(--mono)">&lt;EncryptedAssertion&gt;</code> hides the whole assertion; <code style="font-family:var(--mono)">&lt;EncryptedID&gt;</code> / <code style="font-family:var(--mono)">&lt;EncryptedAttribute&gt;</code> hide parts. <b>There is no <code style="font-family:var(--mono)">EncryptedResponse</code></b> — the envelope stays readable so the SP can route and read Status first.</p>
+        </div>
+      </div>
+      <div class="table-wrap reveal">
+        <table>
+          <thead><tr><th>Item</th><th>Readable in the browser?</th><th>Signed?</th><th>Message-level encrypted?</th></tr></thead>
+          <tbody>
+            <tr><td class="k">AuthnRequest</td><td class="yes">Yes</td><td>Sometimes</td><td class="no">Practically never</td></tr>
+            <tr><td class="k">Response envelope</td><td class="yes">Yes</td><td>Often</td><td class="no">No such element</td></tr>
+            <tr><td class="k">Assertion</td><td class="maybe">Yes, unless encrypted</td><td class="yes">Should be</td><td class="maybe">Optional — the real switch</td></tr>
+            <tr><td class="k">NameID / attributes</td><td>Follow the assertion</td><td>Covered by its signature</td><td class="maybe">Optionally, individually</td></tr>
+            <tr><td class="k">On the wire</td><td class="no">No (TLS)</td><td>—</td><td class="yes">TLS, hop by hop</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout reveal" style="margin-top:16px">
+        <span class="mark">!</span>
+        <p><b>Say this and watch the senior nod:</b> <em>base64 is encoding, not encryption.</em> Anyone who captures a SAML Response — SAML-tracer, devtools, a proxy log — reads it in full, unless the assertion itself was <code style="font-family:var(--mono)">&lt;EncryptedAssertion&gt;</code>.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- QUESTION BANK -->
+  <section id="bank">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <div class="eyebrow">Prove you own it</div>
+        <h2>The question bank — easy → very hard</h2>
+        <p>Tuned for a Ping-expert QnA. Pick a tier, read the question, answer <b>out loud</b>, then expand to check. The full 60-question set lives in the repo note.</p>
+      </div>
+      <div class="qtabs reveal" role="tablist" aria-label="Difficulty tiers">
+        <button role="tab" data-tier="t1" aria-selected="true">Warm-up</button>
+        <button role="tab" data-tier="t2" aria-selected="false">Core</button>
+        <button role="tab" data-tier="t3" aria-selected="false">Hard</button>
+        <button role="tab" data-tier="t4" aria-selected="false">Expert · Ping</button>
+        <button role="tab" data-tier="ts" aria-selected="false">Scenarios</button>
+      </div>
+
+      <div class="qpanel on" data-tier="t1">
+        <p class="qtier-note">Tier 1 — the stuff you must never fumble.</p>
+      </div>
+      <div class="qpanel" data-tier="t2">
+        <p class="qtier-note">Tier 2 — flow, anatomy, and the distinctions.</p>
+      </div>
+      <div class="qpanel" data-tier="t3">
+        <p class="qtier-note">Tier 3 — certificates, encryption, validation.</p>
+      </div>
+      <div class="qpanel" data-tier="t4">
+        <p class="qtier-note">Tier 4 — attacks, defenses, and Ping mechanics.</p>
+      </div>
+      <div class="qpanel" data-tier="ts">
+        <p class="qtier-note">Scenarios — "here's a ticket, diagnose it."</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap foot-grid">
+      <div>
+        <h4>The 60-second read (tape it to your monitor)</h4>
+        <ul class="checklist">
+          <li><b>Status</b> — success, or which side's error?</li>
+          <li><b>Issuer</b> — which IdP minted this?</li>
+          <li><b>InResponseTo</b> — present (SP-init) or absent (IdP-init)?</li>
+          <li><b>NameID</b> — who, and in what format?</li>
+          <li><b>Audience</b> — for this SP? <b>Recipient</b> — my ACS?</li>
+          <li><b>NotBefore / NotOnOrAfter</b> — in window? (else clock skew)</li>
+          <li><b>Signature</b> — signed at which level, against which cert?</li>
+          <li><b>Attributes</b> — does the app get what it needs?</li>
+        </ul>
+      </div>
+      <div>
+        <h4>In the repo</h4>
+        <span class="path">notes/ <b>13-saml-mastery-session2.md</b></span>
+        <span class="path">notes/ <b>14-saml-question-bank.md</b></span>
+        <span class="path">notes/ <b>02-saml-deep-dive.md</b></span>
+        <span class="path">labs/ <b>02-saml-assertion-anatomy/</b></span>
+        <p class="sig" style="margin-top:16px">— Janus 🔐</p>
+        <p class="fine">Guards the gate. Vol. II of the Gatekeeper's Field Manual.</p>
+      </div>
+    </div>
+  </footer>
+</main>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- scroll reveal ---------- */
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (!reduce && "IntersectionObserver" in window) {
+    var io = new IntersectionObserver(function(es){
+      es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add("in"); io.unobserve(e.target); } });
+    }, {threshold:.12});
+    document.querySelectorAll(".reveal").forEach(function(el){ io.observe(el); });
+  } else {
+    document.querySelectorAll(".reveal").forEach(function(el){ el.classList.add("in"); });
+  }
+
+  /* ---------- flow stepper ---------- */
+  var FLOWS = {
+    sp: [
+      {from:"user",to:"sp",kind:"send",route:["Browser","SP"],msg:"GET /reports",detail:"You hit a protected URL at the <b>SP</b>. It has no session for you yet, so SSO must begin."},
+      {from:"sp",to:"user",kind:"return",route:["SP","Browser"],msg:"302 → AuthnRequest",detail:"The SP builds an <b>AuthnRequest</b> (its EntityID as Issuer, its ACS URL, a unique ID) and redirects you to the IdP. It stashes <b>RelayState</b> = <code>/reports</code> so it can return you there later."},
+      {from:"user",to:"idp",kind:"send",route:["Browser","IdP"],msg:"GET ?SAMLRequest=…",detail:"The browser carries the deflate+base64 AuthnRequest to the <b>IdP</b> via the HTTP-Redirect binding. The IdP and SP never talk directly — you are the courier."},
+      {from:"idp",to:"idp",kind:"self",route:["IdP","IdP"],msg:"authenticate + mint",detail:"The IdP validates the request, then — if no IdP session exists — <b>authenticates you</b> (password + MFA). It mints the assertion (NameID, attributes, Audience, Conditions), <b>signs</b> it, optionally <b>encrypts</b> it, and sets <code>InResponseTo</code> to your request ID."},
+      {from:"idp",to:"user",kind:"return",route:["IdP","Browser"],msg:"200 auto-POST form",detail:"The IdP returns an auto-submitting HTML form (HTTP-POST binding) carrying the base64 <b>SAMLResponse</b> + RelayState. The browser submits it instantly."},
+      {from:"user",to:"sp",kind:"send",route:["Browser","SP"],msg:"POST SAMLResponse → ACS",detail:"The browser POSTs the response to the SP's <b>ACS URL</b>. This is the moment the assertion arrives at the app."},
+      {from:"sp",to:"sp",kind:"self",route:["SP","SP"],msg:"validate (the big checklist)",detail:"The SP validates: Status = Success, Issuer = expected IdP, <b>signature</b> vs pinned cert, decrypt if needed, Recipient = my ACS, <b>Audience = my EntityID</b>, time window ± skew, <code>InResponseTo</code> matches, assertion ID not replayed."},
+      {from:"sp",to:"user",kind:"return",route:["SP","Browser"],msg:"set session · 302 /reports",detail:"Valid! The SP maps NameID → account, attributes → roles, creates <b>its own session cookie</b>, and bounces you to <code>/reports</code> (from RelayState). Open a second app now and step 4 is skipped — <b>that's SSO</b>."}
+    ],
+    idp: [
+      {from:"user",to:"idp",kind:"send",route:["Browser","IdP"],msg:"login at IdP portal",detail:"You start <b>at the IdP</b> — the Ping/Okta dashboard of app tiles — and authenticate there (password + MFA). No app is involved yet."},
+      {from:"user",to:"idp",kind:"send",route:["Browser","IdP"],msg:"click the “App X” tile",detail:"You click an app tile. In PingFederate this is effectively hitting <code>/idp/startSSO.ping?PartnerSpId=…</code> — which is exactly why IdP-init is the <b>onboarding &amp; testing</b> flow: you can fire SSO from the IdP side before the app's own login is wired up."},
+      {from:"idp",to:"idp",kind:"self",route:["IdP","IdP"],msg:"mint UNSOLICITED response",detail:"The IdP mints an assertion for App X and wraps it in an <b>unsolicited</b> Response — crucially with <b>no <code>InResponseTo</code></b>, because there was no AuthnRequest to bind to."},
+      {from:"idp",to:"user",kind:"return",route:["IdP","Browser"],msg:"200 auto-POST form",detail:"Same as SP-init from here: an auto-submitting form carries the SAMLResponse to the browser."},
+      {from:"user",to:"sp",kind:"send",route:["Browser","SP"],msg:"POST SAMLResponse → ACS",detail:"The browser POSTs it to App X's ACS URL. A target/RelayState parameter (Ping: <code>TargetResource</code>) handles deep-linking, since there was no original request to remember."},
+      {from:"sp",to:"sp",kind:"self",route:["SP","SP"],msg:"validate (no InResponseTo)",detail:"The SP validates as usual — signature, Audience, Recipient, time window — but there's <b>no <code>InResponseTo</code></b> to check. That missing binding is the whole security gap: replay and login-CSRF get easier."},
+      {from:"sp",to:"user",kind:"return",route:["SP","Browser"],msg:"set session",detail:"Valid → the SP creates its session and lands you in the app. Convenient, but prefer SP-init in production and disable unsolicited SSO where you don't need it."}
+    ]
+  };
+
+  var curFlow = "sp", curStep = 0;
+  var pillars = document.getElementById("pillars");
+  var hop = document.getElementById("hop"), hopArrow = document.getElementById("hopArrow"),
+      hopRoute = document.getElementById("hopRoute"), hopMsg = document.getElementById("hopMsg"),
+      hopDetail = document.getElementById("hopDetail"), dots = document.getElementById("dots"),
+      stepCount = document.getElementById("stepCount"),
+      prevBtn = document.getElementById("prevBtn"), nextBtn = document.getElementById("nextBtn");
+
+  function partyEl(p){ return pillars.querySelector('[data-party="'+p+'"]'); }
+
+  function renderStep(){
+    var steps = FLOWS[curFlow], s = steps[curStep];
+    pillars.querySelectorAll(".pillar").forEach(function(el){ el.classList.remove("src","dst"); });
+    if (s.kind === "self") { partyEl(s.from).classList.add("dst"); }
+    else { partyEl(s.from).classList.add("src"); partyEl(s.to).classList.add("dst"); }
+
+    hop.classList.remove("self","rev");
+    if (s.kind === "self") { hop.classList.add("self"); hopArrow.textContent = "↻"; }
+    else if (s.kind === "return") { hop.classList.add("rev"); hopArrow.textContent = "←"; }
+    else { hopArrow.textContent = "→"; }
+
+    hopRoute.innerHTML = "<b>"+s.route[0]+"</b> "+(s.kind==="self"?"·":"→")+" <b>"+s.route[1]+"</b>";
+    hopMsg.textContent = s.msg;
+    hopDetail.innerHTML = s.detail;
+    stepCount.textContent = "Step "+(curStep+1)+" / "+steps.length;
+
+    dots.innerHTML = "";
+    steps.forEach(function(_,i){
+      var d = document.createElement("i");
+      d.className = i===curStep ? "on" : (i<curStep ? "done" : "");
+      d.setAttribute("role","tab"); d.setAttribute("tabindex","0");
+      d.setAttribute("aria-label","Step "+(i+1));
+      d.addEventListener("click", function(){ curStep=i; renderStep(); });
+      d.addEventListener("keydown", function(e){ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); curStep=i; renderStep(); }});
+      dots.appendChild(d);
+    });
+    prevBtn.disabled = curStep===0;
+    nextBtn.disabled = curStep===steps.length-1;
+  }
+
+  prevBtn.addEventListener("click", function(){ if(curStep>0){ curStep--; renderStep(); }});
+  nextBtn.addEventListener("click", function(){ if(curStep<FLOWS[curFlow].length-1){ curStep++; renderStep(); }});
+
+  document.querySelectorAll('.flow-tabs button').forEach(function(b){
+    b.addEventListener("click", function(){
+      document.querySelectorAll('.flow-tabs button').forEach(function(x){ x.setAttribute("aria-selected","false"); });
+      b.setAttribute("aria-selected","true");
+      curFlow = b.getAttribute("data-flow"); curStep = 0; renderStep();
+    });
+  });
+
+  document.addEventListener("keydown", function(e){
+    if (e.key === "ArrowRight") { if(curStep<FLOWS[curFlow].length-1){ curStep++; renderStep(); } }
+    else if (e.key === "ArrowLeft") { if(curStep>0){ curStep--; renderStep(); } }
+  });
+  renderStep();
+
+  /* ---------- assertion dissector ---------- */
+  var FIELDS = {
+    inresponseto:{key:"InResponseTo",title:"InResponseTo",badges:[["Conditional","opt"]],body:"Echoes the AuthnRequest's ID, binding this response to a request the SP actually made. <b>Present in SP-init, absent in IdP-init</b> — the single fastest tell for which flow you're looking at.",wrong:"Missing or mismatched in an SP-init flow → the SP rejects it as unsolicited/replayed."},
+    issuer:{key:"Issuer",title:"Issuer (the IdP's EntityID)",badges:[["Mandatory","must"]],body:"The unique name of the IdP that minted this. The SP uses it to pick which pinned certificate to verify against.",wrong:"“Unknown issuer” / “IdP not configured” — the EntityID string doesn't match what the SP trusts (often a trailing-slash or http/https mismatch)."},
+    status:{key:"Status",title:"Status code",badges:[["Mandatory","must"]],body:"Read this FIRST. Success, or an error like <code>Requester</code> (SP's fault) vs <code>Responder</code> (IdP's fault) — the code tells you which side to blame.",wrong:"A non-Success status means authentication failed upstream; the assertion won't be usable regardless of everything else."},
+    signature:{key:"Signature",title:"Digital signature",badges:[["Profile-mandatory","must"]],body:"The IdP's signature over the assertion (or Response). The SP recomputes the hash and verifies against the <b>pinned</b> IdP cert. For HTTP-POST, the Assertion or Response MUST be signed.",wrong:"Invalid/expired cert, or “signed Response but unsigned Assertion” → tampering risk, or a company-wide outage when the signing cert expires."},
+    nameid:{key:"NameID",title:"Subject → NameID ★",badges:[["The one that's always required","must"]],body:"The <b>unique identifier for the user</b> — the “who.” Present <b>irrespective</b> of whatever else the Response carries. The SP maps it to a local account.",wrong:"Missing or wrong format → the SP can't map the login to an account; the user is authenticated but nobody."},
+    recipient:{key:"Recipient",title:"Recipient (ACS URL)",badges:[["Profile-mandatory","must"]],body:"The exact SP endpoint the assertion must be delivered to. The SP checks it equals its own configured ACS URL.",wrong:"Mismatch → “Recipient/Destination mismatch”; the response lands nowhere or is rejected. A huge fraction of new-connection tickets."},
+    window:{key:"Conditions",title:"NotBefore / NotOnOrAfter",badges:[["Profile-mandatory","must"]],body:"The validity window (~5 min), checked against each server's own clock. This is where <b>clock skew</b> lives.",wrong:"“Assertion not yet valid / expired” — usually NTP drift between IdP and SP, producing intermittent “sometimes login fails” tickets."},
+    audience:{key:"Audience",title:"Audience (the SP's EntityID)",badges:[["Profile-mandatory","must"]],body:"Names which SP this assertion is <b>for</b>. The SP rejects an assertion whose Audience isn't itself — this is what stops an assertion for App A being replayed to App B.",wrong:"“Audience mismatch” — signature valid but wrong intended app; a config/EntityID string mismatch, not a crypto failure."},
+    authn:{key:"AuthnContext",title:"AuthnContextClassRef",badges:[["Part of AuthnStatement","opt"]],body:"States HOW the user authenticated (e.g. PasswordProtectedTransport, or a stronger MFA class). An SP can demand a level via <code>RequestedAuthnContext</code> to force step-up MFA.",wrong:"Weaker-than-required context → a high-value app can refuse and demand re-auth at a higher assurance level."},
+    attrs:{key:"AttributeStatement",title:"Attributes / claims",badges:[["Optional","opt"]],body:"What the SP learns about the user — email, groups, roles. Mapped to authorization decisions. Optional: a bare-NameID login is legal.",wrong:"User logs in fine but has <b>no access</b> — the SP expected <code>groups</code> but got <code>memberOf</code>, or the values don't match. The classic attribute-mapping ticket."}
+  };
+  var xml = document.getElementById("xml"),
+      piKey=document.getElementById("piKey"), piTitle=document.getElementById("piTitle"),
+      piBody=document.getElementById("piBody"), piBadges=document.getElementById("piBadges"),
+      piWrapW=document.getElementById("piWrongWrap"), piWrong=document.getElementById("piWrong");
+
+  xml.addEventListener("click", function(e){
+    var btn = e.target.closest(".tok"); if(!btn) return;
+    var f = FIELDS[btn.getAttribute("data-key")]; if(!f) return;
+    xml.querySelectorAll(".tok").forEach(function(t){ t.classList.remove("sel"); });
+    btn.classList.add("sel");
+    piKey.textContent = f.key;
+    piTitle.textContent = f.title;
+    piBody.innerHTML = f.body;
+    piBadges.innerHTML = ""; piBadges.hidden = !(f.badges && f.badges.length);
+    (f.badges||[]).forEach(function(b){
+      var s=document.createElement("span"); s.className="badge "+b[1]; s.textContent=b[0]; piBadges.appendChild(s);
+    });
+    if (f.wrong){ piWrapW.hidden=false; piWrong.textContent=f.wrong; } else { piWrapW.hidden=true; }
+  });
+
+  /* ---------- question bank ---------- */
+  var QUESTIONS = {
+    t1:[
+      ["What does SAML stand for, and what's it for — in one breath?","<p><b>Security Assertion Markup Language.</b> An XML standard for browser-based SSO: an IdP makes a <b>signed statement</b> a SP trusts instead of collecting a password. <span class='star'>★</span> It's authentication + federation, carried through the browser, secured by XML signatures.</p>"],
+      ["Name the three actors.","<p><b>Principal</b> (the user), <b>Identity Provider</b> (authenticates, issues the signed assertion), <b>Service Provider</b> (the app that trusts it). <span class='star'>★</span> The <b>browser is the courier</b> — IdP and SP don't talk directly during login.</p>"],
+      ["What is SSO, in plain terms?","<p>Log in once, reach many apps with no new prompt. The mechanism: the <b>IdP holds a session</b> after your first login, so later apps get an assertion silently. <span class='star'>★</span> SSO is the <em>experience</em>; SAML is the <em>machinery</em>.</p>"],
+      ["Is SAML authentication or authorization?","<p>Primarily <b>authentication</b> + federation. It can <em>carry</em> authorization data as attributes (groups/roles), but its core job is proving <em>who</em> you are. Don't conflate it with OAuth (delegated access).</p>"],
+      ["What file do two parties exchange to set up trust?","<p><b>Metadata</b> — the XML business card: EntityID, endpoints (SSO/ACS/SLO URLs), signing/encryption certificates, and supported NameID formats. <span class='star'>★</span> Setting up a SAML app is basically “exchange metadata, agree on attributes.”</p>"]
+    ],
+    t2:[
+      ["What's the fastest way to tell SP-init from IdP-init?","<p>The presence of <b><code>InResponseTo</code></b>. SP-init has it (the response is bound to a request the SP made); IdP-init doesn't (the response is <b>unsolicited</b>). IdP-init typically shows up in <b>onboarding &amp; testing</b> and “click-the-tile” portals.</p>"],
+      ["What are the mandatory fields — and the one that's always required?","<p>Headline: <b>Subject → NameID</b>, the unique user identifier, present <b>irrespective</b> of anything else. Then <b>schema</b>-mandatory (<code>ID</code>, <code>Version</code>, <code>IssueInstant</code>, <code>Status</code>, Assertion <code>Issuer</code>) and <b>profile</b>-mandatory (Subject, bearer SubjectConfirmation, Conditions/Audience, an AuthnStatement, a signature). <span class='star'>★</span> Naming the three levels — schema vs profile vs practical — is the senior answer.</p>"],
+      ["Where does the EntityID appear, and whose is it?","<p>Three homes: AuthnRequest <code>Issuer</code> = the <b>SP's</b>; Response/Assertion <code>Issuer</code> = the <b>IdP's</b>; <code>Audience</code> = the <b>SP's</b> again. <span class='star'>★</span> Issuer = who sent it; Audience = who may consume it.</p>"],
+      ["Which binding carries the request vs the response, and why?","<p><b>HTTP-Redirect</b> for the small AuthnRequest (deflate+base64 in a URL); <b>HTTP-POST</b> for the large, signed Response (auto-submitting form). Artifact binding is a rarer, more-secure back-channel option.</p>"],
+      ["SSO vs Federated SSO — how does SAML give you each?","<p>The IdP authenticates you <b>once</b> → SSO via the IdP session. The <b>metadata + certificate</b> trust lets SPs in <em>other</em> organizations accept the assertion with no shared password → federation. <span class='star'>★</span> All federated SSO is SSO; not all SSO is federated.</p>"],
+      ["“Logged in fine but no access.” Where do you look?","<p><b>Attribute mapping</b> in the <code>&lt;AttributeStatement&gt;</code>. The SP expected e.g. <code>groups</code> but the IdP sent <code>memberOf</code>, or the values don't match its role mapping.</p>"]
+    ],
+    t3:[
+      ["Certificates do two jobs — whose keys does each use?","<p><b>Signing</b>: the <b>IdP's</b> keypair (IdP signs with its private key, SP verifies with its public cert). <b>Encryption</b>: the <b>SP's</b> keypair (IdP encrypts with the SP's public cert, SP decrypts with its private key). <span class='star'>★</span> The direction flips — sign with your own key, encrypt with the reader's.</p>"],
+      ["What must the SP never do when verifying a signature?","<p>Never trust a certificate <b>embedded in the message</b> (<code>&lt;KeyInfo&gt;</code>). Verify only against the <b>pinned cert from metadata</b> — otherwise an attacker signs with their own key and walks in.</p>"],
+      ["“Encrypt the Response” vs “encrypt the Assertion” — be precise.","<p><span class='star'>★</span> <b>There is no <code>EncryptedResponse</code> element.</b> People almost always mean <code>&lt;EncryptedAssertion&gt;</code> — the whole assertion is hidden while the outer envelope (Status, Issuer, Destination) stays readable so the SP can route and read Status first. Finer options: <code>&lt;EncryptedID&gt;</code>, <code>&lt;EncryptedAttribute&gt;</code>.</p>"],
+      ["In the whole process, what's encrypted and what's not?","<p>Three layers: <b>TLS</b> encrypts the wire but terminates at each endpoint; <b>XML signature</b> is <em>not</em> encryption (readable, just tamper-evident); <b>XML encryption</b> is optional and the only thing hiding content from the browser. <span class='star'>★</span> Base64 is encoding, not encryption — capture the POST and you read it all unless the assertion was encrypted.</p>"],
+      ["What is clock skew and why is it sneaky?","<p>The assertion is valid only between <code>NotBefore</code>/<code>NotOnOrAfter</code> (~5 min), checked against each server's own clock. NTP drift → a good assertion looks “not yet valid” or “expired.” It's sneaky because it's <b>intermittent</b>. Fix: NTP + a small skew tolerance.</p>"],
+      ["Why is signing-cert rotation a big deal, and how do you do it cleanly?","<p>If the IdP signing cert expires, <b>every SP fails at once</b> — company-wide outage. Zero-downtime: publish <b>primary + secondary</b> certs so SPs trust the new one before the old retires, roll over, then remove the old. In Ping you stage the new cert as secondary and promote — never a hard cutover.</p>"]
+    ],
+    t4:[
+      ["Explain XML Signature Wrapping (XSW) and the defense.","<p>The attacker wraps the XML so the SP <b>verifies the signature on the real element</b> but <b>reads identity from an injected, unsigned copy</b> — exploiting the gap between validate and read. Defenses: hardened library, ensure the <b>validated element is the processed element</b>, schema-hardening, reject multiple assertions. Pair with SIEM detection for multiple-assertion / signature-failure patterns.</p>"],
+      ["Why exactly is IdP-init less secure?","<p>The response is <b>unsolicited</b> — no <code>InResponseTo</code> to bind it to a request. That enables <b>replay</b> and <b>login-CSRF</b> (an attacker injects an assertion for <em>their</em> account into your browser). Mitigate: prefer SP-init, short lifetimes, one-time assertion IDs, disable unsolicited SSO where unneeded.</p>"],
+      ["(Ping) IdP connection vs SP connection — and where do certs live?","<p>When PingFederate is the IdP, each partner app is an <b>SP connection</b>; when it's the SP, each partner is an <b>IdP connection</b>. Certs live in the connection's <b>Credentials</b>: your signing cert, the partner's verification cert, and an optional encryption cert. The connection also pins the partner EntityID, endpoints, and the <b>attribute contract</b>.</p>"],
+      ["(Ping) What are adapters, and why do they matter?","<p><b>IdP adapter</b> = how the user authenticates (HTML Form, Kerberos/IWA, X.509, + MFA). <b>SP adapter</b> = how identity is handed to the target app (OpenToken, Reference ID) so it can start a session. <span class='star'>★</span> The SAML connection is the federation contract; adapters are the local auth + session hand-off.</p>"],
+      ["Signature verified, but “audience mismatch.” What happened?","<p>The assertion is authentic and untampered, but its <code>&lt;Audience&gt;</code> ≠ this SP's EntityID — minted for a different SP, or a <b>string mismatch</b> (trailing slash, case, http/https). <span class='star'>★</span> Right IdP, wrong intended app: config, not crypto.</p>"],
+      ["Distinguish Destination, Recipient, and Audience.","<p><b>Destination/Recipient</b> = <em>where it goes</em> (endpoints/ACS URL); <b>Audience</b> = <em>who it's for</em> (the SP's EntityID, a logical identity). Confusing the two is a classic mistake.</p>"]
+    ],
+    ts:[
+      ["“Login works mornings, randomly fails midday with ‘expired.’ Retry sometimes helps.”","<p><b>Clock skew.</b> IdP/SP clocks are drifting; the valid assertion falls outside its window when the offset exceeds tolerance. Fix NTP on both hosts (suspect a paused/resumed VM), confirm skew tolerance. Capture the assertion timestamps vs both servers' clocks.</p>"],
+      ["“Every SP broke at 2 a.m., all at once — ‘signature validation failed.’”","<p><b>IdP signing cert expired</b> (or rotated without redistributing metadata). All SPs verify against the same cert, so they fail together. Roll out the new cert (ideally pre-staged as secondary); prevent with expiry tracking + primary/secondary overlap.</p>"],
+      ["“User passes MFA at the IdP, but the app says ‘no roles.’”","<p>Auth succeeded; <b>attribute mapping</b> is wrong. The SP expected a specific attribute name/format/values and got something else. Read the <code>&lt;AttributeStatement&gt;</code>, compare to the SP's role mapping.</p>"],
+      ["“SAML-tracer shows the assertion in plain text with all attributes. Vulnerability?”","<p>By itself, <b>no</b> — base64 is encoding, TLS protects the wire, the assertion is only signed (readable). It's a concern if <b>sensitive attributes</b> shouldn't reach the browser/logs — then enable <code>&lt;EncryptedAssertion&gt;</code>, minimize attributes, and never paste raw assertions into tickets.</p>"],
+      ["“New connection: browser POSTs the response but SP says ‘Recipient/Destination mismatch.’”","<p>The ACS URL the IdP sends to doesn't match the SP's real ACS endpoint — typo, http/https, trailing slash, or wrong environment. Align the ACS URL in the IdP's SP connection with the SP's actual ACS from its metadata.</p>"]
+    ]
+  };
+
+  document.querySelectorAll(".qpanel").forEach(function(panel){
+    var tier = panel.getAttribute("data-tier");
+    (QUESTIONS[tier]||[]).forEach(function(qa,i){
+      var d = document.createElement("details"); d.className="q";
+      var sum = document.createElement("summary");
+      sum.innerHTML = '<span class="qm">Q</span><span>'+qa[0]+'</span><span class="plus">+</span>';
+      var ans = document.createElement("div"); ans.className="ans"; ans.innerHTML = qa[1];
+      d.appendChild(sum); d.appendChild(ans);
+      panel.appendChild(d);
+    });
+  });
+
+  document.querySelectorAll(".qtabs button").forEach(function(b){
+    b.addEventListener("click", function(){
+      var tier = b.getAttribute("data-tier");
+      document.querySelectorAll(".qtabs button").forEach(function(x){ x.setAttribute("aria-selected","false"); });
+      b.setAttribute("aria-selected","true");
+      document.querySelectorAll(".qpanel").forEach(function(p){
+        p.classList.toggle("on", p.getAttribute("data-tier")===tier);
+      });
+    });
+  });
+
+  /* ---------- nav active highlight ---------- */
+  var navlinks = Array.prototype.slice.call(document.querySelectorAll(".nav-links a"));
+  if ("IntersectionObserver" in window) {
+    var so = new IntersectionObserver(function(es){
+      es.forEach(function(e){
+        if(e.isIntersecting){
+          var id = e.target.getAttribute("id");
+          navlinks.forEach(function(a){ a.style.color = a.getAttribute("href")==="#"+id ? "var(--accent)" : ""; });
+        }
+      });
+    }, {rootMargin:"-40% 0px -55% 0px"});
+    document.querySelectorAll("section[id]").forEach(function(s){ so.observe(s); });
+  }
+})();
+</script>

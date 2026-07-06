@@ -1,0 +1,26 @@
+# IAM Lab 01 — Keycloak as your own Identity Provider
+# Usage:  docker compose up -d      (start)
+#         docker compose down       (stop, keep nothing — data is ephemeral in dev mode)
+#         docker compose down -v     (stop + remove any volumes)
+#
+# NOTE: admin/admin and start-dev are LAB-ONLY. Never use dev mode or default
+# credentials in production — same discipline as the repo's .gitignore blocking
+# secrets. This whole stack is a disposable learning sandbox on your machine.
+
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.6.4
+    container_name: keycloak-iam-lab
+    command: start-dev                     # dev mode: HTTP, in-memory H2 DB, no TLS — learning only
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin   # initial admin (created on first start)
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+    ports:
+      - "8080:8080"                        # admin console + all realm endpoints
+    # No volume on purpose: every `down` wipes state so you can practice setup repeatedly.
+    # Want persistence? Add:
+    #   volumes: [ "keycloak_data:/opt/keycloak/data" ]
+    # and a top-level  volumes: { keycloak_data: {} }
+
+# Keycloak is the open-source stand-in for Okta / Entra ID. Everything you do here
+# — realms, clients, users, tokens, SAML — maps directly to those products' concepts.
