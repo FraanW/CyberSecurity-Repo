@@ -21,6 +21,7 @@ Full written walkthroughs now live in [`notes/`](notes/), in learning order:
 5. [**OAuth 2.0 & OIDC deep dive**](notes/03-oauth-oidc-deep-dive.md) — the modern stack; why **OAuth ≠ login**, Authorization Code + PKCE, ID vs access tokens, JWT attacks.
    - ↳ [**OAuth 2.0 in practice**](notes/19-oauth2-in-practice.md) — one login, every byte explained: the full Code+PKCE flow wire-by-wire, decoded tokens, refresh rotation, client-credentials vs mTLS, + curl commands against the Keycloak lab.
 6. [**PingFederate — a field guide**](notes/18-pingfederate-explained.md) — the federation hub your team runs: SP vs IdP connections, adapters, policy trees, attribute contracts, Access Token Managers, and the audit.log debugging playbook.
+   - ↳ [**Reverse proxies in IAM**](notes/20-reverse-proxies-in-iam.md) — the gate that does the logging-in for your apps: forward vs reverse, the authenticating-proxy/PEP pattern, and where it lives in your stack (PingAccess, nginx-ingress forward-auth, Envoy `ext_authz`).
 7. [**LDAP, Active Directory & Entra ID**](notes/04-ldap-ad-entra.md) — the directory layer; DIT/DN, Kerberos, and why Entra ≠ "AD in the cloud".
    - ↳ [**Kerberos explained**](notes/15-kerberos-explained.md) — how legacy systems do "passwordless" auth: TGT/service tickets step by step, why the password never crosses the wire, keytabs & clock skew, attacks + defenses.
 8. [**HTTPS, TLS & mTLS**](notes/06-tls-https-mtls.md) — transport security from scratch: the padlock, PKI/certs, and **mTLS** (machine auth) incl. the Kubernetes service-mesh pattern.
