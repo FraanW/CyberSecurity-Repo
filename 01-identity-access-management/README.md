@@ -11,20 +11,25 @@ Ask **Janus** (your IAM agent) for deep dives, **Lefler** to build the labs, and
 Full written walkthroughs now live in [`notes/`](notes/), in learning order:
 
 1. [**The IAM protocol landscape**](notes/01-iam-protocol-landscape.md) — the map: authN vs authZ, federation, the vendor zoo (Entra/Okta/Ping), how a real login flows end to end.
-2. [**SSO explained + the buzzword glossary**](notes/08-sso-and-glossary.md) — your dictionary: what SSO *really* means (vs federation) + every IAM term in one line. Skim early, keep open.
-3. [**SAML 2.0 deep dive**](notes/02-saml-deep-dive.md) — the protocol you'll debug most; assertion anatomy, bindings, clock skew, attacks + a 60-second debugging checklist.
+2. [**The eight domains of IAM**](notes/17-iam-domains-map.md) — the full map of the field: Identity Mgmt, AuthN, AuthZ, PAM, IGA, Federation/SSO, Directory Services, **CIAM** — what each covers, achieves, and by what mechanisms.
+3. [**SSO explained + the buzzword glossary**](notes/08-sso-and-glossary.md) — your dictionary: what SSO *really* means (vs federation) + every IAM term in one line. Skim early, keep open.
+4. [**SAML 2.0 deep dive**](notes/02-saml-deep-dive.md) — the protocol you'll debug most; assertion anatomy, bindings, clock skew, attacks + a 60-second debugging checklist.
    - ↳ [**SAML mastery — session 2**](notes/13-saml-mastery-session2.md) — a senior's whiteboard deep dive: SP-init vs IdP-init, speed-reading assertions, EntityID's three homes, certificates (sign vs encrypt), and exactly what's encrypted vs merely encoded.
+   - ↳ [**SAML bindings & the two certificates**](notes/16-saml-bindings-and-certificates.md) — how the messages physically travel (Redirect/POST/Artifact/SOAP), where each is configured, and the signing-vs-encryption cert deep-cut with a rollover/outage playbook.
    - ↳ [**SAML question bank**](notes/14-saml-question-bank.md) — a self-test from *easy → very hard*, tuned for a Ping-expert QnA, with model answers in spoilers.
    - ↳ [**SAML — the complete visual guide**](saml-complete-guide.html) — an interactive one-page walkthrough of the whole protocol + the question bank (open in a browser).
-4. [**OAuth 2.0 & OIDC deep dive**](notes/03-oauth-oidc-deep-dive.md) — the modern stack; why **OAuth ≠ login**, Authorization Code + PKCE, ID vs access tokens, JWT attacks.
-5. [**LDAP, Active Directory & Entra ID**](notes/04-ldap-ad-entra.md) — the directory layer; DIT/DN, Kerberos, and why Entra ≠ "AD in the cloud".
-6. [**HTTPS, TLS & mTLS**](notes/06-tls-https-mtls.md) — transport security from scratch: the padlock, PKI/certs, and **mTLS** (machine auth) incl. the Kubernetes service-mesh pattern.
-7. [**IAM foundations round-up**](notes/07-iam-foundations.md) — MFA & passkeys, sessions/tokens, authZ models (RBAC/ABAC), PAM, IGA/SCIM, Zero Trust.
-8. [**PAM — Privileged Access Management**](notes/11-pam-deep-dive.md) — deep dive: vaulting, rotation, session recording/isolation, JIT & Zero Standing Privilege, service accounts & secrets, tiered admin.
-9. [**IGA — Identity Governance & Administration**](notes/12-iga-deep-dive.md) — deep dive: JML lifecycle, SCIM provisioning, access reviews/certifications, SoD. **Likely your day job.**
-10. [**PCI-DSS × IAM**](notes/09-pci-dss-and-iam.md) — where compliance meets identity: how PCI Req 7/8/10 map onto every IAM layer, and why your daily work *is* the audit evidence.
-11. [**IAM vulnerabilities**](notes/10-iam-vulnerabilities.md) — the identity attack surface, mapped to OWASP (A01/A07) + the API **BOLA** risk; every vuln paired with its defense.
-12. [**First-week questions & incident-channel decoder**](notes/05-first-week-questions.md) — turn all of the above into sharp questions for your manager, seniors, lead, and director (+ AI-in-tickets guardrails).
+5. [**OAuth 2.0 & OIDC deep dive**](notes/03-oauth-oidc-deep-dive.md) — the modern stack; why **OAuth ≠ login**, Authorization Code + PKCE, ID vs access tokens, JWT attacks.
+   - ↳ [**OAuth 2.0 in practice**](notes/19-oauth2-in-practice.md) — one login, every byte explained: the full Code+PKCE flow wire-by-wire, decoded tokens, refresh rotation, client-credentials vs mTLS, + curl commands against the Keycloak lab.
+6. [**PingFederate — a field guide**](notes/18-pingfederate-explained.md) — the federation hub your team runs: SP vs IdP connections, adapters, policy trees, attribute contracts, Access Token Managers, and the audit.log debugging playbook.
+7. [**LDAP, Active Directory & Entra ID**](notes/04-ldap-ad-entra.md) — the directory layer; DIT/DN, Kerberos, and why Entra ≠ "AD in the cloud".
+   - ↳ [**Kerberos explained**](notes/15-kerberos-explained.md) — how legacy systems do "passwordless" auth: TGT/service tickets step by step, why the password never crosses the wire, keytabs & clock skew, attacks + defenses.
+8. [**HTTPS, TLS & mTLS**](notes/06-tls-https-mtls.md) — transport security from scratch: the padlock, PKI/certs, and **mTLS** (machine auth) incl. the Kubernetes service-mesh pattern.
+9. [**IAM foundations round-up**](notes/07-iam-foundations.md) — MFA & passkeys, sessions/tokens, authZ models (RBAC/ABAC), PAM, IGA/SCIM, Zero Trust.
+10. [**PAM — Privileged Access Management**](notes/11-pam-deep-dive.md) — deep dive: vaulting, rotation, session recording/isolation, JIT & Zero Standing Privilege, service accounts & secrets, tiered admin.
+11. [**IGA — Identity Governance & Administration**](notes/12-iga-deep-dive.md) — deep dive: JML lifecycle, SCIM provisioning, access reviews/certifications, SoD. **Likely your day job.**
+12. [**PCI-DSS × IAM**](notes/09-pci-dss-and-iam.md) — where compliance meets identity: how PCI Req 7/8/10 map onto every IAM layer, and why your daily work *is* the audit evidence.
+13. [**IAM vulnerabilities**](notes/10-iam-vulnerabilities.md) — the identity attack surface, mapped to OWASP (A01/A07) + the API **BOLA** risk; every vuln paired with its defense.
+14. [**First-week questions & incident-channel decoder**](notes/05-first-week-questions.md) — turn all of the above into sharp questions for your manager, seniors, lead, and director (+ AI-in-tickets guardrails).
 
 > ✍️ Every note & lab here is written to **[Lefler's Laws](../LEFLER-LAWS.md)** — the repo's beginner-first documentation standard.
 

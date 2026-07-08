@@ -29,6 +29,8 @@
 
 **Law 11 — Close the loop.** End substantial docs with **"What you learned"** and a **"Next"** pointer, so every doc leads somewhere.
 
+**Law 12 — Derive the why, then prove it.** Don't just describe a design — show **why it must exist** from its constraints (**first-principles thinking**), and give the reader a way to **see it with their own eyes** — a lab, a capture, a command with expected output (**empirical thinking**). Notes derive; labs verify. Full read: [`00-foundations/notes/01-first-principles-and-empirical-thinking.md`](00-foundations/notes/01-first-principles-and-empirical-thinking.md).
+
 ---
 
 ## The 20-second checklist (run it before saving any doc)
@@ -42,6 +44,7 @@
 - [ ] Any attack **paired with a defense**? (Law 9)
 - [ ] **Authorized-lab-only**, **cleanup** included, **no real secrets**? (Law 10)
 - [ ] Ends with **"what you learned" + "next"**? (Law 11)
+- [ ] Does it **derive the why** and offer a way to **see it for yourself**? (Law 12)
 
 ---
 

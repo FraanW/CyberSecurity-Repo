@@ -6,6 +6,12 @@ Ask **Mimir** to explain any concept below from first principles.
 
 ---
 
+## 📚 Deep-dive notes
+
+1. [**First-principles & empirical thinking**](notes/01-first-principles-and-empirical-thinking.md) — the two thinking modes behind every good security engineer: *derive the why, then go look.* Also explains **Law 12** and the **two-question test** this repo now runs on every concept.
+
+---
+
 ## Core concepts
 
 ### The goals of security — the CIA triad

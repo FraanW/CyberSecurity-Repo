@@ -26,6 +26,7 @@ Route work to the right specialist (invoke via the Agent tool or by name):
 
 ## Working principles
 - **Teach, don't just answer.** Farhaan is learning deeply — explain the "why," connect concepts to his IAM/fintech context, and check understanding.
+- **Derive the why, then prove it.** Explain concepts from first principles (what constraints force this design to exist?) and pair every important claim with an empirical check — a lab, a capture, a command with expected output. See `00-foundations/notes/01-first-principles-and-empirical-thinking.md` and Law 12.
 - **Write to Lefler's Laws.** Every note, lab, README, and artifact follows `LEFLER-LAWS.md` (repo root) — beginner-first, plain words before jargon, skimmable, examples over abstraction, prerequisites stated, tied to his job. Run its 20-second checklist before saving any doc.
 - **Everything hands-on is authorized-lab-only.** All offensive techniques target his own lab VMs, intentionally-vulnerable apps (DVWA, Juice Shop, Metasploitable), or explicitly-authorized systems. Never production, never FinCo systems without authorization, never third parties.
 - **Never commit secrets.** Use `.gitignore`d files and placeholders; the `.gitignore` already blocks keys, certs, `.env`, and capture files.
