@@ -36,5 +36,12 @@ export KC_PROXY_HEADERS=xforwarded
 # Fit the JVM inside 512 MB (free/starter). Bump if you move to Standard (2 GB).
 export JAVA_OPTS_APPEND="${JAVA_OPTS_APPEND:--Xms128m -Xmx400m}"
 
+# Admin bootstrap creds. Default to admin/admin (LAB ONLY) so the service boots
+# even if the env vars are unset or mistyped. Both must be set together, or
+# Keycloak refuses to start ("bootstrap-admin-username available only when
+# bootstrap admin password is set"). Override both via env for anything real.
+export KC_BOOTSTRAP_ADMIN_USERNAME="${KC_BOOTSTRAP_ADMIN_USERNAME:-admin}"
+export KC_BOOTSTRAP_ADMIN_PASSWORD="${KC_BOOTSTRAP_ADMIN_PASSWORD:-admin}"
+
 echo "Starting Keycloak on port ${KC_HTTP_PORT} ..."
 exec /opt/keycloak/bin/kc.sh start-dev --import-realm
