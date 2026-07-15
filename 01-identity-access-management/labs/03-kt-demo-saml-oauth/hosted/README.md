@@ -7,8 +7,9 @@
 ---
 
 ## Reality check on "fully free"
-- **Free = 512 MB RAM / 0.1 CPU.** Keycloak is tuned here to fit (JVM capped at 400 MB). Fine for a **single-presenter** demo; watch for restarts during rehearsal. *(If it's unstable, the only real fix is more RAM — Render **Standard**, 2 GB — because $7 Starter is also just 512 MB.)*
-- **Free spins down after 15 min idle**, and cold-start on 0.1 CPU takes **1–3 min**. → You **must keep it warm** (see §3). This is the single most important thing for a smooth live demo.
+- **Free = 512 MB RAM / 0.1 CPU.** This image uses Keycloak's **optimized production build** (`kc.sh build` at image-build time → `start --optimized`), plus a **local non-clustered cache**, **SerialGC**, and a **300 MB heap** — all to fit comfortably under 512 MB and avoid the intermittent OOM that plain dev mode hits. Fine for a **single-presenter** demo.
+- **Faster boot:** because augmentation is baked into the image, cold-start drops from ~3–4 min (dev mode) to roughly **under a minute**.
+- **Free still spins down after 15 min idle.** → keep it warm with the pinger (see §3). *(If you ever needed more RAM, only Render **Standard** (2 GB) adds it — $7 Starter is also 512 MB — but the optimized build is designed so you shouldn't need to.)*
 
 ---
 
