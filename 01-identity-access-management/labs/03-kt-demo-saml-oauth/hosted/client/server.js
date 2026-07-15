@@ -47,25 +47,28 @@ async function postForm(url, params) {
   return { status: r.status, json: j };
 }
 
-// --- SAML: fetch the IdP signing cert from its metadata (lazy + cached) -------
-let _idpCert = null;
-async function idpCert() {
-  if (_idpCert) return _idpCert;
+// --- SAML: fetch ALL IdP signing certs FRESH from metadata each time ----------
+// Keycloak on ephemeral storage regenerates its SAML signing key on every
+// restart/redeploy, so a cached cert goes stale and node-saml fails with
+// "Invalid signature". Fetching fresh (and passing every cert as an array, which
+// node-saml validates against any of) makes SAML survive Keycloak restarts.
+async function idpCerts() {
   const res = await fetch(`${SAML_IDP}/descriptor`);
   if (!res.ok) throw new Error(`IdP metadata fetch failed: HTTP ${res.status}`);
   const xml = await res.text();
-  const m = xml.match(/<[^>]*X509Certificate>([\s\S]*?)<\/[^>]*X509Certificate>/);
-  if (!m) throw new Error('No X509Certificate in IdP metadata');
-  const b64 = m[1].replace(/\s+/g, '');
-  _idpCert = `-----BEGIN CERTIFICATE-----\n${b64.match(/.{1,64}/g).join('\n')}\n-----END CERTIFICATE-----`;
-  return _idpCert;
+  const matches = [...xml.matchAll(/<[^>]*X509Certificate>([\s\S]*?)<\/[^>]*X509Certificate>/g)];
+  if (!matches.length) throw new Error('No X509Certificate in IdP metadata');
+  return matches.map(m => {
+    const b64 = m[1].replace(/\s+/g, '');
+    return `-----BEGIN CERTIFICATE-----\n${b64.match(/.{1,64}/g).join('\n')}\n-----END CERTIFICATE-----`;
+  });
 }
 async function samlSP() {
   return new SAML({
     callbackUrl: `${APP_ORIGIN}/saml/acs`,
     entryPoint: `${SAML_IDP}`,
     issuer: SAML_SP_ENTITY,
-    idpCert: await idpCert(),
+    idpCert: await idpCerts(),
     wantAssertionsSigned: true,
     wantAuthnResponseSigned: false,     // Keycloak signs the assertion; be lenient on the envelope
     validateInResponseTo: 'never',      // allow BOTH SP-init and IdP-init (unsolicited) responses
