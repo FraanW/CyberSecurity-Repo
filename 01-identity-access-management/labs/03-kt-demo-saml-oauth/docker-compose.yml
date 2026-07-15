@@ -1,0 +1,43 @@
+# IAM Lab 03 — Reverse-KT demo stack: SAML + OAuth 2.0 (all 4 grant types)
+#
+# Usage:
+#   docker compose up -d        start everything (Keycloak auto-imports both realms)
+#   docker compose logs -f keycloak   watch until you see "Running the server ... started"
+#   docker compose down         stop but KEEP state (your realms/config survive)
+#   docker compose down -v      stop and WIPE everything (fresh start next time)
+#
+# LAB-ONLY: admin/admin, HTTP (no TLS), dev-mode H2 database, weak client secrets.
+# Never use any of this in production — it is a disposable sandbox on your machine.
+
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.6.4
+    container_name: kt-keycloak
+    command: ["start-dev", "--import-realm"]   # dev mode + import every realm JSON under data/import
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin       # admin console login (created on first boot)
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+    ports:
+      - "8080:8080"                            # admin console + all realm endpoints (SAML + OAuth/OIDC)
+    volumes:
+      - ./import:/opt/keycloak/data/import:ro  # the two pre-baked realms (read-only)
+      - kc_data:/opt/keycloak/data             # persists DB + any UI changes across `down` (not `down -v`)
+    healthcheck:
+      # /realms/master is always up once Keycloak is serving — a simple readiness probe
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/8080 && echo -e 'GET /realms/master HTTP/1.0\\r\\n\\r\\n' >&3 && cat <&3 | head -1 | grep -q '200'"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+
+  spa:
+    image: nginx:alpine
+    container_name: kt-spa
+    ports:
+      - "9000:80"                              # the OAuth Authorization Code + PKCE demo client (Demo B)
+    volumes:
+      - ./spa:/usr/share/nginx/html:ro         # static single-page app — no build step
+    depends_on:
+      - keycloak
+
+volumes:
+  kc_data: {}

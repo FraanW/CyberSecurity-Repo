@@ -1,0 +1,39 @@
+{
+  "realm": "finco-app",
+  "enabled": true,
+  "displayName": "FinCo Expense App (KT lab · SAML Service Provider)",
+  "sslRequired": "none",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "trustEmail": true,
+  "identityProviders": [
+    {
+      "alias": "kc-idp",
+      "displayName": "Log in with FinCo Corporate IdP (SAML)",
+      "providerId": "saml",
+      "enabled": true,
+      "trustEmail": true,
+      "storeToken": false,
+      "addReadTokenRoleOnCreate": false,
+      "firstBrokerLoginFlowAlias": "first broker login",
+      "config": {
+        "singleSignOnServiceUrl": "http://localhost:8080/realms/finco-idp/protocol/saml",
+        "singleLogoutServiceUrl": "http://localhost:8080/realms/finco-idp/protocol/saml",
+        "idpEntityId": "http://localhost:8080/realms/finco-idp",
+        "entityId": "kt-saml-broker",
+        "nameIDPolicyFormat": "urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress",
+        "principalType": "SUBJECT",
+        "postBindingResponse": "true",
+        "postBindingAuthnRequest": "true",
+        "postBindingLogout": "true",
+        "wantAssertionsSigned": "true",
+        "wantAssertionsEncrypted": "false",
+        "wantAuthnRequestsSigned": "false",
+        "validateSignature": "false",
+        "signatureAlgorithm": "RSA_SHA256",
+        "syncMode": "IMPORT",
+        "allowCreate": "true"
+      }
+    }
+  ]
+}
