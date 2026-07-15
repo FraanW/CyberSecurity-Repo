@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OAuth 2.0 — Authorization Code + PKCE (KT demo)</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+         background: #0e1116; color: #e6edf3; line-height: 1.5; }
+  header { padding: 20px 28px; background: #161b22; border-bottom: 2px solid #2d333b; }
+  h1 { margin: 0; font-size: 22px; }
+  .sub { color: #8b949e; font-size: 14px; margin-top: 4px; }
+  main { padding: 24px 28px; max-width: 1100px; }
+  button { font: inherit; font-size: 15px; padding: 12px 20px; margin: 4px 8px 4px 0;
+           border: 1px solid #3fb950; background: #238636; color: #fff; border-radius: 8px; cursor: pointer; }
+  button.secondary { background: #21262d; border-color: #3fb950; color: #3fb950; }
+  button.danger { background: #21262d; border-color: #f85149; color: #f85149; }
+  button:disabled { opacity: .4; cursor: not-allowed; }
+  .card { background: #161b22; border: 1px solid #2d333b; border-radius: 10px; padding: 16px 18px; margin: 14px 0; }
+  .label { color: #58a6ff; font-size: 13px; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px; }
+  pre { white-space: pre-wrap; word-break: break-all; margin: 0; font-size: 14px; }
+  .code { color: #f0883e; }
+  .muted { color: #8b949e; }
+  .ok { color: #3fb950; }
+  .err { color: #f85149; }
+  .row { display: flex; flex-wrap: wrap; gap: 12px; }
+  .row > .card { flex: 1 1 460px; }
+  .step { color: #d2a8ff; font-weight: bold; }
+  a { color: #58a6ff; }
+</style>
+</head>
+<body>
+<header>
+  <h1>OAuth 2.0 — Authorization Code + PKCE</h1>
+  <div class="sub">Demo B · public SPA client <code>kt-spa</code> · IdP = Keycloak realm <code>finco-idp</code></div>
+</header>
+<main>
+  <div id="controls">
+    <button id="loginBtn">1 · Log in (start the flow)</button>
+    <button id="refreshBtn" class="secondary" disabled>Refresh the access token</button>
+    <button id="userinfoBtn" class="secondary" disabled>Call /userinfo (as the API would)</button>
+    <button id="logoutBtn" class="danger" disabled>Log out</button>
+  </div>
+
+  <div id="status" class="card muted">Not logged in. Open SAML-tracer / browser DevTools (Network) before you click <b>Log in</b> — you'll watch every step on the wire.</div>
+
+  <div id="pkceCard" class="card" style="display:none">
+    <div class="label">What the SPA generated before redirecting (PKCE)</div>
+    <pre><span class="muted">code_verifier (secret, kept in sessionStorage — never sent to the browser URL):</span>
+<span id="v_verifier" class="code"></span>
+
+<span class="muted">code_challenge = BASE64URL(SHA-256(code_verifier)) — only the HASH goes to /authorize:</span>
+<span id="v_challenge" class="code"></span></pre>
+  </div>
+
+  <div id="codeCard" class="card" style="display:none">
+    <div class="label">The authorization code (came back through the browser URL — front channel)</div>
+    <pre><span id="v_code" class="code"></span>
+<span class="muted">↳ one-time use, ~60s life, useless to a thief without the code_verifier above. That's the point of PKCE.</span></pre>
+  </div>
+
+  <div class="row">
+    <div id="atCard" class="card" style="display:none">
+      <div class="label">Access token — decoded payload (for the API / Resource Server)</div>
+      <pre id="v_at"></pre>
+    </div>
+    <div id="idCard" class="card" style="display:none">
+      <div class="label">ID token — decoded payload (for THIS app — who logged in)</div>
+      <pre id="v_id"></pre>
+    </div>
+  </div>
+
+  <div id="rawCard" class="card" style="display:none">
+    <div class="label">Raw /token response (back channel)</div>
+    <pre id="v_raw"></pre>
+  </div>
+</main>
+
+<script>
+// ---- Config: points at the Keycloak realm imported by this lab -------------
+const AUTH = "http://localhost:8080/realms/finco-idp/protocol/openid-connect";
+const CLIENT_ID = "kt-spa";
+const REDIRECT_URI = "http://localhost:9000/";
+const SCOPE = "openid profile email";
+
+// ---- Tiny helpers ----------------------------------------------------------
+const $ = (id) => document.getElementById(id);
+const b64url = (bytes) => btoa(String.fromCharCode(...new Uint8Array(bytes)))
+  .replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+function randomVerifier() {
+  const a = new Uint8Array(32); crypto.getRandomValues(a); return b64url(a);
+}
+async function challengeFrom(verifier) {
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier));
+  return b64url(digest);
+}
+function decodeJwt(jwt) {
+  try {
+    const p = jwt.split('.')[1].replace(/-/g,'+').replace(/_/g,'/');
+    return JSON.stringify(JSON.parse(decodeURIComponent(escape(atob(p)))), null, 2);
+  } catch (e) { return "(could not decode: " + e + ")"; }
+}
+function setStatus(html, cls) { const s = $("status"); s.innerHTML = html; s.className = "card " + (cls||""); }
+
+// ---- Step 1: start the flow -> /authorize ----------------------------------
+$("loginBtn").onclick = async () => {
+  const verifier = randomVerifier();
+  const challenge = await challengeFrom(verifier);
+  const state = randomVerifier();          // anti-CSRF
+  const nonce = randomVerifier();          // anti-replay (OIDC)
+  sessionStorage.setItem("pkce_verifier", verifier);
+  sessionStorage.setItem("oauth_state", state);
+  sessionStorage.setItem("pkce_challenge", challenge);
+  const url = new URL(AUTH + "/auth");
+  url.search = new URLSearchParams({
+    response_type: "code",
+    client_id: CLIENT_ID,
+    redirect_uri: REDIRECT_URI,
+    scope: SCOPE,
+    state: state,
+    nonce: nonce,
+    code_challenge: challenge,
+    code_challenge_method: "S256"
+  }).toString();
+  window.location.assign(url.toString());
+};
+
+// ---- Step 2 (on return): exchange the code for tokens ----------------------
+async function exchangeCode(code) {
+  const verifier = sessionStorage.getItem("pkce_verifier");
+  $("v_verifier").textContent = verifier || "(missing!)";
+  $("v_challenge").textContent = sessionStorage.getItem("pkce_challenge") || "";
+  $("pkceCard").style.display = "block";
+  $("v_code").textContent = code;
+  $("codeCard").style.display = "block";
+
+  const res = await fetch(AUTH + "/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      grant_type: "authorization_code",
+      code: code,
+      redirect_uri: REDIRECT_URI,
+      client_id: CLIENT_ID,
+      code_verifier: verifier
+    })
+  });
+  const tokens = await res.json();
+  showTokens(tokens, res.ok);
+}
+
+function showTokens(tokens, ok) {
+  $("rawCard").style.display = "block";
+  $("v_raw").textContent = JSON.stringify(tokens, null, 2);
+  if (!ok || tokens.error) {
+    setStatus("Token exchange failed: <span class='err'>" + (tokens.error_description || tokens.error) + "</span>", "err");
+    return;
+  }
+  sessionStorage.setItem("access_token", tokens.access_token || "");
+  sessionStorage.setItem("refresh_token", tokens.refresh_token || "");
+  if (tokens.access_token) { $("v_at").textContent = decodeJwt(tokens.access_token); $("atCard").style.display = "block"; }
+  if (tokens.id_token)     { $("v_id").textContent = decodeJwt(tokens.id_token);     $("idCard").style.display = "block"; }
+  setStatus("Logged in ✅ &nbsp; Compare the two tokens: <b>ID token</b> answers <i>who is the user</i> (aud = " +
+            "<code>kt-spa</code>); <b>access token</b> is for the <i>API</i>. Never mix them up.", "ok");
+  $("refreshBtn").disabled = false; $("userinfoBtn").disabled = false; $("logoutBtn").disabled = false;
+}
+
+// ---- Refresh: silently mint a new access token (shows rotation) ------------
+$("refreshBtn").onclick = async () => {
+  const rt = sessionStorage.getItem("refresh_token");
+  const res = await fetch(AUTH + "/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({ grant_type: "refresh_token", client_id: CLIENT_ID, refresh_token: rt })
+  });
+  const tokens = await res.json();
+  setStatus("Refreshed ✅ &nbsp; New access token issued with NO user interaction. " +
+            "Notice Keycloak also returned a <b>new refresh_token</b> — that's rotation.", "ok");
+  showTokens(tokens, res.ok);
+};
+
+// ---- UserInfo: call the OIDC endpoint as the API would ---------------------
+$("userinfoBtn").onclick = async () => {
+  const at = sessionStorage.getItem("access_token");
+  const res = await fetch(AUTH + "/userinfo", { headers: { Authorization: "Bearer " + at } });
+  const info = await res.json();
+  $("rawCard").style.display = "block";
+  $("v_raw").textContent = "GET /userinfo  (Authorization: Bearer <access_token>)\n\n" + JSON.stringify(info, null, 2);
+  setStatus("Called <code>/userinfo</code> with the <b>access token</b> — this is how a Resource Server reads claims.", "ok");
+};
+
+// ---- Logout ----------------------------------------------------------------
+$("logoutBtn").onclick = () => {
+  sessionStorage.clear();
+  const url = new URL(AUTH + "/logout");
+  url.search = new URLSearchParams({ client_id: CLIENT_ID, post_logout_redirect_uri: REDIRECT_URI }).toString();
+  window.location.assign(url.toString());
+};
+
+// ---- On page load: are we returning from /authorize with a code? -----------
+(function init() {
+  const q = new URLSearchParams(window.location.search);
+  if (q.get("error")) {
+    setStatus("Authorization error: <span class='err'>" + q.get("error") + " — " + (q.get("error_description")||"") + "</span>", "err");
+    history.replaceState({}, "", REDIRECT_URI); return;
+  }
+  const code = q.get("code");
+  if (code) {
+    const returnedState = q.get("state");
+    const savedState = sessionStorage.getItem("oauth_state");
+    history.replaceState({}, "", REDIRECT_URI);   // scrub the code from the address bar
+    if (!savedState || returnedState !== savedState) {
+      setStatus("state mismatch — possible CSRF. Aborting. <span class='err'>(expected " + savedState + ", got " + returnedState + ")</span>", "err");
+      return;
+    }
+    setStatus("Got the authorization code. Exchanging it for tokens on the back channel…", "muted");
+    exchangeCode(code);
+  }
+})();
+</script>
+</body>
+</html>

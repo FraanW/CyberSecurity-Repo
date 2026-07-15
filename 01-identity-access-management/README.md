@@ -33,12 +33,14 @@ Full written walkthroughs now live in [`notes/`](notes/), in learning order:
 12. [**PCI-DSS × IAM**](notes/09-pci-dss-and-iam.md) — where compliance meets identity: how PCI Req 7/8/10 map onto every IAM layer, and why your daily work *is* the audit evidence.
 13. [**IAM vulnerabilities**](notes/10-iam-vulnerabilities.md) — the identity attack surface, mapped to OWASP (A01/A07) + the API **BOLA** risk; every vuln paired with its defense.
 14. [**First-week questions & incident-channel decoder**](notes/05-first-week-questions.md) — turn all of the above into sharp questions for your manager, seniors, lead, and director (+ AI-in-tickets guardrails).
+15. [**Reverse-KT presentation guide**](notes/23-reverse-kt-presentation-guide.md) 🎤 — a **33-slide** teach-the-room deck for explaining IAM + SAML + OAuth/OIDC end to end: slide content **and** first-person talk track for each slide, **Mermaid flow diagrams** for every protocol (SAML SP/IdP-init, all 4 OAuth grants, OIDC), the full **PingFederate** mapping, live-demo cue cards, and a Q&A prep sheet. Pairs with **Lab 03**.
 
 > ✍️ Every note & lab here is written to **[Lefler's Laws](../LEFLER-LAWS.md)** — the repo's beginner-first documentation standard.
 
 **Hands-on labs** in [`labs/`](labs/):
 - [**Lab 01 — Keycloak as your own IdP (OIDC end to end)**](labs/01-keycloak-idp/README.md) — run a full login by hand and mint real tokens.
 - [**Lab 02 — SAML assertion anatomy**](labs/02-saml-assertion-anatomy/README.md) — decode a real assertion and run the debugging checklist.
+- [**Lab 03 — Reverse-KT demo stack (SAML + OAuth 2.0)**](labs/03-kt-demo-saml-oauth/README.md) 🎤 — one-command Keycloak that's both a **SAML IdP** and an **OAuth/OIDC Authorization Server**, plus a browser app: demo **SAML SSO** and **all 4 OAuth grant types** live, captured with **SAML-tracer** + DevTools. Built to present alongside [note 23](notes/23-reverse-kt-presentation-guide.md).
 
 ---
 
