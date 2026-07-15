@@ -119,6 +119,32 @@ const server = http.createServer(async (req, res) => {
       const r = await postForm(`${OIDC}/token`, { grant_type: 'urn:ietf:params:oauth:grant-type:device_code', device_code: body.get('device_code'), client_id: DEVICE_CLIENT });
       return send(res, r.status, r.json);
     }
+    // Auth Code WITHOUT PKCE — confidential client exchanges the code with its
+    // secret, server-side (the secret must never reach the browser).
+    if (p === '/api/authcode-exchange' && req.method === 'POST') {
+      const body = new URLSearchParams(await readBody(req));
+      const r = await postForm(`${OIDC}/token`, {
+        grant_type: 'authorization_code',
+        code: body.get('code'),
+        redirect_uri: body.get('redirect_uri'),
+        client_id: 'kt-web',
+        client_secret: 'kt-web-secret'
+      });
+      return send(res, r.status, r.json);
+    }
+    // ROPC — the app collects the user's password and exchanges it server-side.
+    if (p === '/api/ropc' && req.method === 'POST') {
+      const body = new URLSearchParams(await readBody(req));
+      const r = await postForm(`${OIDC}/token`, {
+        grant_type: 'password',
+        client_id: 'kt-web',
+        client_secret: 'kt-web-secret',
+        username: body.get('username'),
+        password: body.get('password'),
+        scope: 'openid profile email'
+      });
+      return send(res, r.status, r.json);
+    }
     if (p === '/api/resource' && req.method === 'GET') {
       const token = (req.headers['authorization'] || '').replace(/^Bearer\s+/i, '');
       if (!token) return send(res, 401, { ok: false, message: 'No bearer token presented.' });

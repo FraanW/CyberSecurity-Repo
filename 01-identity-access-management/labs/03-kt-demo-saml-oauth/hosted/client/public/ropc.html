@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Resource Owner Password Credentials (ROPC)</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header>
+  <h1>5 · Resource Owner Password Credentials <span class="muted">(ROPC)</span></h1>
+  <div class="sub"><a class="back" href="/oauth.html">← OAuth flows</a> &nbsp;·&nbsp; confidential client <span class="code">kt-web</span> · direct grant</div>
+</header>
+<main>
+  <p class="note"><b>The app collects the password itself.</b> Type your credentials into <i>this app's own form</i> below — no redirect to the IdP — and the app sends them to the token endpoint. That's the defining trait (and the risk) of ROPC.</p>
+
+  <div class="panel">
+    <div class="label">Log in — directly to the app (not the IdP)</div>
+    <p><input id="u" placeholder="username" value="farhaan" style="font:inherit;padding:9px;border-radius:6px;border:1px solid #2d333b;background:#0e1116;color:#e6edf3;width:220px"></p>
+    <p><input id="p" type="password" placeholder="password" value="Passw0rd!" style="font:inherit;padding:9px;border-radius:6px;border:1px solid #2d333b;background:#0e1116;color:#e6edf3;width:220px"></p>
+    <button id="go">Log in (grant_type=password)</button>
+  </div>
+
+  <div class="panel" id="rawPanel" style="display:none">
+    <div class="label">Raw /token response</div>
+    <pre id="raw"></pre>
+  </div>
+  <div class="panel" id="atPanel" style="display:none">
+    <div class="label">Access token — decoded</div>
+    <pre id="at"></pre>
+  </div>
+
+  <div class="panel">
+    <div class="label">When is ROPC actually OK? (the nuance)</div>
+    <ul class="muted">
+      <li>✅ <b>Trusted first-party apps inside the org</b> — legacy internal tools, CLIs, test automation, and migrations, where the app is fully owned/trusted and MFA isn't required for that path.</li>
+      <li>❌ <b>Never third-party or public apps</b> — handing your password to someone else's app is exactly what OAuth exists to prevent.</li>
+      <li>⚠️ <b>The costs:</b> the app <b>sees the raw password</b>, and there's no place for <b>MFA</b>, passkeys, or a consent screen in the flow.</li>
+      <li>📜 Deprecated by the OAuth Security BCP (RFC 9700) and removed in <b>OAuth 2.1</b> — but still common on internal, trusted systems. Prefer <b>Auth Code + PKCE</b> when you can.</li>
+    </ul>
+  </div>
+</main>
+<script src="/config.js"></script>
+<script src="/common.js"></script>
+<script>
+$("go").onclick = async () => {
+  const res = await fetch("/api/ropc", {
+    method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({ username: $("u").value, password: $("p").value })
+  });
+  const t = await res.json();
+  reveal("rawPanel"); setText("raw", JSON.stringify(t, null, 2));
+  if (t.access_token) { setText("at", decodeJwt(t.access_token)); reveal("atPanel"); }
+};
+</script>
+</body>
+</html>
