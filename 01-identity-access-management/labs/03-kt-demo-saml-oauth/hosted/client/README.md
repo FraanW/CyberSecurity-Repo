@@ -64,6 +64,25 @@ Everything is browser-only on `*.onrender.com` — nothing to install but **SAML
 
 ---
 
+## Deploying on Netlify instead of Render (same folder works for both)
+The `/api/*` routes and `/config.js` are also provided as **Netlify Functions** (`netlify/functions/`), wired by `netlify.toml`, so the exact same pages run on Netlify with no code change. Keycloak still lives on Render.
+
+1. **app.netlify.com → Add new site → Import an existing project** → GitHub → repo `FraanW/CyberSecurity-Repo`.
+2. Configure:
+   - **Base directory:** `01-identity-access-management/labs/03-kt-demo-saml-oauth/hosted/client`
+   - **Publish directory:** `public` *(relative to base — `netlify.toml` already sets this)*
+   - **Functions directory:** `netlify/functions` *(also set in `netlify.toml`)*
+   - **Build command:** *(leave empty)*
+3. **Environment variables** (Site configuration → Environment variables):
+   | Key | Value |
+   |---|---|
+   | `KEYCLOAK_URL` | `https://cybersecurity-repo.onrender.com` |
+4. **Deploy.** Your site is `https://<name>.netlify.app`.
+5. **Point Keycloak at it:** on the Render `finco-idp` service, set `CLIENT_ORIGIN` to your **Netlify** URL (`https://<name>.netlify.app`) and save → Keycloak redeploys so the browser flows' redirect URIs match. *(If you'd deployed the Render client too, this env var only points at one origin — set it to whichever client you'll actually present from.)*
+6. Verify the five flows (same checklist as §3).
+
+> **Why Netlify needs the functions:** a pure static host can't run Client Credentials (needs the secret) or Device Code (browser CORS), or generate `/config.js`. The functions are the serverless equivalent of `server.js` — Auth Code + PKCE, Implicit and Refresh still run straight in the browser against Keycloak.
+
 ## How it's wired (for your own understanding)
 - **Browser → Keycloak directly:** Auth Code + PKCE, Implicit, Refresh, `/userinfo` (CORS allowed via `CLIENT_ORIGIN` web origins).
 - **Browser → this Node app → Keycloak:** Client Credentials (secret stays server-side) and Device Code (avoids browser CORS). The app also exposes `/api/resource`, a real Resource Server that validates the token via Keycloak introspection.

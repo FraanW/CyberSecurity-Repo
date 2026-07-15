@@ -1,0 +1,38 @@
+# Netlify config for the KT client. Base directory (set in the Netlify UI) =
+# 01-identity-access-management/labs/03-kt-demo-saml-oauth/hosted/client
+# These paths are relative to that base.
+
+[build]
+  publish = "public"
+  functions = "netlify/functions"
+  command = ""
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# Same paths the frontend already calls -> serverless functions (status 200 = rewrite/proxy,
+# so method, body and headers are preserved and the browser URL stays /api/... and /config.js).
+[[redirects]]
+  from = "/config.js"
+  to = "/.netlify/functions/config"
+  status = 200
+
+[[redirects]]
+  from = "/api/client-credentials"
+  to = "/.netlify/functions/client-credentials"
+  status = 200
+
+[[redirects]]
+  from = "/api/device/start"
+  to = "/.netlify/functions/device-start"
+  status = 200
+
+[[redirects]]
+  from = "/api/device/poll"
+  to = "/.netlify/functions/device-poll"
+  status = 200
+
+[[redirects]]
+  from = "/api/resource"
+  to = "/.netlify/functions/resource"
+  status = 200
