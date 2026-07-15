@@ -35,6 +35,11 @@ export KC_HOSTNAME="${PUBLIC_ORIGIN}"        # public https URL (issuer, redirec
 export KC_HOSTNAME_STRICT=false
 export KC_HTTP_ENABLED=true                  # Render terminates TLS, forwards HTTP
 export KC_PROXY_HEADERS=xforwarded           # trust X-Forwarded-* from Render's proxy
+# Single instance: use local caches, NOT clustered Infinispan. `cache` is a
+# RUNTIME option (Keycloak ignores it at build time), so it must be set here.
+# This avoids the JGroups cluster-formation churn that made boot take ~5 min and
+# flooded the log with "Socket is closed" warnings — and it lowers memory.
+export KC_CACHE=local
 
 # JVM tuned for 512 MB: cap the heap at 256 MB (the base image otherwise defaults
 # to -Xmx512m, which alone overruns the container). Do NOT set a GC here — the

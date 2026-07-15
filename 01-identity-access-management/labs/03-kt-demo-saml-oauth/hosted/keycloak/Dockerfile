@@ -6,9 +6,9 @@
 # __CLIENT_ORIGIN__) and substituted at boot by entrypoint.sh.
 
 FROM quay.io/keycloak/keycloak:26.6.4 AS builder
-# Build-time options (baked into the optimized image):
+# Build-time option baked into the optimized image. (cache is a RUNTIME option —
+# it's set to `local` in entrypoint.sh, not here, or Keycloak ignores it.)
 ENV KC_DB=dev-file
-ENV KC_CACHE=local
 RUN /opt/keycloak/bin/kc.sh build
 
 FROM quay.io/keycloak/keycloak:26.6.4
