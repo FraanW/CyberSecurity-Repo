@@ -21,12 +21,9 @@
    - **Root Directory:** `01-identity-access-management/labs/03-kt-demo-saml-oauth/hosted/keycloak`
    - **Runtime / Language:** **Docker** (it auto-detects the `Dockerfile`)
    - **Instance Type:** **Free**
-3. **Environment variables** (Advanced → Add):
-   | Key | Value |
-   |---|---|
-   | `KC_BOOTSTRAP_ADMIN_USERNAME` | `admin` |
-   | `KC_BOOTSTRAP_ADMIN_PASSWORD` | `admin` |
-   - You do **not** need to set `PUBLIC_ORIGIN` — the container auto-detects its public URL from Render's `RENDER_EXTERNAL_URL`. *(You'll add one more var, `CLIENT_ORIGIN`, in Part 2 once the client exists.)*
+3. **Environment variables:** none required — the image defaults the admin login to **`admin` / `admin`** (lab-only) and auto-detects its public URL from Render's `RENDER_EXTERNAL_URL`.
+   - *Optional override:* set **both** `KC_BOOTSTRAP_ADMIN_USERNAME` **and** `KC_BOOTSTRAP_ADMIN_PASSWORD` together (Keycloak refuses to start if only one is set — with the exact name `KC_BOOTSTRAP_ADMIN_PASSWORD`, not `PASSWORD`).
+   - *(You'll add one var, `CLIENT_ORIGIN`, in Part 2 once the client exists.)*
 4. **Create Web Service.** First boot is slow on free (watch the **Logs** tab for `Running the server ... started`). If it restarts once or twice while booting cold, give it a minute.
 
 **✅ Checkpoint:**
