@@ -6,6 +6,7 @@
   "engines": { "node": ">=18" },
   "scripts": { "start": "node server.js" },
   "dependencies": {
-    "@node-saml/node-saml": "^5.0.1"
+    "@node-saml/node-saml": "^5.0.1",
+    "qrcode": "^1.5.4"
   }
 }

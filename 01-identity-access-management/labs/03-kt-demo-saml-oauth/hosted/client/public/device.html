@@ -17,10 +17,17 @@
     <button id="start">Start device flow</button>
   </div>
   <div class="panel" id="codePanel" style="display:none">
-    <div class="label">On another tab / your phone, go here and enter this code</div>
-    <p>URL: <a id="uri" href="#" target="_blank" rel="noopener"></a></p>
-    <p style="font-size:26px" class="code" id="usercode"></p>
-    <p class="muted" id="poll">Polling the token endpoint…</p>
+    <div class="label">📱 Scan with your phone camera — or open the URL and enter the code</div>
+    <div style="display:flex; flex-wrap:wrap; gap:22px; align-items:center;">
+      <img id="qr" alt="Scan to open the verification page" style="width:220px; height:220px; background:#fff; border-radius:10px; padding:8px;">
+      <div>
+        <p class="muted" style="margin:0 0 4px">Scanning opens the verification page with the code pre-filled. Or go to:</p>
+        <p><a id="uri" href="#" target="_blank" rel="noopener"></a></p>
+        <p class="muted" style="margin:14px 0 4px">and enter code:</p>
+        <p style="font-size:30px; margin:0" class="code" id="usercode"></p>
+      </div>
+    </div>
+    <p class="muted" id="poll" style="margin-top:14px">Polling the token endpoint…</p>
   </div>
   <div class="panel" id="tokPanel" style="display:none">
     <div class="label">Approved ✅ — tokens issued</div>
@@ -41,6 +48,7 @@ $("start").onclick = async () => {
   if (!d.device_code) { reveal("codePanel"); setText("poll", "Error: " + JSON.stringify(d)); return; }
   const uri = d.verification_uri_complete || d.verification_uri;
   const a = $("uri"); a.href = uri; a.textContent = uri;
+  $("qr").src = "/api/qr?data=" + encodeURIComponent(uri);
   setText("usercode", d.user_code);
   reveal("codePanel");
   const interval = (d.interval || 5) * 1000;

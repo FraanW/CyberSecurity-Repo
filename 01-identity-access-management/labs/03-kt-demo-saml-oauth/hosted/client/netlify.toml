@@ -28,6 +28,11 @@
   status = 200
 
 [[redirects]]
+  from = "/api/qr"
+  to = "/.netlify/functions/qr"
+  status = 200
+
+[[redirects]]
   from = "/api/device/poll"
   to = "/.netlify/functions/device-poll"
   status = 200
