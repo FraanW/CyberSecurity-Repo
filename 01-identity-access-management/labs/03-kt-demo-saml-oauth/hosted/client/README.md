@@ -37,7 +37,9 @@ The browser flows (Auth Code + PKCE, Implicit) redirect back to the client, so K
 
 ## 3. Verify each flow (rehearsal checklist)
 Open `https://finco-client.onrender.com`, then:
-- [ ] **SAML card** → Start SAML login → log in as `farhaan/Passw0rd!` → SAML-tracer shows `SAMLRequest` + signed `SAMLResponse`.
+- [ ] **SAML card → SP-initiated** → log in as `farhaan/Passw0rd!` → SAML-tracer shows a `SAMLRequest` **then** a signed `SAMLResponse` (with `InResponseTo`); the app shows your SAML attributes.
+- [ ] **SAML card → IdP-initiated** (after logging out) → SAML-tracer shows a `SAMLResponse` with **no** preceding `SAMLRequest`.
+- [ ] **SAML SSO** → after login, "Log out of the App only" then log in again → **no password** (IdP session alive); "Full reset" → password required again.
 - [ ] **OAuth → Authorization Code + PKCE** → log in → PKCE verifier/challenge, the `?code=`, decoded access + ID tokens. Try **Refresh** and **/userinfo**.
 - [ ] **OAuth → Client Credentials** → Get a token (no refresh/id token) → **Call the Resource Server API** → HTTP 200.
 - [ ] **OAuth → Device Code** → Start → open the URL on another tab, enter the code, approve → the page's polling flips to tokens.
@@ -82,6 +84,19 @@ The `/api/*` routes and `/config.js` are also provided as **Netlify Functions** 
 6. Verify the five flows (same checklist as §3).
 
 > **Why Netlify needs the functions:** a pure static host can't run Client Credentials (needs the secret) or Device Code (browser CORS), or generate `/config.js`. The functions are the serverless equivalent of `server.js` — Auth Code + PKCE, Implicit and Refresh still run straight in the browser against Keycloak.
+
+## SAML: SP-initiated, IdP-initiated & SSO
+The client is a **real SAML Service Provider** (via `@node-saml/node-saml`, so `npm install` pulls one dependency). It talks **directly** to the `finco-idp` IdP (no brokering), using the realm's `kt-saml-app` SAML client (ACS = `<client>/saml/acs`).
+
+- **SP-initiated** (`/saml/login`): the app builds a SAML **AuthnRequest** → IdP → signed assertion POSTed to the ACS. SAML-tracer shows `SAMLRequest` then `SAMLResponse` (with `InResponseTo`).
+- **IdP-initiated** (`<keycloak>/realms/finco-idp/protocol/saml/clients/finco-sp`): the IdP sends an **unsolicited** assertion (no request, no `InResponseTo`). The SP accepts it (`validateInResponseTo: 'never'`).
+- **SSO**: a session cookie proves you're logged in. "Log out of the app only" clears it but leaves the **IdP** session, so the next login is passwordless (SSO); "Full reset" ends the IdP session too.
+
+**Two deploy prerequisites (one-time):**
+1. **Redeploy the client** so `npm install` fetches `node-saml`.
+2. **Redeploy Keycloak** (from `master`) so the realm imports the new `kt-saml-app` client, and make sure `CLIENT_ORIGIN` on the Keycloak service equals this client's URL (the ACS is derived from it).
+
+> On **Netlify**, the SAML SP is **not** available (it needs the Node server; Netlify only has the OAuth functions). SAML runs on the **Render** client.
 
 ## How it's wired (for your own understanding)
 - **Browser → Keycloak directly:** Auth Code + PKCE, Implicit, Refresh, `/userinfo` (CORS allowed via `CLIENT_ORIGIN` web origins).

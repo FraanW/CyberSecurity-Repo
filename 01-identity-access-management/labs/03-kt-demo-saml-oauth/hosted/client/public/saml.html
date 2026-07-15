@@ -3,45 +3,87 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SAML 2.0 — SSO round trip</title>
+<title>SAML 2.0 — SP-initiated, IdP-initiated & SSO</title>
 <link rel="stylesheet" href="/style.css">
 </head>
 <body>
 <header>
-  <h1>SAML 2.0 — SSO round trip</h1>
-  <div class="sub"><a class="back" href="/">← back</a> &nbsp;·&nbsp; capture this with the <b>SAML-tracer</b> extension.</div>
+  <h1>SAML 2.0 — federation & SSO</h1>
+  <div class="sub"><a class="back" href="/">← back</a> &nbsp;·&nbsp; this app is a real SAML <b>Service Provider</b> · capture with <b>SAML-tracer</b></div>
 </header>
 <main>
-  <p class="note"><b>The story:</b> a second application (realm <span class="code">finco-app</span>) doesn't manage passwords — when you log in, it <b>federates over SAML</b> to the corporate IdP (realm <span class="code">finco-idp</span>), which returns a <b>signed assertion</b>. Textbook SP-initiated SSO.</p>
+  <div id="status" class="panel muted">Checking session…</div>
 
-  <div class="panel">
-    <div class="label">Before you click — arm the capture</div>
-    <ol>
-      <li>Click the <b>SAML-tracer</b> icon so its window is recording.</li>
-      <li>Then click the button below and log in as <span class="code">farhaan / Passw0rd!</span>.</li>
-      <li>First time only: you may see a one-time "review profile" page — that's just-in-time provisioning on first federated login. Confirm it.</li>
-    </ol>
-    <button id="go">Start SAML login (the "app" = finco-app) →</button>
-    <p class="muted" id="target"></p>
+  <!-- Shown when NOT logged in: the two flows -->
+  <div id="loggedOut" style="display:none">
+    <p class="note">Two ways SAML SSO can start. Arm <b>SAML-tracer</b> before clicking, then log in as <span class="code">farhaan / Passw0rd!</span>.</p>
+
+    <div class="panel">
+      <div class="label">① SP-initiated SSO — you start at the App</div>
+      <p class="muted">The app has no session, so <b>it builds a SAML AuthnRequest</b> and redirects you to the IdP. The IdP authenticates you and POSTs a <b>signed assertion</b> back to the app's ACS. This is the everyday flow (~95% of SAML).</p>
+      <button id="spBtn">Start at the App (SP-initiated) →</button>
+      <p class="muted">In SAML-tracer you'll see a <span class="code">SAMLRequest</span> (AuthnRequest) <b>then</b> a <span class="code">SAMLResponse</span> with <span class="code">InResponseTo</span> tying them together.</p>
+    </div>
+
+    <div class="panel">
+      <div class="label">② IdP-initiated SSO — you start at the IdP</div>
+      <p class="muted">You begin at the IdP (e.g. a portal tile). It sends the app an <b>unsolicited</b> assertion — <b>no AuthnRequest, no <span class="code">InResponseTo</span></b>. Convenient, but weaker (easier to replay), so modern practice prefers SP-init.</p>
+      <button id="idpBtn">Start at the IdP (IdP-initiated) →</button>
+      <p class="muted">In SAML-tracer you'll see a <span class="code">SAMLResponse</span> with <b>no preceding</b> <span class="code">SAMLRequest</span> and <b>no</b> <span class="code">InResponseTo</span>. That difference IS the distinction.</p>
+    </div>
   </div>
 
-  <div class="panel">
-    <div class="label">In SAML-tracer, find the two SAML rows and read them</div>
-    <table style="width:100%; border-collapse:collapse; font-size:14px;">
-      <tr><td class="code">SAMLRequest</td><td class="muted">the AuthnRequest (finco-app → finco-idp) — small, deflated+base64, unreadable by eye.</td></tr>
-      <tr><td class="code">SAMLResponse</td><td class="muted">the signed assertion. Read: <b>Issuer → Signature → NameID → Conditions (NotBefore/NotOnOrAfter) → Audience → AttributeStatement</b> (email, givenName, surname, Role).</td></tr>
-    </table>
-    <p class="muted">Punchline: the app never saw your password — it trusted a <b>signed assertion</b>. That signature is the whole security model.</p>
+  <!-- Shown when logged in: the SSO demonstration -->
+  <div id="loggedIn" style="display:none">
+    <div class="panel">
+      <div class="label ok">✅ SSO session active — logged in via SAML as <span id="who"></span></div>
+      <pre id="attrs"></pre>
+    </div>
+    <div class="panel">
+      <div class="label">Demonstrate SSO (single sign-on)</div>
+      <p class="muted">Your IdP session is alive. Try these in order — it's the whole point of federation:</p>
+      <button id="againBtn">Access the app again (SP-init) — watch it be instant</button>
+      <button id="appLogoutBtn" class="secondary">Log out of the App only</button>
+      <button id="fullLogoutBtn" class="danger">Full reset (end the IdP session)</button>
+      <ul class="muted">
+        <li><b>Access again / App-only logout then log in:</b> no password — the IdP session carries you straight through. <b>That's SSO.</b></li>
+        <li><b>Full reset:</b> ends the IdP session, so the next login asks for the password again — proving the SSO session is what made it seamless.</li>
+      </ul>
+    </div>
   </div>
 </main>
 <script src="/config.js"></script>
 <script src="/common.js"></script>
 <script>
-  // The SP is the finco-app realm's account console; clicking its login shows the
-  // "Log in with FinCo Corporate IdP (SAML)" button which triggers the SAML round trip.
-  const samlAppUrl = CFG.KEYCLOAK_URL + "/realms/finco-app/account";
-  setText("target", "Opens: " + samlAppUrl + "  → then click the 'Log in with FinCo Corporate IdP (SAML)' button.");
-  $("go").onclick = () => { window.location.assign(samlAppUrl); };
+const idpInitUrl = CFG.SAML_IDP + "/clients/finco-sp";   // IdP-initiated SSO URL (Keycloak)
+
+function render(s) {
+  const st = $("status");
+  const q = new URLSearchParams(location.search);
+  if (s.loggedIn) {
+    $("loggedOut").style.display = "none";
+    $("loggedIn").style.display = "block";
+    $("who").textContent = s.name || "(unknown)";
+    $("attrs").textContent = "SAML attributes received:\n" + JSON.stringify(s.attributes || {}, null, 2);
+    st.className = "panel ok";
+    st.innerHTML = q.get("loggedin") ? "Just logged in via SAML ✅ — the assertion was validated (signature checked against the IdP's cert)." : "You have an active SAML SSO session.";
+  } else {
+    $("loggedIn").style.display = "none";
+    $("loggedOut").style.display = "block";
+    st.className = "panel muted";
+    st.innerHTML = q.get("loggedout") === "app"
+      ? "Logged out of the <b>app</b> — but your <b>IdP session may still be alive</b>. Click SP-initiated again: if it's instant with no password, that's SSO."
+      : "Not logged in. Pick a flow below.";
+  }
+}
+
+$("spBtn").onclick = () => location.assign("/saml/login");
+$("idpBtn").onclick = () => location.assign(idpInitUrl);
+$("againBtn").onclick = () => location.assign("/saml/login");
+$("appLogoutBtn").onclick = () => location.assign("/saml/slogout");
+$("fullLogoutBtn").onclick = () => location.assign("/saml/logout");
+
+fetch("/saml/status").then(r => r.json()).then(render).catch(() => render({ loggedIn: false }));
 </script>
 </body>
 </html>
