@@ -77,7 +77,7 @@ If you see OOM/restart loops under light use, that's the free-RAM ceiling — te
 
 ---
 
-## Next (Part 2)
-Once your IdP passes §1 and §4, tell me your **IdP URL** and I'll build the client — the **landing page (SAML · OAuth cards)** and the **4 interactive grant flows** — as a free Render **Static Site**, wire it to your IdP, and add the `CLIENT_ORIGIN` env var so redirect URIs line up. Then a hosted presenter runbook.
+## Next (Part 2) — the client is built
+Deploy the **landing page (SAML · OAuth cards) + the 4 interactive grant flows**: see **[`client/README.md`](client/README.md)**. It deploys as a free Render **Web Service** (a tiny zero-dependency Node app — needed because Client Credentials and Device Code can't run in a pure static page), and you set one `CLIENT_ORIGIN` env var back on this Keycloak service so the redirect URIs line up.
 
 *Authorized-lab-only · demo users/keys, never real FinCo data 🔐*

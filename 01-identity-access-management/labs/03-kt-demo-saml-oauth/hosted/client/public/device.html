@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Device Authorization (device code)</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header>
+  <h1>3 · Device Authorization <span class="muted">(smart TV / CLI)</span></h1>
+  <div class="sub"><a class="back" href="/oauth.html">← OAuth flows</a> &nbsp;·&nbsp; public client <span class="code">kt-device</span> · polling runs server-side</div>
+</header>
+<main>
+  <p class="note"><b>No keyboard.</b> The "device" gets a short code; you approve it on a trusted device (your phone/another tab). The device just <b>polls</b> until you approve — the password never touches the untrusted device.</p>
+  <div class="panel">
+    <button id="start">Start device flow</button>
+  </div>
+  <div class="panel" id="codePanel" style="display:none">
+    <div class="label">On another tab / your phone, go here and enter this code</div>
+    <p>URL: <a id="uri" href="#" target="_blank" rel="noopener"></a></p>
+    <p style="font-size:26px" class="code" id="usercode"></p>
+    <p class="muted" id="poll">Polling the token endpoint…</p>
+  </div>
+  <div class="panel" id="tokPanel" style="display:none">
+    <div class="label">Approved ✅ — tokens issued</div>
+    <pre id="tok"></pre>
+  </div>
+  <div class="panel" id="idPanel" style="display:none">
+    <div class="label">ID token — decoded</div>
+    <pre id="id"></pre>
+  </div>
+</main>
+<script src="/config.js"></script>
+<script src="/common.js"></script>
+<script>
+let timer = null;
+$("start").onclick = async () => {
+  const res = await fetch("/api/device/start", { method: "POST" });
+  const d = await res.json();
+  if (!d.device_code) { reveal("codePanel"); setText("poll", "Error: " + JSON.stringify(d)); return; }
+  const uri = d.verification_uri_complete || d.verification_uri;
+  const a = $("uri"); a.href = uri; a.textContent = uri;
+  setText("usercode", d.user_code);
+  reveal("codePanel");
+  const interval = (d.interval || 5) * 1000;
+  const deadline = Date.now() + (d.expires_in || 600) * 1000;
+  clearInterval(timer);
+  timer = setInterval(async () => {
+    if (Date.now() > deadline) { clearInterval(timer); setText("poll", "Device code expired."); return; }
+    const pr = await fetch("/api/device/poll", { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: "device_code=" + encodeURIComponent(d.device_code) });
+    const t = await pr.json();
+    if (t.access_token) {
+      clearInterval(timer);
+      setText("poll", "Approved!");
+      reveal("tokPanel"); setText("tok", JSON.stringify(t, null, 2));
+      if (t.id_token) { setText("id", decodeJwt(t.id_token)); reveal("idPanel"); }
+    } else if (t.error && t.error !== "authorization_pending" && t.error !== "slow_down") {
+      clearInterval(timer); setText("poll", "Stopped: " + t.error);
+    } else {
+      setText("poll", "Polling… (" + new Date().toLocaleTimeString() + ") — approve the code to continue");
+    }
+  }, interval);
+};
+</script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OAuth 2.0 — the four grant flows</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header>
+  <h1>OAuth 2.0 + OIDC — the grant flows</h1>
+  <div class="sub"><a class="back" href="/">← back</a> &nbsp;·&nbsp; each card is a real, interactive flow. Keep DevTools → Network open.</div>
+</header>
+<main>
+  <p class="note"><b>Which grant, in one breath:</b> human in a browser → <b>Authorization Code + PKCE</b>. No human (a service) → <b>Client Credentials</b>. No keyboard (TV/CLI) → <b>Device Code</b>. And <b>Implicit</b> is the dead one we show to explain why it died.</p>
+  <div class="cards">
+    <a class="card" href="/authcode.html">
+      <span class="tag">✅ the default · OIDC</span>
+      <h3>1 · Authorization Code + PKCE →</h3>
+      <p>Any app with a user. See the <span class="code">code_challenge</span>, the one-time <span class="code">?code=</span>, the back-channel token swap, and the decoded <b>access + ID tokens</b>. Includes a <b>Refresh</b> button.</p>
+    </a>
+    <a class="card" href="/client-credentials.html">
+      <span class="tag">✅ machine-to-machine</span>
+      <h3>2 · Client Credentials →</h3>
+      <p>No user, no browser — the service authenticates as itself (run server-side). Get a token, then call a real <b>Resource Server</b> → 200. No refresh, no ID token.</p>
+    </a>
+    <a class="card" href="/device.html">
+      <span class="tag">✅ no keyboard</span>
+      <h3>3 · Device Code →</h3>
+      <p>Smart-TV / CLI flow: get a <span class="code">user_code</span>, approve it on another tab, watch the device <b>poll</b> until a token drops.</p>
+    </a>
+    <a class="card" href="/implicit.html">
+      <span class="tag dead">☠ deprecated</span>
+      <h3>4 · Implicit →</h3>
+      <p>The old SPA way. The access token comes back <b>in the URL fragment</b> — see why that leaks, and why OAuth 2.1 removed it.</p>
+    </a>
+  </div>
+</main>
+<script src="/config.js"></script>
+</body>
+</html>
