@@ -58,6 +58,7 @@
       "standardFlowEnabled": true,
       "implicitFlowEnabled": false,
       "directAccessGrantsEnabled": false,
+      "consentRequired": true,
       "redirectUris": ["__CLIENT_ORIGIN__/*"],
       "webOrigins": ["__CLIENT_ORIGIN__", "+"],
       "fullScopeAllowed": true,

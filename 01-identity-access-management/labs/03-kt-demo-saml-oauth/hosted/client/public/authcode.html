@@ -18,7 +18,7 @@
     <button id="userinfo" class="secondary" disabled>Call /userinfo</button>
     <button id="logout" class="danger" disabled>Log out</button>
   </div>
-  <div class="panel muted" id="status">Not logged in. Click <b>Log in</b> — watch the redirect to <span class="code">/authorize</span> (with <span class="code">code_challenge</span>), the return with <span class="code">?code=</span>, then the back-channel <span class="code">/token</span> POST.</div>
+  <div class="panel muted" id="status">Not logged in. Click <b>Log in</b> — watch: the redirect to <span class="code">/authorize</span> (with <span class="code">code_challenge</span>), the login, the <b>consent screen</b> ("this app wants: profile, email — Allow?"), the return with <span class="code">?code=</span>, then the back-channel <span class="code">/token</span> POST. <span class="muted">(Consent is on here because we set the client as if it were third-party; first-party apps skip it.)</span></div>
 
   <div class="panel" id="pkcePanel" style="display:none">
     <div class="label">PKCE — what the browser generated</div>
@@ -69,7 +69,7 @@ $("login").onclick = async () => {
   const url = new URL(OIDC + "/auth");
   url.search = new URLSearchParams({
     response_type: "code", client_id: CLIENT_ID, redirect_uri: REDIRECT, scope: SCOPE,
-    state, nonce, code_challenge: challenge, code_challenge_method: "S256", prompt: "login"
+    state, nonce, code_challenge: challenge, code_challenge_method: "S256", prompt: "login consent"
   }).toString();
   window.location.assign(url.toString());
 };

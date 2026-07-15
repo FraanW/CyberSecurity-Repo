@@ -162,10 +162,17 @@ const server = http.createServer(async (req, res) => {
     }
     if (p === '/saml/acs' && req.method === 'POST') {            // ACS: both SP-init and IdP-init land here
       if (!SAML) return send(res, 500, { error: 'node-saml not installed' });
-      const sp = await samlSP();
       const body = Object.fromEntries(new URLSearchParams(await readBody(req)));
+      // Not a login assertion? A SAML LogoutRequest/Response can arrive on this
+      // same endpoint (it's also the Master SAML Processing URL). Don't feed
+      // node-saml an undefined SAMLResponse — just clear the session.
+      if (!body.SAMLResponse) return clearSession(res, '/saml.html?loggedout=idp');
+      const sp = await samlSP();
       const { profile } = await sp.validatePostResponseAsync(body);
       return setSession(res, profile, '/saml.html?loggedin=1');
+    }
+    if (p === '/saml/acs' && req.method === 'GET') {             // SAML logout via redirect binding
+      return clearSession(res, '/saml.html?loggedout=idp');
     }
     if (p === '/saml/status' && req.method === 'GET') {
       const c = cookies(req).kt_saml;
