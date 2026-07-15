@@ -5,7 +5,6 @@
   "sslRequired": "none",
   "registrationAllowed": false,
   "loginWithEmailAllowed": true,
-  "trustEmail": true,
   "identityProviders": [
     {
       "alias": "kc-idp",
