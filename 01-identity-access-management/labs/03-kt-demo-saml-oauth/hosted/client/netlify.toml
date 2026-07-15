@@ -23,6 +23,16 @@
   status = 200
 
 [[redirects]]
+  from = "/api/authcode-exchange"
+  to = "/.netlify/functions/authcode-exchange"
+  status = 200
+
+[[redirects]]
+  from = "/api/ropc"
+  to = "/.netlify/functions/ropc"
+  status = 200
+
+[[redirects]]
   from = "/api/device/start"
   to = "/.netlify/functions/device-start"
   status = 200

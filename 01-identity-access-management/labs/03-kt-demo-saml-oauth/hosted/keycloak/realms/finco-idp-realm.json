@@ -68,7 +68,7 @@
     },
     {
       "clientId": "kt-web",
-      "name": "OAuth — Web app (confidential, Auth Code + Refresh + ROPC)",
+      "name": "OAuth — Web app (confidential: Auth Code no-PKCE + Refresh + ROPC)",
       "enabled": true,
       "protocol": "openid-connect",
       "publicClient": false,
@@ -79,7 +79,7 @@
       "redirectUris": ["__CLIENT_ORIGIN__/*"],
       "webOrigins": ["+"],
       "fullScopeAllowed": true,
-      "attributes": { "pkce.code.challenge.method": "S256" }
+      "attributes": {}
     },
     {
       "clientId": "kt-service",

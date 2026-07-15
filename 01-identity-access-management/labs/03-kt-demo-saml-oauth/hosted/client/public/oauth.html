@@ -12,12 +12,17 @@
   <div class="sub"><a class="back" href="/">← back</a> &nbsp;·&nbsp; each card is a real, interactive flow. Keep DevTools → Network open.</div>
 </header>
 <main>
-  <p class="note"><b>Which grant, in one breath:</b> human in a browser → <b>Authorization Code + PKCE</b>. No human (a service) → <b>Client Credentials</b>. No keyboard (TV/CLI) → <b>Device Code</b>. And <b>Implicit</b> is the dead one we show to explain why it died.</p>
+  <p class="note"><b>Which grant, in one breath:</b> human in a browser → <b>Authorization Code + PKCE</b> (public) or <b>no PKCE</b> (confidential server app). No human (a service) → <b>Client Credentials</b>. No keyboard (TV/CLI) → <b>Device Code</b>. <b>Implicit</b> is the dead one (token in the URL). <b>ROPC</b> — the app takes your password — is deprecated publicly but still used for trusted first-party apps inside an org.</p>
   <div class="cards">
     <a class="card" href="/authcode.html">
       <span class="tag">✅ the default · OIDC</span>
       <h3>1 · Authorization Code + PKCE →</h3>
       <p>Any app with a user. See the <span class="code">code_challenge</span>, the one-time <span class="code">?code=</span>, the back-channel token swap, and the decoded <b>access + ID tokens</b>. Includes a <b>Refresh</b> button.</p>
+    </a>
+    <a class="card" href="/authcode-nopkce.html">
+      <span class="tag">confidential · no PKCE</span>
+      <h3>1b · Authorization Code (no PKCE) →</h3>
+      <p>The classic <b>server-side web app</b> flow. A confidential client proves itself with a <b>client secret</b> instead of PKCE; the code is exchanged <b>on the server</b>. Nice contrast to flow 1.</p>
     </a>
     <a class="card" href="/client-credentials.html">
       <span class="tag">✅ machine-to-machine</span>
@@ -33,6 +38,11 @@
       <span class="tag dead">☠ deprecated</span>
       <h3>4 · Implicit →</h3>
       <p>The old SPA way. The access token comes back <b>in the URL fragment</b> — see why that leaks, and why OAuth 2.1 removed it.</p>
+    </a>
+    <a class="card" href="/ropc.html">
+      <span class="tag warn">legacy · trusted first-party</span>
+      <h3>5 · ROPC (password) →</h3>
+      <p>The app takes your <b>username + password directly</b>. Deprecated for public/third-party use, but <b>still used inside orgs</b> for trusted first-party apps (legacy tools, CLIs, migrations).</p>
     </a>
   </div>
 </main>

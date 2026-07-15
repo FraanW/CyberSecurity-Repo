@@ -36,7 +36,7 @@ const REDIRECT = window.location.origin + "/implicit.html";
 $("go").onclick = () => {
   const url = new URL(OIDC + "/auth");
   url.search = new URLSearchParams({
-    response_type: "token", client_id: CLIENT_ID, redirect_uri: REDIRECT, scope: "profile", state: randB64()
+    response_type: "token", client_id: CLIENT_ID, redirect_uri: REDIRECT, scope: "profile", state: randB64(), prompt: "login"
   }).toString();
   window.location.assign(url.toString());
 };
