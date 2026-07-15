@@ -1,14 +1,12 @@
 #!/bin/bash
-# Boot Keycloak on Render (free tier). Substitutes the real public URLs into the
-# realm templates, tunes the JVM for 512 MB, and starts in dev mode with import.
+# Boot the OPTIMIZED Keycloak on Render (free tier, 512 MB). Substitutes the
+# real public URLs into the realm templates, tunes the JVM to stay under 512 MB,
+# and starts in production-optimized mode (fast boot, low memory) with import.
 set -e
 
 # Render injects RENDER_EXTERNAL_URL = this service's public https URL.
-# Override with PUBLIC_ORIGIN if you want. CLIENT_ORIGIN is the static client's
-# URL (set it once the client is deployed; defaults to PUBLIC_ORIGIN meanwhile).
 PUBLIC_ORIGIN="${PUBLIC_ORIGIN:-${RENDER_EXTERNAL_URL}}"
 CLIENT_ORIGIN="${CLIENT_ORIGIN:-${PUBLIC_ORIGIN}}"
-
 if [ -z "${PUBLIC_ORIGIN}" ]; then
   echo "FATAL: PUBLIC_ORIGIN (or RENDER_EXTERNAL_URL) is not set." >&2
   exit 1
@@ -27,21 +25,20 @@ for f in /opt/keycloak/data/import-templates/*.json; do
   echo "prepared realm: $(basename "$f")"
 done
 
-# Render provides the port to listen on via $PORT; Keycloak reads KC_HTTP_PORT.
-export KC_HTTP_PORT="${PORT:-8080}"
-# Public hostname + proxy awareness (Render terminates TLS, forwards HTTP).
-export KC_HOSTNAME="${PUBLIC_ORIGIN}"
-export KC_HTTP_ENABLED=true
-export KC_PROXY_HEADERS=xforwarded
-# Fit the JVM inside 512 MB (free/starter). Bump if you move to Standard (2 GB).
-export JAVA_OPTS_APPEND="${JAVA_OPTS_APPEND:--Xms128m -Xmx400m}"
+# Runtime options (hostname/proxy). DB + cache are baked at build time (optimized).
+export KC_HTTP_PORT="${PORT:-8080}"          # Render provides the port via $PORT
+export KC_HOSTNAME="${PUBLIC_ORIGIN}"        # public https URL (issuer, redirects, SAML)
+export KC_HOSTNAME_STRICT=false
+export KC_HTTP_ENABLED=true                  # Render terminates TLS, forwards HTTP
+export KC_PROXY_HEADERS=xforwarded           # trust X-Forwarded-* from Render's proxy
 
-# Admin bootstrap creds. Default to admin/admin (LAB ONLY) so the service boots
-# even if the env vars are unset or mistyped. Both must be set together, or
-# Keycloak refuses to start ("bootstrap-admin-username available only when
-# bootstrap admin password is set"). Override both via env for anything real.
+# JVM tuned for 512 MB: modest heap + SerialGC (lowest GC memory overhead, ideal
+# for a single-user demo on 0.1 CPU). Optimized mode keeps class metadata small.
+export JAVA_OPTS_APPEND="${JAVA_OPTS_APPEND:--Xms64m -Xmx300m -XX:+UseSerialGC}"
+
+# Admin bootstrap (LAB ONLY) — default so it boots with zero required env vars.
 export KC_BOOTSTRAP_ADMIN_USERNAME="${KC_BOOTSTRAP_ADMIN_USERNAME:-admin}"
 export KC_BOOTSTRAP_ADMIN_PASSWORD="${KC_BOOTSTRAP_ADMIN_PASSWORD:-admin}"
 
-echo "Starting Keycloak on port ${KC_HTTP_PORT} ..."
-exec /opt/keycloak/bin/kc.sh start-dev --import-realm
+echo "Starting Keycloak (optimized) on port ${KC_HTTP_PORT} ..."
+exec /opt/keycloak/bin/kc.sh start --optimized --import-realm
