@@ -2,7 +2,7 @@
 
 > **Lefler's build, Janus's curriculum.** This is your **presentation lab** for the reverse KT. One command brings up a Keycloak that plays **both** roles your team's PingFederate plays — a **SAML Identity Provider** *and* an **OAuth 2.0 / OIDC Authorization Server** — plus a browser app so you can demo, capture, and *read* every message live with **SAML-tracer** and browser DevTools.
 >
-> Pair it with the slide guide: [note 23 — Reverse-KT presentation guide](../../notes/23-reverse-kt-presentation-guide.md). The demos here are exactly its Demo A–E cue cards.
+> Pair it with the slide guide: [note 23 — Reverse-KT presentation guide](../../notes/23-reverse-kt-presentation-guide.md). The demos here are exactly its Demo A–E cue cards. **On the day, drive from [`PRESENTER-RUNBOOK.md`](PRESENTER-RUNBOOK.md)** — the single-screen "what to click / what to say" script.
 >
 > **Authorized-lab-only.** Everything runs on your machine with dummy users. Never put a real FinCo token or assertion on screen.
 
@@ -169,6 +169,18 @@ $t | Format-List
 ```
 
 > **Why two clients?** `kt-spa` is a **public** client (no secret, PKCE-protected) for the SPA; `kt-web` is a **confidential** client (has a secret) for the manual/back-channel demo. Showing both is a great "public vs confidential" teaching beat (slide 16).
+
+### B.3 — Implicit grant (DEPRECATED — show it to bury it)
+
+The perfect contrast to B: the *old* way SPAs did this, before PKCE existed. Paste into the browser address bar (client `kt-implicit`), log in as **farhaan**:
+```
+http://localhost:8080/realms/finco-idp/protocol/openid-connect/auth?response_type=token&client_id=kt-implicit&redirect_uri=http://localhost:9999/callback&scope=profile&state=xyz
+```
+The browser lands on `http://localhost:9999/callback#access_token=...&token_type=Bearer&...` ("can't reach this page" is expected). **Point at the address bar:** the **access token is sitting right there in the URL fragment.**
+
+**Talk track:** *"See the token in the URL? That means it's in my browser history, in the `Referer` header, in server logs — everywhere. And there's no code to protect with PKCE. That's why Implicit is dead and OAuth 2.1 removed it. The fix is exactly Demo B — Authorization Code + PKCE."* (Slide 20.)
+
+> Notice `response_type=token` (not `code`) — that single change is the whole difference: the AS hands back a **token** on the front channel instead of a one-time code. That's the anti-pattern.
 
 ---
 

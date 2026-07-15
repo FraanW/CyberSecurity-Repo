@@ -124,6 +124,21 @@
       }
     },
     {
+      "clientId": "kt-implicit",
+      "name": "OAuth Demo — Implicit (DEPRECATED, for contrast)",
+      "description": "Public client with the legacy Implicit flow enabled. Returns the token directly in the URL fragment — shown ONLY to demonstrate why it leaks and why OAuth 2.1 removed it.",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": true,
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "redirectUris": ["http://localhost:9000/*", "http://localhost:9999/callback"],
+      "webOrigins": ["+"],
+      "fullScopeAllowed": true
+    },
+    {
       "clientId": "kt-saml-broker",
       "name": "SAML Demo A — Service Provider (the app that trusts this IdP)",
       "description": "SAML SP registered here as a client. Entity ID = kt-saml-broker. The finco-app realm's SAML broker uses this identity. IdP signs assertions; SP AuthnRequest signing is off for lab simplicity.",
