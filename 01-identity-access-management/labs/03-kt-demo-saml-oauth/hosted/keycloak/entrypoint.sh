@@ -7,6 +7,10 @@ set -e
 # Render injects RENDER_EXTERNAL_URL = this service's public https URL.
 PUBLIC_ORIGIN="${PUBLIC_ORIGIN:-${RENDER_EXTERNAL_URL}}"
 CLIENT_ORIGIN="${CLIENT_ORIGIN:-${PUBLIC_ORIGIN}}"
+# Strip any trailing slash(es) — a trailing "/" would produce malformed redirect
+# URIs (".../*" -> "...//*") and an invalid CORS web origin.
+PUBLIC_ORIGIN="${PUBLIC_ORIGIN%/}"
+CLIENT_ORIGIN="${CLIENT_ORIGIN%/}"
 if [ -z "${PUBLIC_ORIGIN}" ]; then
   echo "FATAL: PUBLIC_ORIGIN (or RENDER_EXTERNAL_URL) is not set." >&2
   exit 1
@@ -32,9 +36,12 @@ export KC_HOSTNAME_STRICT=false
 export KC_HTTP_ENABLED=true                  # Render terminates TLS, forwards HTTP
 export KC_PROXY_HEADERS=xforwarded           # trust X-Forwarded-* from Render's proxy
 
-# JVM tuned for 512 MB: modest heap + SerialGC (lowest GC memory overhead, ideal
-# for a single-user demo on 0.1 CPU). Optimized mode keeps class metadata small.
-export JAVA_OPTS_APPEND="${JAVA_OPTS_APPEND:--Xms64m -Xmx300m -XX:+UseSerialGC}"
+# JVM tuned for 512 MB: cap the heap at 256 MB (the base image otherwise defaults
+# to -Xmx512m, which alone overruns the container). Do NOT set a GC here — the
+# Keycloak image already selects one, and adding a second flag fails VM init with
+# "Multiple garbage collectors selected". Optimized mode keeps class metadata small,
+# so heap + metaspace + native fits under 512 MB.
+export JAVA_OPTS_APPEND="${JAVA_OPTS_APPEND:--Xms64m -Xmx256m}"
 
 # Admin bootstrap (LAB ONLY) — default so it boots with zero required env vars.
 export KC_BOOTSTRAP_ADMIN_USERNAME="${KC_BOOTSTRAP_ADMIN_USERNAME:-admin}"
