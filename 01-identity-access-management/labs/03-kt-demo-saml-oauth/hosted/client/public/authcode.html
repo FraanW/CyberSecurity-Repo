@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Authorization Code + PKCE (OIDC)</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header>
+  <h1>1 · Authorization Code + PKCE <span class="muted">(OIDC)</span></h1>
+  <div class="sub"><a class="back" href="/oauth.html">← OAuth flows</a> &nbsp;·&nbsp; public client <span class="code">kt-spa</span> · keep DevTools → Network open</div>
+</header>
+<main>
+  <div class="panel" id="controls">
+    <button id="login">1 · Log in (start the flow)</button>
+    <button id="refresh" class="secondary" disabled>Refresh the access token</button>
+    <button id="userinfo" class="secondary" disabled>Call /userinfo</button>
+    <button id="logout" class="danger" disabled>Log out</button>
+  </div>
+  <div class="panel muted" id="status">Not logged in. Click <b>Log in</b> — watch the redirect to <span class="code">/authorize</span> (with <span class="code">code_challenge</span>), the return with <span class="code">?code=</span>, then the back-channel <span class="code">/token</span> POST.</div>
+
+  <div class="panel" id="pkcePanel" style="display:none">
+    <div class="label">PKCE — what the browser generated</div>
+    <pre><span class="muted">code_verifier (secret, kept locally, never in the URL):</span>
+<span id="verifier" class="code"></span>
+
+<span class="muted">code_challenge = BASE64URL(SHA-256(verifier)) — only this HASH went to /authorize:</span>
+<span id="challenge" class="code"></span></pre>
+  </div>
+
+  <div class="panel" id="codePanel" style="display:none">
+    <div class="label">The authorization code (came back via the browser — front channel)</div>
+    <pre><span id="code" class="code"></span>
+<span class="muted">↳ one-time, ~60s life, useless to a thief without the code_verifier above. That's PKCE.</span></pre>
+  </div>
+
+  <div class="two">
+    <div class="panel" id="atPanel" style="display:none">
+      <div class="label">Access token — decoded (for the API)</div>
+      <pre id="at"></pre>
+    </div>
+    <div class="panel" id="idPanel" style="display:none">
+      <div class="label">ID token — decoded (for THIS app: who logged in)</div>
+      <pre id="id"></pre>
+    </div>
+  </div>
+  <div class="panel" id="rawPanel" style="display:none">
+    <div class="label">Raw /token response (back channel)</div>
+    <pre id="raw"></pre>
+  </div>
+</main>
+<script src="/config.js"></script>
+<script src="/common.js"></script>
+<script>
+const CLIENT_ID = "kt-spa";
+const REDIRECT = window.location.origin + "/authcode.html";
+const SCOPE = "openid profile email";
+
+function status(html, cls) { const s = $("status"); s.innerHTML = html; s.className = "panel " + (cls || "muted"); }
+
+$("login").onclick = async () => {
+  const verifier = randB64();
+  const challenge = await sha256b64(verifier);
+  const state = randB64(), nonce = randB64();
+  sessionStorage.setItem("v", verifier);
+  sessionStorage.setItem("s", state);
+  sessionStorage.setItem("c", challenge);
+  const url = new URL(OIDC + "/auth");
+  url.search = new URLSearchParams({
+    response_type: "code", client_id: CLIENT_ID, redirect_uri: REDIRECT, scope: SCOPE,
+    state, nonce, code_challenge: challenge, code_challenge_method: "S256"
+  }).toString();
+  window.location.assign(url.toString());
+};
+
+async function exchange(code) {
+  const verifier = sessionStorage.getItem("v");
+  setText("verifier", verifier || "(missing)");
+  setText("challenge", sessionStorage.getItem("c") || "");
+  reveal("pkcePanel");
+  setText("code", code); reveal("codePanel");
+  const res = await fetch(OIDC + "/token", {
+    method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({ grant_type: "authorization_code", code, redirect_uri: REDIRECT, client_id: CLIENT_ID, code_verifier: verifier })
+  });
+  showTokens(await res.json(), res.ok);
+}
+
+function showTokens(t, ok) {
+  reveal("rawPanel"); setText("raw", JSON.stringify(t, null, 2));
+  if (!ok || t.error) { status("Token exchange failed: <span class='err'>" + (t.error_description || t.error) + "</span>", "err"); return; }
+  sessionStorage.setItem("at", t.access_token || "");
+  sessionStorage.setItem("rt", t.refresh_token || "");
+  if (t.access_token) { setText("at", decodeJwt(t.access_token)); reveal("atPanel"); }
+  if (t.id_token) { setText("id", decodeJwt(t.id_token)); reveal("idPanel"); }
+  status("Logged in ✅ — <b>ID token</b> (aud = <span class='code'>kt-spa</span>) says <i>who</i> logged in; <b>access token</b> is for the API. Never mix them.", "ok");
+  $("refresh").disabled = false; $("userinfo").disabled = false; $("logout").disabled = false;
+}
+
+$("refresh").onclick = async () => {
+  const res = await fetch(OIDC + "/token", {
+    method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({ grant_type: "refresh_token", client_id: CLIENT_ID, refresh_token: sessionStorage.getItem("rt") })
+  });
+  const t = await res.json();
+  status("Refreshed ✅ — new access token, no login. Note a <b>new refresh_token</b> came back (rotation).", "ok");
+  showTokens(t, res.ok);
+};
+
+$("userinfo").onclick = async () => {
+  const res = await fetch(OIDC + "/userinfo", { headers: { Authorization: "Bearer " + sessionStorage.getItem("at") } });
+  reveal("rawPanel"); setText("raw", "GET /userinfo (Bearer access_token)\n\n" + JSON.stringify(await res.json(), null, 2));
+  status("Called <span class='code'>/userinfo</span> with the <b>access token</b> — how a Resource Server reads claims.", "ok");
+};
+
+$("logout").onclick = () => {
+  sessionStorage.clear();
+  const url = new URL(OIDC + "/logout");
+  url.search = new URLSearchParams({ client_id: CLIENT_ID, post_logout_redirect_uri: REDIRECT }).toString();
+  window.location.assign(url.toString());
+};
+
+(function init() {
+  const q = new URLSearchParams(window.location.search);
+  if (q.get("error")) { status("Authorization error: <span class='err'>" + q.get("error") + " — " + (q.get("error_description") || "") + "</span>", "err"); history.replaceState({}, "", REDIRECT); return; }
+  const code = q.get("code");
+  if (code) {
+    const saved = sessionStorage.getItem("s");
+    history.replaceState({}, "", REDIRECT);
+    if (!saved || q.get("state") !== saved) { status("state mismatch — possible CSRF, aborting.", "err"); return; }
+    status("Got the authorization code — exchanging it on the back channel…");
+    exchange(code);
+  }
+})();
+</script>
+</body>
+</html>

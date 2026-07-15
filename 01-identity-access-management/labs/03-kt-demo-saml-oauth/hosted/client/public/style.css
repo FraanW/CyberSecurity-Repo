@@ -1,0 +1,38 @@
+/* Self-contained styles — no external CDN/fonts (company blocks them). */
+:root { color-scheme: dark; }
+* { box-sizing: border-box; }
+body { margin: 0; font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+       background: #0e1116; color: #e6edf3; line-height: 1.55; }
+a { color: #58a6ff; text-decoration: none; }
+a:hover { text-decoration: underline; }
+header { padding: 20px 26px; background: #161b22; border-bottom: 2px solid #2d333b; }
+header h1 { margin: 0; font-size: 20px; }
+header .sub { color: #8b949e; font-size: 13px; margin-top: 4px; }
+header .back { font-size: 13px; }
+main { max-width: 1000px; margin: 0 auto; padding: 24px 22px; }
+h2 { font-size: 18px; }
+.cards { display: flex; flex-wrap: wrap; gap: 18px; margin-top: 10px; }
+.card { flex: 1 1 300px; background: #161b22; border: 1px solid #2d333b; border-radius: 12px;
+        padding: 20px; transition: border-color .15s; }
+.card:hover { border-color: #3fb950; }
+.card h3 { margin: 0 0 8px; font-size: 17px; }
+.card p { color: #8b949e; font-size: 14px; margin: 6px 0; }
+.card .tag { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 20px;
+             border: 1px solid #3fb950; color: #3fb950; margin-bottom: 8px; }
+.card .tag.warn { border-color: #e3b341; color: #e3b341; }
+.card .tag.dead { border-color: #f85149; color: #f85149; }
+.panel { background: #161b22; border: 1px solid #2d333b; border-radius: 10px; padding: 16px 18px; margin: 14px 0; }
+.label { color: #58a6ff; font-size: 12px; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px; }
+button { font: inherit; font-size: 15px; padding: 11px 18px; margin: 4px 8px 4px 0;
+         border: 1px solid #3fb950; background: #238636; color: #fff; border-radius: 8px; cursor: pointer; }
+button.secondary { background: #21262d; border-color: #3fb950; color: #3fb950; }
+button.danger { background: #21262d; border-color: #f85149; color: #f85149; }
+button:disabled { opacity: .4; cursor: not-allowed; }
+pre { white-space: pre-wrap; word-break: break-all; margin: 0; font-size: 13px; }
+.code { color: #f0883e; }
+.muted { color: #8b949e; }
+.ok { color: #3fb950; }
+.err { color: #f85149; }
+.two { display: flex; flex-wrap: wrap; gap: 14px; }
+.two > .panel { flex: 1 1 420px; }
+.note { background: #1c2230; border-left: 3px solid #58a6ff; padding: 10px 14px; border-radius: 6px; font-size: 14px; color: #c9d1d9; }

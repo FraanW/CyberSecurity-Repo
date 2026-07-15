@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Implicit grant (deprecated)</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header>
+  <h1>4 · Implicit <span class="err">(deprecated ☠)</span></h1>
+  <div class="sub"><a class="back" href="/oauth.html">← OAuth flows</a> &nbsp;·&nbsp; public client <span class="code">kt-implicit</span></div>
+</header>
+<main>
+  <p class="note"><b>Why we show it:</b> the old way SPAs worked before PKCE. The access token is returned <b>directly in the URL fragment</b> — so it leaks into history, referrer headers, and logs. And there's no code to protect. OAuth 2.1 removed it.</p>
+  <div class="panel">
+    <button id="go">Log in with the Implicit flow →</button>
+    <p class="muted">Uses <span class="code">response_type=token</span> (not <span class="code">code</span>) — that single change is the whole anti-pattern.</p>
+  </div>
+  <div class="panel" id="fragPanel" style="display:none">
+    <div class="label err">⚠ The access token arrived IN THE URL — look at your address bar</div>
+    <pre id="frag" class="code"></pre>
+    <p class="muted">This is now in your browser history. That's exactly why Implicit is dead — the fix is flow #1, Authorization Code + PKCE.</p>
+  </div>
+  <div class="panel" id="atPanel" style="display:none">
+    <div class="label">Access token — decoded</div>
+    <pre id="at"></pre>
+  </div>
+</main>
+<script src="/config.js"></script>
+<script src="/common.js"></script>
+<script>
+const CLIENT_ID = "kt-implicit";
+const REDIRECT = window.location.origin + "/implicit.html";
+
+$("go").onclick = () => {
+  const url = new URL(OIDC + "/auth");
+  url.search = new URLSearchParams({
+    response_type: "token", client_id: CLIENT_ID, redirect_uri: REDIRECT, scope: "profile", state: randB64()
+  }).toString();
+  window.location.assign(url.toString());
+};
+
+(function init() {
+  // Implicit returns the token in the URL fragment (#access_token=...)
+  const h = window.location.hash.startsWith("#") ? window.location.hash.substring(1) : "";
+  if (!h) return;
+  const params = new URLSearchParams(h);
+  if (params.get("access_token")) {
+    setText("frag", window.location.href);
+    reveal("fragPanel");
+    setText("at", decodeJwt(params.get("access_token")));
+    reveal("atPanel");
+  } else if (params.get("error")) {
+    setText("frag", "error: " + params.get("error") + " — " + (params.get("error_description") || ""));
+    reveal("fragPanel");
+  }
+})();
+</script>
+</body>
+</html>
