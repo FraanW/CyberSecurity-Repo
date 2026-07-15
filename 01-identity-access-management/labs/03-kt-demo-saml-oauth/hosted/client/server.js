@@ -29,6 +29,8 @@ const SAML_SP_ENTITY = 'kt-saml-app';                 // SAML SP entityId (match
 
 let SAML = null;
 try { SAML = require('@node-saml/node-saml').SAML; } catch (e) { console.warn('node-saml not installed; SAML routes disabled:', e.message); }
+let QRCode = null;
+try { QRCode = require('qrcode'); } catch (e) { console.warn('qrcode not installed; /api/qr disabled:', e.message); }
 
 const PUBLIC = path.join(__dirname, 'public');
 const TYPES = { '.html': 'text/html', '.css': 'text/css', '.js': 'application/javascript', '.svg': 'image/svg+xml', '.ico': 'image/x-icon', '.json': 'application/json' };
@@ -103,6 +105,14 @@ const server = http.createServer(async (req, res) => {
     if (p === '/api/device/start' && req.method === 'POST') {
       const r = await postForm(`${OIDC}/auth/device`, { client_id: DEVICE_CLIENT, scope: 'openid profile' });
       return send(res, r.status, r.json);
+    }
+    // QR code for the device-flow verification URL (SVG, generated on our own server)
+    if (p === '/api/qr' && req.method === 'GET') {
+      if (!QRCode) return send(res, 500, 'qrcode not installed', 'text/plain');
+      const data = u.searchParams.get('data');
+      if (!data) return send(res, 400, 'missing ?data', 'text/plain');
+      const svg = await QRCode.toString(data, { type: 'svg', margin: 1, width: 240 });
+      return send(res, 200, svg, 'image/svg+xml', { 'Cache-Control': 'no-store' });
     }
     if (p === '/api/device/poll' && req.method === 'POST') {
       const body = new URLSearchParams(await readBody(req));
