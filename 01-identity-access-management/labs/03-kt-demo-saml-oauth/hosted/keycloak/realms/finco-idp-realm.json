@@ -176,6 +176,7 @@
       "enabled": true,
       "protocol": "saml",
       "frontchannelLogout": true,
+      "adminUrl": "__CLIENT_ORIGIN__/saml/acs",
       "redirectUris": ["__CLIENT_ORIGIN__/saml/acs"],
       "attributes": {
         "saml.assertion.signature": "true",
@@ -185,6 +186,7 @@
         "saml.authnstatement": "true",
         "saml_name_id_format": "email",
         "saml_idp_initiated_sso_url_name": "finco-sp",
+        "saml_assertion_consumer_url_post": "__CLIENT_ORIGIN__/saml/acs",
         "saml_signature_canonicalization_method": "http://www.w3.org/2001/10/xml-exc-c14n#",
         "saml.signature.algorithm": "RSA_SHA256"
       },
