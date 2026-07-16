@@ -21,14 +21,14 @@
     <p class="note">Two ways SAML SSO can start. Arm <b>SAML-tracer</b> before clicking, then log in as <span class="code">farhaan / Passw0rd!</span>.</p>
 
     <div class="panel">
-      <div class="label">① SP-initiated SSO — you start at the App</div>
+      <div class="flow-title">① SP-initiated SSO — you start at the App</div>
       <p class="muted">The app has no session, so <b>it builds a SAML AuthnRequest</b> and redirects you to the IdP. The IdP authenticates you and POSTs a <b>signed assertion</b> back to the app's ACS. This is the everyday flow (~95% of SAML).</p>
       <button id="spBtn" class="go">Start at the App (SP-initiated)</button>
       <p class="muted">In SAML-tracer you'll see a <span class="code">SAMLRequest</span> (AuthnRequest) <b>then</b> a <span class="code">SAMLResponse</span> with <span class="code">InResponseTo</span> tying them together.</p>
     </div>
 
     <div class="panel">
-      <div class="label">② IdP-initiated SSO — you start at the IdP</div>
+      <div class="flow-title">② IdP-initiated SSO — you start at the IdP</div>
       <p class="muted">You begin at the IdP (e.g. a portal tile). It sends the app an <b>unsolicited</b> assertion — <b>no AuthnRequest, no <span class="code">InResponseTo</span></b>. Convenient, but weaker (easier to replay), so modern practice prefers SP-init.</p>
       <button id="idpBtn" class="go">Start at the IdP (IdP-initiated)</button>
       <p class="muted">In SAML-tracer you'll see a <span class="code">SAMLResponse</span> with <b>no preceding</b> <span class="code">SAMLRequest</span> and <b>no</b> <span class="code">InResponseTo</span>. That difference IS the distinction.</p>

@@ -30,6 +30,13 @@
   font-style: italic;
   font-display: swap;
 }
+@font-face {
+  font-family: "Playfair Display";
+  src: url("/fonts/PlayfairDisplay-Var.woff2") format("woff2");
+  font-weight: 400 900;
+  font-style: normal;
+  font-display: swap;
+}
 
 /* ---- Theme tokens --------------------------------------------------------- */
 :root {
@@ -247,6 +254,18 @@ h2 { font-size: 18px; font-weight: 700; }
   margin-bottom: 8px;
 }
 .label.ok { color: var(--ok); }
+/* Big Playfair panel title — for the marquee headings inside panels
+   (e.g. the SP-initiated / IdP-initiated cards on the SAML page). */
+.flow-title {
+  font-family: var(--font-quote);
+  font-style: normal;
+  font-weight: 600;
+  font-size: 23px;
+  line-height: 1.3;
+  letter-spacing: 0.01em;
+  color: var(--quote);
+  margin: 2px 0 10px;
+}
 .note {
   background: color-mix(in srgb, var(--surface-2) 80%, transparent);
   border: 1px solid var(--outline);
