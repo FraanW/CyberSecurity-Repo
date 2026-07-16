@@ -183,6 +183,8 @@ h2 { font-size: 18px; font-weight: 700; }
   border-radius: 8px;
   font-size: 14px;
 }
+.note ul { margin: 8px 0 2px; padding-left: 22px; }
+.note li { margin: 4px 0; }
 .two { display: flex; flex-wrap: wrap; gap: 14px; }
 .two > .panel { flex: 1 1 420px; }
 

@@ -13,7 +13,16 @@
 </header>
 <main>
   <p class="quote">Delegate access, never credentials.</p>
-  <p class="note"><b>Which grant, in one breath:</b> human in a browser → <b>Authorization Code + PKCE</b> (public) or <b>no PKCE</b> (confidential server app). No human (a service) → <b>Client Credentials</b>. No keyboard (TV/CLI) → <b>Device Code</b>. <b>Implicit</b> is the dead one (token in the URL). <b>ROPC</b> — the app takes your password — is deprecated publicly but still used for trusted first-party apps inside an org.</p>
+  <div class="note">
+    <b>Choosing the right grant type</b>
+    <ul>
+      <li>A human logging in through a browser? <b>Authorization Code + PKCE</b> — or <b>no PKCE</b> if it's a confidential server app.</li>
+      <li>No human involved — a service calling a service? <b>Client Credentials</b>.</li>
+      <li>No keyboard — a smart TV or a CLI? <b>Device Code</b>.</li>
+      <li><b>Implicit</b> is the dead one: the token comes back in the URL.</li>
+      <li><b>ROPC</b> means the app takes your password. Deprecated publicly, but still used for trusted first-party apps inside an org.</li>
+    </ul>
+  </div>
   <div class="cards">
     <a class="card" href="/authcode.html">
       <span class="tag">✅ the default · OIDC</span>
