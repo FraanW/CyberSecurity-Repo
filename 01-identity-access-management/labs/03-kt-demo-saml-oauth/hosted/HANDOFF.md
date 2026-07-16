@@ -73,7 +73,7 @@ UptimeRobot (or cron-job.org) → **HTTP(s)** monitor (not "Ping"/ICMP — Rende
 | node-saml **`Invalid signature`** | client cached a stale IdP cert after a Keycloak key change | client fetches certs **fresh** now *(fixed)*; if it ever recurs, **redeploy the client** |
 | Logout → `/saml/acs` **Buffer/"Received undefined"** | SAML LogoutRequest hit the login ACS | `/saml/acs` now clears the session on non-login messages *(fixed)* |
 | Keycloak **"Multiple garbage collectors selected"** | a GC flag added on top of the image's default | don't set a GC in `entrypoint.sh` — heap-only tuning *(fixed)* |
-| Keycloak **OOM > 512 MB** | dev mode / big heap | optimized prod build, `-Xmx256m`, `KC_CACHE=local` *(fixed)*; only more RAM (Standard) helps beyond this |
+| Keycloak **OOM > 512 MB** | Keycloak sits near the 512 MB ceiling | tuned to the max: optimized prod build, **SerialGC**, capped code-cache/direct/metaspace, `-Xmx256m`, `KC_CACHE=local`, single realm. If it still OOMs under heavy interactive clicking, that's the wall → **Standard (2 GB)**, prorated ~$1/day, downgrade after |
 | Keycloak **~5-min boot + JGroups "Socket is closed" spam** | clustered cache | `KC_CACHE=local` at **runtime** *(fixed)* — cache is a runtime option |
 | Keycloak **"bootstrap-admin-username … password is set"** | admin username set without password | admin creds default to `admin`/`admin` now *(fixed)*; if overriding, set **both** `KC_BOOTSTRAP_ADMIN_USERNAME` and `KC_BOOTSTRAP_ADMIN_PASSWORD` |
 | Realm import **"Unrecognized field …"** | a field on the wrong object | keep realm JSON to known fields; validate with `python3 -m json.tool` before deploy |
@@ -101,8 +101,7 @@ hosted/
     Dockerfile          optimized prod build (kc.sh build)
     entrypoint.sh       URL substitution, JVM tuning, KC_CACHE=local, start --optimized
     realms/
-      finco-idp-realm.json   ← users, all clients, SAML SP (edit here for realm changes)
-      finco-app-realm.json   (legacy brokering realm; unused by the current SAML demo)
+      finco-idp-realm.json   ← the ONE realm: users, all clients, SAML SP (edit here for realm changes)
   client/
     server.js           OAuth server-side grants, SAML SP, /api/qr, Resource Server
     package.json        deps: @node-saml/node-saml, qrcode

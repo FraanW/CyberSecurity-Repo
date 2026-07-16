@@ -41,12 +41,19 @@ export KC_PROXY_HEADERS=xforwarded           # trust X-Forwarded-* from Render's
 # flooded the log with "Socket is closed" warnings — and it lowers memory.
 export KC_CACHE=local
 
-# JVM tuned for 512 MB: cap the heap at 256 MB (the base image otherwise defaults
-# to -Xmx512m, which alone overruns the container). Do NOT set a GC here — the
-# Keycloak image already selects one, and adding a second flag fails VM init with
-# "Multiple garbage collectors selected". Optimized mode keeps class metadata small,
-# so heap + metaspace + native fits under 512 MB.
-export JAVA_OPTS_APPEND="${JAVA_OPTS_APPEND:--Xms64m -Xmx256m}"
+# JVM tuned to the MAX for Render free's 512 MB. We set the FULL JAVA_OPTS (not
+# _APPEND) so we can switch to SerialGC: single GC thread, no G1 region bookkeeping
+# — much lighter, and ideal for a 1-user service on 0.1 CPU. (Adding a GC via
+# _APPEND fails with "Multiple garbage collectors selected", so we replace the lot.)
+# We also cap the non-heap regions — code cache, direct memory, metaspace — to
+# shrink RSS and leave the 256 MB heap room inside 512 MB. If it still OOMs under
+# heavy interactive load, that's the 512 MB wall (→ Standard, 2 GB).
+export JAVA_OPTS="-XX:+UseSerialGC -Xms32m -Xmx256m \
+-XX:MaxMetaspaceSize=200m -XX:ReservedCodeCacheSize=48m -XX:MaxDirectMemorySize=48m \
+-XX:+ExitOnOutOfMemoryError \
+-Djava.net.preferIPv4Stack=true -Djava.awt.headless=true \
+-Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8 -Dsun.jnu.encoding=UTF-8 \
+-Duser.language=en -Duser.country=US"
 
 # Admin bootstrap (LAB ONLY) — default so it boots with zero required env vars.
 export KC_BOOTSTRAP_ADMIN_USERNAME="${KC_BOOTSTRAP_ADMIN_USERNAME:-admin}"
