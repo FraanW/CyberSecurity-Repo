@@ -104,7 +104,11 @@ The client is a **real SAML Service Provider** (via `@node-saml/node-saml`, so `
 - **Config injection:** `/config.js` serves `KEYCLOAK_URL`/`REALM` from the env var, so nothing is hardcoded.
 
 ## The look: "Velvet Wire" design system
-All pages share one stylesheet (`public/style.css`) built on CSS variables — change a token there and every page follows. The theme is **Velvet Maroon**: deep maroon background (`--bg`) with a pink dotted grid, pink outlines on every card/panel (`--outline`), and a soft glow behind the header.
+All pages share one stylesheet (`public/style.css`) built on CSS variables — change a token there and every page follows. Two dark themes, toggled by the dots in the header (`public/theme.js`, persisted in localStorage):
+- **Velvet Maroon** (default) — deep maroon background with a pink dotted grid and pink outlines on every card/panel.
+- **Ember Orange** — burnt-brown dark background with orange outlines and accents.
+
+Both share the same bones: dotted grid (`--dot`), soft glow behind the header (`--glow`), outlined surfaces (`--outline`).
 
 **Type has three jobs, three faces:**
 | Face | Used for | Why |

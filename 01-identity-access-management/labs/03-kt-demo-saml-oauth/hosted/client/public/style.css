@@ -1,7 +1,10 @@
 /* ============================================================================
-   KT demo design system — "Velvet Wire" (theme: Velvet Maroon)
+   KT demo design system — "Velvet Wire"
    Self-contained: fonts are self-hosted woff2 in /fonts (no CDN — company
-   network blocks external font hosts).
+   network blocks external font hosts). Two dark themes, switched by /theme.js
+   via <html data-theme="...">:
+     maroon — Velvet Maroon (default: deep maroon, rose-pink outlines)
+     ember  — Ember Orange  (burnt-brown dark, brand-orange accents)
    Type roles: Open Sans = body/UI · Playfair Display italic = .quote only
                mono = anything that travels on the wire (tokens, codes)
    ========================================================================== */
@@ -54,6 +57,22 @@
   --font-mono: ui-monospace, "Cascadia Code", Consolas, monospace;
 }
 
+[data-theme="ember"] {
+  --bg: #200e03;
+  --surface: #2c1507;
+  --surface-2: #3a1d0a;
+  --dot: rgba(251, 140, 60, 0.14);
+  --glow: rgba(255, 102, 0, 0.1);
+  --outline: rgba(251, 140, 60, 0.38);
+  --outline-strong: #fb8c3c;
+  --text: #fbf0e6;
+  --muted: #cfa588;
+  --accent: #ff6600;
+  --accent-ink: #2b1200;
+  --quote: #fbd8b6;
+  --code: #fbbe85;
+}
+
 /* ---- Base ------------------------------------------------------------------ */
 * { box-sizing: border-box; }
 
@@ -96,6 +115,30 @@ header h1 {
 header .sub { color: var(--muted); font-size: 13px; margin-top: 5px; }
 header .back { font-size: 13px; }
 
+/* Theme switcher (injected by /theme.js) */
+.theme-dots {
+  position: absolute;
+  top: 22px;
+  right: 26px;
+  display: flex;
+  gap: 9px;
+}
+button.theme-dot {
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  margin: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  transition: transform 0.12s;
+  box-shadow: none;
+}
+button.theme-dot:hover { transform: scale(1.2); box-shadow: none; }
+button.theme-dot[aria-pressed="true"] {
+  box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent);
+}
+
 /* ---- Layout ---------------------------------------------------------------- */
 main { max-width: 1000px; margin: 0 auto; padding: 26px 22px 48px; }
 h2 { font-size: 18px; font-weight: 700; }
@@ -105,19 +148,19 @@ h2 { font-size: 18px; font-weight: 700; }
   font-family: var(--font-quote);
   font-style: italic;
   font-weight: 500;
-  font-size: 22px;
+  font-size: 26px;
   line-height: 1.35;
   color: var(--quote);
-  margin: 4px 0 20px;
-  padding-left: 36px;
+  margin: 6px 0 22px;
+  padding-left: 42px;
   position: relative;
 }
 .quote::before {
   content: "\201C";
   position: absolute;
   left: 0;
-  top: -10px;
-  font-size: 48px;
+  top: -12px;
+  font-size: 56px;
   font-weight: 600;
   color: var(--accent);
   opacity: 0.9;
@@ -242,7 +285,8 @@ code, .code { font-family: var(--font-mono); font-size: 0.92em; color: var(--cod
 /* ---- Quality floor ------------------------------------------------------------------ */
 @media (max-width: 560px) {
   header { padding: 18px 18px 14px; }
-  .quote { font-size: 19px; }
+  .theme-dots { top: 18px; right: 16px; }
+  .quote { font-size: 21px; }
   main { padding: 20px 16px 40px; }
 }
 @media (prefers-reduced-motion: reduce) {
