@@ -1,7 +1,7 @@
 // Demo C — Client Credentials, run server-side (the secret never reaches the browser).
 function oidc() {
   const k = (process.env.KEYCLOAK_URL || '').replace(/\/+$/, '');
-  return k ? `${k}/realms/${process.env.REALM || 'finco-idp'}/protocol/openid-connect` : null;
+  return k ? `${k}/realms/${process.env.REALM || 'KT-idp'}/protocol/openid-connect` : null;
 }
 function json(status, obj) { return { statusCode: status, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(obj) }; }
 async function postForm(url, params) {

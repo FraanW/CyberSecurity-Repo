@@ -25,7 +25,7 @@
 ## 2. Point Keycloak at the client (one-time — makes redirects match)
 The browser flows (Auth Code + PKCE, Implicit) redirect back to the client, so Keycloak must allow the client's URL as a redirect. Tell it:
 
-1. Render → your **`finco-idp`** (Keycloak) service → **Environment** → add:
+1. Render → your **`KT-idp`** (Keycloak) service → **Environment** → add:
    | Key | Value |
    |---|---|
    | `CLIENT_ORIGIN` | `https://finco-client.onrender.com` *(your client URL from step 1)* |
@@ -80,16 +80,16 @@ The `/api/*` routes and `/config.js` are also provided as **Netlify Functions** 
    |---|---|
    | `KEYCLOAK_URL` | `https://cybersecurity-repo.onrender.com` |
 4. **Deploy.** Your site is `https://<name>.netlify.app`.
-5. **Point Keycloak at it:** on the Render `finco-idp` service, set `CLIENT_ORIGIN` to your **Netlify** URL (`https://<name>.netlify.app`) and save → Keycloak redeploys so the browser flows' redirect URIs match. *(If you'd deployed the Render client too, this env var only points at one origin — set it to whichever client you'll actually present from.)*
+5. **Point Keycloak at it:** on the Render `KT-idp` service, set `CLIENT_ORIGIN` to your **Netlify** URL (`https://<name>.netlify.app`) and save → Keycloak redeploys so the browser flows' redirect URIs match. *(If you'd deployed the Render client too, this env var only points at one origin — set it to whichever client you'll actually present from.)*
 6. Verify the five flows (same checklist as §3).
 
 > **Why Netlify needs the functions:** a pure static host can't run Client Credentials (needs the secret) or Device Code (browser CORS), or generate `/config.js`. The functions are the serverless equivalent of `server.js` — Auth Code + PKCE, Implicit and Refresh still run straight in the browser against Keycloak.
 
 ## SAML: SP-initiated, IdP-initiated & SSO
-The client is a **real SAML Service Provider** (via `@node-saml/node-saml`, so `npm install` pulls one dependency). It talks **directly** to the `finco-idp` IdP (no brokering), using the realm's `kt-saml-app` SAML client (ACS = `<client>/saml/acs`).
+The client is a **real SAML Service Provider** (via `@node-saml/node-saml`, so `npm install` pulls one dependency). It talks **directly** to the `KT-idp` IdP (no brokering), using the realm's `kt-saml-app` SAML client (ACS = `<client>/saml/acs`).
 
 - **SP-initiated** (`/saml/login`): the app builds a SAML **AuthnRequest** → IdP → signed assertion POSTed to the ACS. SAML-tracer shows `SAMLRequest` then `SAMLResponse` (with `InResponseTo`).
-- **IdP-initiated** (`<keycloak>/realms/finco-idp/protocol/saml/clients/finco-sp`): the IdP sends an **unsolicited** assertion (no request, no `InResponseTo`). The SP accepts it (`validateInResponseTo: 'never'`).
+- **IdP-initiated** (`<keycloak>/realms/KT-idp/protocol/saml/clients/finco-sp`): the IdP sends an **unsolicited** assertion (no request, no `InResponseTo`). The SP accepts it (`validateInResponseTo: 'never'`).
 - **SSO**: a session cookie proves you're logged in. "Log out of the app only" clears it but leaves the **IdP** session, so the next login is passwordless (SSO); "Full reset" ends the IdP session too.
 
 **Two deploy prerequisites (one-time):**
@@ -102,5 +102,21 @@ The client is a **real SAML Service Provider** (via `@node-saml/node-saml`, so `
 - **Browser → Keycloak directly:** Auth Code + PKCE, Implicit, Refresh, `/userinfo` (CORS allowed via `CLIENT_ORIGIN` web origins).
 - **Browser → this Node app → Keycloak:** Client Credentials (secret stays server-side) and Device Code (avoids browser CORS). The app also exposes `/api/resource`, a real Resource Server that validates the token via Keycloak introspection.
 - **Config injection:** `/config.js` serves `KEYCLOAK_URL`/`REALM` from the env var, so nothing is hardcoded.
+
+## The look: "Velvet Wire" design system
+All pages share one stylesheet (`public/style.css`) built on CSS variables — change a token there and every page follows. Two dark themes, toggled by the dots in the header (`public/theme.js`, persisted in localStorage):
+- **Velvet Maroon** (default) — deep maroon background with a pink dotted grid and pink outlines on every card/panel.
+- **Ember Orange** — burnt-brown dark background with orange outlines and accents.
+
+Both share the same bones: dotted grid (`--dot`), soft glow behind the header (`--glow`), outlined surfaces (`--outline`).
+
+**Type has three jobs, three faces:**
+| Face | Used for | Why |
+|---|---|---|
+| **Open Sans** (self-hosted) | body, UI, headings | readable on a projector |
+| **Playfair Display italic** | the one `.quote` aphorism per page | the memorable line of each lesson |
+| **mono** (system) | anything that travels on the wire — tokens, codes, client IDs | "if it's protocol material, it's mono" |
+
+Fonts are **self-hosted woff2** in `public/fonts/` (no CDN — the office network blocks external font hosts; same-origin always loads). The standalone SPA (`../../spa/index.html`) carries an inline copy of the same system so it stays a single teaching file.
 
 *Authorized-lab-only 🔐*

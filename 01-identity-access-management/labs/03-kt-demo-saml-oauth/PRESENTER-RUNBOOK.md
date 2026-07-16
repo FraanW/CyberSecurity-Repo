@@ -14,7 +14,7 @@
    ```
 3. **Verify both realms** (must both print an `issuer`):
    ```powershell
-   curl.exe -s http://localhost:8080/realms/finco-idp/.well-known/openid-configuration | Select-String issuer
+   curl.exe -s http://localhost:8080/realms/KT-idp/.well-known/openid-configuration | Select-String issuer
    curl.exe -s http://localhost:8080/realms/finco-app/.well-known/openid-configuration | Select-String issuer
    ```
 4. **Pre-open browser tabs** (don't type URLs on stage):
@@ -23,7 +23,7 @@
    | 1 | `http://localhost:8080` (admin/admin) | Admin console (backup/visuals) |
    | 2 | `http://localhost:9000` | OAuth SPA — Demo B |
    | 3 | `http://localhost:8080/realms/finco-app/account` | SAML app — Demo A |
-   | 4 | `http://localhost:8080/realms/finco-idp/device` | Device page — Demo D |
+   | 4 | `http://localhost:8080/realms/KT-idp/device` | Device page — Demo D |
 5. **Pin SAML-tracer**; open **DevTools → Network**.
 6. **Prime PowerShell** in `scripts/`:
    ```powershell
@@ -72,7 +72,7 @@ Run [note 23](../../notes/23-reverse-kt-presentation-guide.md) Sections 1–4 (s
 ### Demo B-2 — Implicit **(DEPRECATED — show it to bury it)** · slide 20
 Paste in the address bar, log in as **farhaan**:
 ```
-http://localhost:8080/realms/finco-idp/protocol/openid-connect/auth?response_type=token&client_id=kt-implicit&redirect_uri=http://localhost:9999/callback&scope=profile&state=xyz
+http://localhost:8080/realms/KT-idp/protocol/openid-connect/auth?response_type=token&client_id=kt-implicit&redirect_uri=http://localhost:9999/callback&scope=profile&state=xyz
 ```
 - Lands on `…/callback#access_token=…` ("can't reach this page" is fine).
 - *Say:* "The **token is in the URL** — history, referer, logs. No code, so no PKCE. That's why Implicit is dead. `response_type=token` instead of `code` is the whole difference."
@@ -117,7 +117,7 @@ Q&A (slide 32 answers), then the five takeaways (slide 33). *"AuthN ≠ authZ ·
 | Admin console | `http://localhost:8080` · admin/admin |
 | SAML app (Demo A) | `http://localhost:8080/realms/finco-app/account` |
 | OAuth SPA (Demo B/E) | `http://localhost:9000` |
-| Device page (Demo D) | `http://localhost:8080/realms/finco-idp/device` |
+| Device page (Demo D) | `http://localhost:8080/realms/KT-idp/device` |
 | Login | `farhaan` / `Passw0rd!` |
 | Scripts | `. .\oauth-demos.ps1` → `Show-ClientCredentials` / `Show-DeviceFlow` / `Show-Refresh` / `Show-Ropc` |
 | Grant clients | `kt-spa` (PKCE) · `kt-web` (confidential/ROPC) · `kt-service` (client-creds) · `kt-device` (device) · `kt-implicit` (implicit) |

@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Implicit grant (deprecated)</title>
 <link rel="stylesheet" href="/style.css">
+<script src="/theme.js"></script>
 </head>
 <body>
 <header>
@@ -12,6 +13,7 @@
   <div class="sub"><a class="back" href="/oauth.html">← OAuth flows</a> &nbsp;·&nbsp; public client <span class="code">kt-implicit</span></div>
 </header>
 <main>
+  <p class="quote">Tokens don't belong in URLs.</p>
   <p class="note"><b>Why we show it:</b> the old way SPAs worked before PKCE. The access token is returned <b>directly in the URL fragment</b> — so it leaks into history, referrer headers, and logs. And there's no code to protect. OAuth 2.1 removed it.</p>
   <div class="panel">
     <button id="go">Log in with the Implicit flow →</button>

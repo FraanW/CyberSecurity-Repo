@@ -64,7 +64,7 @@ UptimeRobot (or cron-job.org) → **HTTP(s)** monitor (not "Ping"/ICMP — Rende
 
 ## 6. 🔧 Hotfix runbook (symptom → cause → fix)
 
-> Most fixes are a **Render env change + redeploy** or a **realm-file edit + Keycloak redeploy**. All realm edits live in `keycloak/realms/finco-idp-realm.json` (and are applied on the next Keycloak deploy).
+> Most fixes are a **Render env change + redeploy** or a **realm-file edit + Keycloak redeploy**. All realm edits live in `keycloak/realms/KT-idp-realm.json` (and are applied on the next Keycloak deploy).
 
 | Symptom | Cause | Fix |
 |---|---|---|
@@ -88,7 +88,7 @@ UptimeRobot (or cron-job.org) → **HTTP(s)** monitor (not "Ping"/ICMP — Rende
 KC=https://cybersecurity-repo.onrender.com
 TOKEN=$(curl -s -X POST "$KC/realms/master/protocol/openid-connect/token" \
   -d grant_type=password -d client_id=admin-cli -d username=admin -d password=admin | jq -r .access_token)
-curl -s "$KC/admin/realms/finco-idp/clients?clientId=kt-saml-app" -H "Authorization: Bearer $TOKEN"
+curl -s "$KC/admin/realms/KT-idp/clients?clientId=kt-saml-app" -H "Authorization: Bearer $TOKEN"
 ```
 *(API patches are lost on the next Keycloak restart — mirror any real fix into the realm JSON.)*
 
@@ -101,7 +101,7 @@ hosted/
     Dockerfile          optimized prod build (kc.sh build)
     entrypoint.sh       URL substitution, JVM tuning, KC_CACHE=local, start --optimized
     realms/
-      finco-idp-realm.json   ← the ONE realm: users, all clients, SAML SP (edit here for realm changes)
+      KT-idp-realm.json   ← the ONE realm: users, all clients, SAML SP (edit here for realm changes)
   client/
     server.js           OAuth server-side grants, SAML SP, /api/qr, Resource Server
     package.json        deps: @node-saml/node-saml, qrcode

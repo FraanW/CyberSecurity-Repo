@@ -15,13 +15,13 @@ If the app starts keeping its own passwords, you've broken SSO.
 ---
 
 ## Where users live in THIS lab
-Everything authenticates against **Keycloak, realm `finco-idp`** (our IdP / PingFederate stand-in). The two demo users (`farhaan`, `priya`) are defined in the realm import file:
-`hosted/keycloak/realms/finco-idp-realm.json` → `"users": [ … ]`.
+Everything authenticates against **Keycloak, realm `KT-idp`** (our IdP / PingFederate stand-in). The two demo users (`farhaan`, `priya`) are defined in the realm import file:
+`hosted/keycloak/realms/KT-idp-realm.json` → `"users": [ … ]`.
 
 ### Add a user — two ways
 
 **A) Persisted (survives redeploys) — edit the realm import** *(recommended for the lab)*
-In `finco-idp-realm.json`, add to the `users` array:
+In `KT-idp-realm.json`, add to the `users` array:
 ```json
 {
   "username": "meera",
@@ -36,7 +36,7 @@ In `finco-idp-realm.json`, add to the `users` array:
 Commit → redeploy Keycloak. *(The DB is ephemeral, so the import file is the durable source — users added only in the UI vanish on the next cold start.)*
 
 **B) Quick / temporary — the admin console**
-`https://<keycloak>/admin/` → realm **finco-idp** → **Users → Add user** (username, email, **Email verified: On**) → **Create** → **Credentials → Set password** (Temporary: **Off**) → **Role mapping** (assign `iam-team` / `payments-read` / …). *This is exactly the manual JML "Joiner" step.* It works immediately but is lost on the next Keycloak restart unless you also put it in the import file.
+`https://<keycloak>/admin/` → realm **KT-idp** → **Users → Add user** (username, email, **Email verified: On**) → **Create** → **Credentials → Set password** (Temporary: **Off**) → **Role mapping** (assign `iam-team` / `payments-read` / …). *This is exactly the manual JML "Joiner" step.* It works immediately but is lost on the next Keycloak restart unless you also put it in the import file.
 
 > **Attributes matter as much as the account.** The roles you assign here (`iam-team`, `payments-read`) are what show up as the `Role` attribute in the SAML assertion / the `realm_access.roles` in the JWT — i.e. what the app turns into permissions.
 
@@ -46,7 +46,7 @@ Commit → redeploy Keycloak. *(The DB is ephemeral, so the import file is the d
 
 | Flow in the lab | Where the user lives | IdP team does | App team does |
 |---|---|---|---|
-| **SAML SSO** (SP-init / IdP-init) | IdP (`finco-idp`) | Own the user + credentials + MFA; release the right **attributes** (email, name, `Role`) | **Map assertion attributes → app roles**; never store a password. Register the SP (Entity ID + ACS) |
+| **SAML SSO** (SP-init / IdP-init) | IdP (`KT-idp`) | Own the user + credentials + MFA; release the right **attributes** (email, name, `Role`) | **Map assertion attributes → app roles**; never store a password. Register the SP (Entity ID + ACS) |
 | **OIDC — Auth Code + PKCE / no-PKCE** | IdP | Same as above; issue the ID/access token | Validate the token; map claims → app roles; register the client (redirect URIs) |
 | **ROPC (trusted first-party)** | IdP | Own the user; **note MFA can't apply on this path** | Collect credentials in the *first-party* app only; forward to the IdP; never persist the password |
 | **Client Credentials (M2M)** | *No human* — a **service account** | Create the **client/service account** + its secret; grant it scopes; rotate the secret (PAM) | Own the calling service; request least-privilege scopes |

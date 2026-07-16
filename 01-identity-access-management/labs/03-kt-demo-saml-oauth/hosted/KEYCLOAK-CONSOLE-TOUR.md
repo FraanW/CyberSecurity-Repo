@@ -2,7 +2,7 @@
 
 > For the KT: how to walk the room through the **Keycloak admin console** and explain each screen — **where users live, how credentials are managed, where the signing certs are, how apps are onboarded** — and map every screen to **PingFederate / Entra ID**.
 >
-> Open: `https://cybersecurity-repo.onrender.com/admin/` → **admin / admin**. Top-left **realm dropdown** → switch to **`finco-idp`** (do everything in this realm, not `master`).
+> Open: `https://cybersecurity-repo.onrender.com/admin/` → **admin / admin**. Top-left **realm dropdown** → switch to **`KT-idp`** (do everything in this realm, not `master`).
 
 **The 30-second framing to open with:**
 > "This is our IdP's control plane — same job as the PingFederate admin console. Everything here answers one of three questions: *who are the users* (Users, User federation), *how do they prove it* (Credentials, Authentication), and *which apps trust us* (Clients, Identity providers). Let me walk each screen."
@@ -10,7 +10,7 @@
 ---
 
 ## 0. Realms — the first concept
-**Top-left dropdown.** There are two: **master** (the console's own admin realm — don't demo here) and **finco-idp** (our corporate IdP).
+**Top-left dropdown.** There are two: **master** (the console's own admin realm — don't demo here) and **KT-idp** (our corporate IdP).
 - **Say:** "A **realm** is a fully isolated identity world — its own users, its own apps, its own signing keys. Think **one tenant / one company**."
 - **Maps to:** Entra **tenant**. *(PingFederate has no realm concept — one server, many connections.)*
 

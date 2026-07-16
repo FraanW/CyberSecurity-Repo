@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Federated Identity — live demo (SAML · OAuth 2.0)</title>
 <link rel="stylesheet" href="/style.css">
+<script src="/theme.js"></script>
 </head>
 <body>
 <header>
@@ -12,16 +13,17 @@
   <div class="sub">A real Keycloak IdP (the PingFederate stand-in) driving SAML and OAuth 2.0 / OIDC. Open <b>SAML-tracer</b> and <b>DevTools → Network</b> to watch the messages on the wire.</div>
 </header>
 <main>
+  <p class="quote">Never build login twice.</p>
   <p class="note">Pick a protocol. Each flow is interactive — you log in for real, and the tokens / assertions are shown decoded. Demo users: <span class="code">farhaan / Passw0rd!</span> and <span class="code">priya / Passw0rd!</span>. Lab-only, no real data.</p>
   <div class="cards">
     <a class="card" href="/saml.html">
       <span class="tag">2005 · XML</span>
-      <h3>SAML 2.0 →</h3>
+      <h3>SAML 2.0</h3>
       <p>Enterprise SSO. Watch an app federate to the IdP: <b>AuthnRequest → signed Assertion</b>, captured in SAML-tracer, read field by field.</p>
     </a>
     <a class="card" href="/oauth.html">
       <span class="tag">2012 · JSON/JWT</span>
-      <h3>OAuth 2.0 + OIDC →</h3>
+      <h3>OAuth 2.0 + OIDC</h3>
       <p>The modern stack. Interactive grant flows: <b>Authorization Code + PKCE</b> and <b>no-PKCE</b>, <b>Client Credentials</b>, <b>Device Code</b> (with QR), <b>Implicit</b>, and <b>ROPC</b>.</p>
     </a>
   </div>

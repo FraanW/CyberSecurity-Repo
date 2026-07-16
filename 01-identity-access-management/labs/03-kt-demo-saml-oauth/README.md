@@ -54,24 +54,24 @@ First boot takes ~30–60s (Keycloak downloads once, then imports both realms).
 **✅ Checkpoint — confirm both realms imported:**
 ```powershell
 # should return HTTP 200 and JSON for each realm's OIDC discovery doc
-curl.exe -s http://localhost:8080/realms/finco-idp/.well-known/openid-configuration | Select-String issuer
+curl.exe -s http://localhost:8080/realms/KT-idp/.well-known/openid-configuration | Select-String issuer
 curl.exe -s http://localhost:8080/realms/finco-app/.well-known/openid-configuration | Select-String issuer
 ```
-Then open **http://localhost:8080/** → **Administration Console** → **admin / admin**. Use the realm dropdown (top-left) to see **finco-idp** and **finco-app**.
+Then open **http://localhost:8080/** → **Administration Console** → **admin / admin**. Use the realm dropdown (top-left) to see **KT-idp** and **finco-app**.
 
-> **What you're looking at:** `finco-idp` is your corporate IdP + Authorization Server (the PingFederate stand-in). `finco-app` is a second app that *trusts* it over SAML. The two OAuth clients, the device client, and the service account all live in `finco-idp`.
+> **What you're looking at:** `KT-idp` is your corporate IdP + Authorization Server (the PingFederate stand-in). `finco-app` is a second app that *trusts* it over SAML. The two OAuth clients, the device client, and the service account all live in `KT-idp`.
 
-**Bookmark these endpoints (finco-idp) — you'll point at them all session:**
+**Bookmark these endpoints (KT-idp) — you'll point at them all session:**
 
 | Purpose | URL |
 |---|---|
-| OIDC discovery | `http://localhost:8080/realms/finco-idp/.well-known/openid-configuration` |
-| Authorize (front channel) | `…/realms/finco-idp/protocol/openid-connect/auth` |
-| Token (back channel) | `…/realms/finco-idp/protocol/openid-connect/token` |
-| UserInfo | `…/realms/finco-idp/protocol/openid-connect/userinfo` |
-| Device authorization | `…/realms/finco-idp/protocol/openid-connect/auth/device` |
-| JWKS (public keys) | `…/realms/finco-idp/protocol/openid-connect/certs` |
-| SAML IdP (metadata) | `…/realms/finco-idp/protocol/saml/descriptor` |
+| OIDC discovery | `http://localhost:8080/realms/KT-idp/.well-known/openid-configuration` |
+| Authorize (front channel) | `…/realms/KT-idp/protocol/openid-connect/auth` |
+| Token (back channel) | `…/realms/KT-idp/protocol/openid-connect/token` |
+| UserInfo | `…/realms/KT-idp/protocol/openid-connect/userinfo` |
+| Device authorization | `…/realms/KT-idp/protocol/openid-connect/auth/device` |
+| JWKS (public keys) | `…/realms/KT-idp/protocol/openid-connect/certs` |
+| SAML IdP (metadata) | `…/realms/KT-idp/protocol/saml/descriptor` |
 
 **Test users** (both realms trust the same person): `farhaan / Passw0rd!` and `priya / Passw0rd!`.
 
@@ -79,12 +79,12 @@ Then open **http://localhost:8080/** → **Administration Console** → **admin 
 
 ## Demo A — SAML SSO round trip (capture the assertion)
 
-**The story for the room:** *"App B (`finco-app`) doesn't manage passwords. When I log in, it federates me to the corporate IdP (`finco-idp`) over SAML, gets a signed assertion back, and trusts it."* That's textbook **SP-initiated SSO** (slide 7).
+**The story for the room:** *"App B (`finco-app`) doesn't manage passwords. When I log in, it federates me to the corporate IdP (`KT-idp`) over SAML, gets a signed assertion back, and trusts it."* That's textbook **SP-initiated SSO** (slide 7).
 
 ### A.1 — Verify SAML is wired (60-second pre-flight, do it before the event)
 
 1. Admin console → realm **finco-app** → **Identity providers** → you should see **`kc-idp`** (SAML).
-2. Realm **finco-idp** → **Clients** → you should see **`kt-saml-broker`** (a SAML client).
+2. Realm **KT-idp** → **Clients** → you should see **`kt-saml-broker`** (a SAML client).
 
 If both are present, you're ready. Now smoke-test the actual login (A.2). **If the login fails**, jump to **A.4 (fallback)** — it re-wires the SAML link in 5 deterministic clicks.
 
@@ -95,8 +95,8 @@ If both are present, you're ready. Now smoke-test the actual login (A.2). **If t
    ```
    http://localhost:8080/realms/finco-app/account
    ```
-3. Keycloak shows `finco-app`'s login page. Click the button **"Log in with FinCo Corporate IdP (SAML)"**.
-4. You're redirected to **finco-idp** — log in as **farhaan / Passw0rd!**.
+3. Keycloak shows `finco-app`'s login page. Click the button **"Log in with Fintech Corporate IdP (SAML)"**.
+4. You're redirected to **KT-idp** — log in as **farhaan / Passw0rd!**.
 5. *(First time only)* you may see a **"review profile / update account"** page — that's **just-in-time provisioning** on first federated login (a nice thing to narrate). Confirm it once; it won't appear again.
 6. You land back in the `finco-app` account console — **logged in via SAML**. ✅
 
@@ -104,12 +104,12 @@ If both are present, you're ready. Now smoke-test the actual login (A.2). **If t
 
 In SAML-tracer, find the two rows tagged **SAML** and click the **"SAML" tab** (it auto-decodes the XML):
 
-- **The `SAMLRequest`** (AuthnRequest, `finco-app` → `finco-idp`): note it's small and, on the wire, deflated+base64 — *"this is why you can't read it by eye."*
-- **The `SAMLResponse`** (the signed assertion, `finco-idp` → `finco-app`): walk these fields **out loud** (slides 9–10):
+- **The `SAMLRequest`** (AuthnRequest, `finco-app` → `KT-idp`): note it's small and, on the wire, deflated+base64 — *"this is why you can't read it by eye."*
+- **The `SAMLResponse`** (the signed assertion, `KT-idp` → `finco-app`): walk these fields **out loud** (slides 9–10):
 
 | Find in the assertion | What to say |
 |---|---|
-| `<saml:Issuer>` | *"who vouched — our IdP, `http://localhost:8080/realms/finco-idp`"* |
+| `<saml:Issuer>` | *"who vouched — our IdP, `http://localhost:8080/realms/KT-idp`"* |
 | `<ds:Signature>` | *"the hologram — the SP verifies this"* |
 | `<NameID>` | *"who this is — `farhaan@example.com`"* |
 | `<Conditions NotBefore/NotOnOrAfter>` | *"~5-min validity window — where clock skew bites"* |
@@ -124,9 +124,9 @@ Keycloak makes this deterministic — it fetches the IdP's metadata for you:
 
 1. Realm **finco-app** → **Identity providers** → delete `kc-idp` if present → **Add provider → SAML v2.0**.
 2. **Alias:** `kc-idp` · **Use entity descriptor / Import from URL:**
-   `http://localhost:8080/realms/finco-idp/protocol/saml/descriptor` → **Import** (this auto-fills the SSO URL and cert).
+   `http://localhost:8080/realms/KT-idp/protocol/saml/descriptor` → **Import** (this auto-fills the SSO URL and cert).
 3. Turn **"Validate signatures" Off** (lab simplicity) → **Add**. Copy the **"Redirect URI"** shown on the provider page (it ends in `/broker/kc-idp/endpoint`).
-4. Realm **finco-idp** → **Clients** → `kt-saml-broker` → **Settings** → ensure that same **`/broker/kc-idp/endpoint`** URL is in **Valid redirect URIs** → **Save**.
+4. Realm **KT-idp** → **Clients** → `kt-saml-broker` → **Settings** → ensure that same **`/broker/kc-idp/endpoint`** URL is in **Valid redirect URIs** → **Save**.
 5. Retry A.2.
 
 > **Second fallback (needs internet):** the external-SP path from [Lab 02 Exercise B](../02-saml-assertion-anatomy/README.md#exercise-b--capture-a-live-assertion-with-saml-tracer) using mocksaml/samltest — good backup if the venue Wi-Fi is fine but you're short on time.
@@ -157,13 +157,13 @@ Keycloak makes this deterministic — it fetches the IdP's metadata for you:
 
 This always works — it's the manual flow from Lab 01, and it's arguably *more* impressive because you type every parameter. Paste into the browser (one line), log in, then copy the `code` from the address bar:
 ```
-http://localhost:8080/realms/finco-idp/protocol/openid-connect/auth?response_type=code&client_id=kt-web&redirect_uri=http://localhost:9999/callback&scope=openid%20profile%20email&state=xyz
+http://localhost:8080/realms/KT-idp/protocol/openid-connect/auth?response_type=code&client_id=kt-web&redirect_uri=http://localhost:9999/callback&scope=openid%20profile%20email&state=xyz
 ```
 The browser lands on `http://localhost:9999/callback?code=...` ("can't reach this page" is expected). Copy the `code`, then exchange it (be quick — codes die in ~60s):
 ```powershell
 $body = @{ grant_type='authorization_code'; code='<PASTE_CODE>'
            redirect_uri='http://localhost:9999/callback'; client_id='kt-web'; client_secret='kt-web-secret' }
-$t = Invoke-RestMethod -Method Post -Uri 'http://localhost:8080/realms/finco-idp/protocol/openid-connect/token' -Body $body
+$t = Invoke-RestMethod -Method Post -Uri 'http://localhost:8080/realms/KT-idp/protocol/openid-connect/token' -Body $body
 $t | Format-List
 # decode (see scripts/oauth-demos.ps1 for Decode-Jwt), or paste tokens into an OFFLINE decoder
 ```
@@ -174,7 +174,7 @@ $t | Format-List
 
 The perfect contrast to B: the *old* way SPAs did this, before PKCE existed. Paste into the browser address bar (client `kt-implicit`), log in as **farhaan**:
 ```
-http://localhost:8080/realms/finco-idp/protocol/openid-connect/auth?response_type=token&client_id=kt-implicit&redirect_uri=http://localhost:9999/callback&scope=profile&state=xyz
+http://localhost:8080/realms/KT-idp/protocol/openid-connect/auth?response_type=token&client_id=kt-implicit&redirect_uri=http://localhost:9999/callback&scope=profile&state=xyz
 ```
 The browser lands on `http://localhost:9999/callback#access_token=...&token_type=Bearer&...` ("can't reach this page" is expected). **Point at the address bar:** the **access token is sitting right there in the URL fragment.**
 
@@ -223,7 +223,7 @@ Show-DeviceFlow
 ```
 
 **What happens:**
-1. The script prints a **`user_code`** and a **verification URL** (`http://localhost:8080/realms/finco-idp/device`).
+1. The script prints a **`user_code`** and a **verification URL** (`http://localhost:8080/realms/KT-idp/device`).
 2. Open that URL in a **second tab** (pretend it's your phone), enter the code, log in as **farhaan**, approve.
 3. Watch the script's **polling** flip from `authorization_pending` (the dots) to a real **access + ID token**.
 
@@ -278,7 +278,7 @@ Try these **only** on this lab, and narrate the defense:
 
 | In this lab (Keycloak) | At FinCo (PingFederate) |
 |---|---|
-| realm `finco-idp` as SAML IdP | an **SP connection** (we log people into an app) |
+| realm `KT-idp` as SAML IdP | an **SP connection** (we log people into an app) |
 | realm `finco-app` trusting it | an **IdP connection** (we trust a partner IdP) |
 | the login page / MFA step | **adapters** (HTML Form, Kerberos, PingID) |
 | `kt-service` client credentials | service accounts calling internal APIs |

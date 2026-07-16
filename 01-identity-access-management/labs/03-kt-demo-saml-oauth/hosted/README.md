@@ -17,7 +17,7 @@
 
 1. **dashboard.render.com** → **New +** → **Web Service** → **Build and deploy from a Git repository** → connect **`FraanW/CyberSecurity-Repo`**.
 2. Configure:
-   - **Name:** `finco-idp` → your URL becomes `https://finco-idp.onrender.com` (Render may add a suffix; whatever it is, that's your IdP URL).
+   - **Name:** `KT-idp` → your URL becomes `https://KT-idp.onrender.com` (Render may add a suffix; whatever it is, that's your IdP URL).
    - **Branch:** `claude/oauth-openid-connect-study-neesah` *(or `master` once merged)*
    - **Root Directory:** `01-identity-access-management/labs/03-kt-demo-saml-oauth/hosted/keycloak`
    - **Runtime / Language:** **Docker** (it auto-detects the `Dockerfile`)
@@ -28,8 +28,8 @@
 4. **Create Web Service.** First boot is slow on free (watch the **Logs** tab for `Running the server ... started`). If it restarts once or twice while booting cold, give it a minute.
 
 **✅ Checkpoint:**
-- Open `https://<your-idp>.onrender.com/realms/finco-idp/.well-known/openid-configuration` → JSON with an `issuer` that is your **https onrender URL** (not localhost). 
-- Open `https://<your-idp>.onrender.com/admin/` → log in `admin`/`admin` → realm dropdown shows **finco-idp** and **finco-app**.
+- Open `https://<your-idp>.onrender.com/realms/KT-idp/.well-known/openid-configuration` → JSON with an `issuer` that is your **https onrender URL** (not localhost). 
+- Open `https://<your-idp>.onrender.com/admin/` → log in `admin`/`admin` → realm dropdown shows **KT-idp** and **finco-app**.
 
 > If the OIDC `issuer` shows `http://` or `localhost`, the proxy/hostname env didn't take — check the service logs; the entrypoint prints the public origin it used.
 
@@ -45,7 +45,7 @@ One Keycloak = **PingFederate's dual role**: a **SAML IdP** *and* an **OAuth/OID
 | `kt-service` | Client Credentials (machine-to-machine) |
 | `kt-device` | Device Authorization |
 | `kt-implicit` | Implicit (deprecated — shown to bury it) |
-| `kt-saml-broker` | the SAML SP (realm `finco-app` federates to `finco-idp`) |
+| `kt-saml-broker` | the SAML SP (realm `finco-app` federates to `KT-idp`) |
 
 *(Keycloak↔Entra ID↔PingFederate concept map lives in note 23 / the chat.)*
 
@@ -70,7 +70,7 @@ That's it — it pings forever, keeps the service warm, and gives you an uptime 
 ## 4. Stress-test before you trust it (rehearsal)
 On free 512 MB / 0.1 CPU, do a full dry run and watch the Render **Logs / Metrics**:
 - [ ] Admin console loads; both realms present.
-- [ ] Log in as `farhaan` / `Passw0rd!` somewhere (e.g. `…/realms/finco-idp/account`).
+- [ ] Log in as `farhaan` / `Passw0rd!` somewhere (e.g. `…/realms/KT-idp/account`).
 - [ ] Memory stays under 512 MB (Metrics tab) — no `OOMKilled` / restart loop.
 - [ ] After 20 min idle **with the pinger on**, the service is still instantly responsive.
 

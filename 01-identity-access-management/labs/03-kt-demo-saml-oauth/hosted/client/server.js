@@ -6,7 +6,7 @@
 //    @node-saml/node-saml, so the SAML section shows genuine federation + SSO.
 //
 // Required env: KEYCLOAK_URL = https://<your-keycloak>.onrender.com
-// Optional env: REALM (default finco-idp)
+// Optional env: REALM (default KT-idp)
 //               APP_ORIGIN (this app's public https URL; Render sets
 //               RENDER_EXTERNAL_URL automatically, used as the fallback).
 
@@ -16,7 +16,7 @@ const path = require('path');
 
 const PORT = process.env.PORT || 8080;
 const KEYCLOAK_URL = (process.env.KEYCLOAK_URL || '').replace(/\/+$/, '');
-const REALM = process.env.REALM || 'finco-idp';
+const REALM = process.env.REALM || 'KT-idp';
 const OIDC = `${KEYCLOAK_URL}/realms/${REALM}/protocol/openid-connect`;
 const SAML_IDP = `${KEYCLOAK_URL}/realms/${REALM}/protocol/saml`;
 const APP_ORIGIN = (process.env.APP_ORIGIN || process.env.RENDER_EXTERNAL_URL || '').replace(/\/+$/, '');
@@ -33,7 +33,7 @@ let QRCode = null;
 try { QRCode = require('qrcode'); } catch (e) { console.warn('qrcode not installed; /api/qr disabled:', e.message); }
 
 const PUBLIC = path.join(__dirname, 'public');
-const TYPES = { '.html': 'text/html', '.css': 'text/css', '.js': 'application/javascript', '.svg': 'image/svg+xml', '.ico': 'image/x-icon', '.json': 'application/json' };
+const TYPES = { '.html': 'text/html', '.css': 'text/css', '.js': 'application/javascript', '.svg': 'image/svg+xml', '.ico': 'image/x-icon', '.json': 'application/json', '.woff2': 'font/woff2' };
 
 function send(res, code, body, type = 'application/json', extraHeaders = {}) {
   res.writeHead(code, { 'Content-Type': type, ...extraHeaders });

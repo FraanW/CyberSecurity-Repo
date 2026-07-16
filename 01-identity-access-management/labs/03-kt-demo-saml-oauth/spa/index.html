@@ -5,38 +5,134 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>OAuth 2.0 — Authorization Code + PKCE (KT demo)</title>
 <style>
-  :root { color-scheme: dark; }
+  /* "Velvet Wire" design system (inline copy — this file stays self-contained).
+     Fonts are self-hosted in ./fonts (no CDN). Two dark themes via
+     <html data-theme>, same as the hosted client. */
+  @font-face { font-family: "Open Sans"; src: url("fonts/OpenSans-Var.woff2") format("woff2");
+               font-weight: 300 800; font-style: normal; font-display: swap; }
+  @font-face { font-family: "Open Sans"; src: url("fonts/OpenSans-Italic-Var.woff2") format("woff2");
+               font-weight: 300 800; font-style: italic; font-display: swap; }
+  @font-face { font-family: "Playfair Display"; src: url("fonts/PlayfairDisplay-Italic-Var.woff2") format("woff2");
+               font-weight: 400 900; font-style: italic; font-display: swap; }
+
+  :root {
+    color-scheme: dark;
+    --bg: #23080f; --surface: #2e0d18; --surface-2: #3b1120;
+    --dot: rgba(255,122,184,.14); --glow: rgba(255,122,184,.09);
+    --outline: rgba(244,114,182,.36); --outline-strong: #f472b6;
+    --text: #f8ecf1; --muted: #cfa0b3;
+    --accent: #ff7ab8; --accent-ink: #33091a; --quote: #ffd3e6;
+    --ok: #74e0b3; --warn: #f2c14e; --danger: #ff6d7f; --code: #ffb27e;
+    --font-sans: "Open Sans", "Segoe UI", system-ui, sans-serif;
+    --font-quote: "Playfair Display", Georgia, "Times New Roman", serif;
+    --font-mono: ui-monospace, "Cascadia Code", Consolas, monospace;
+  }
+  [data-theme="ember"] {
+    --bg: #200e03; --surface: #2c1507; --surface-2: #3a1d0a;
+    --dot: rgba(251,140,60,.14); --glow: rgba(255,102,0,.1);
+    --outline: rgba(251,140,60,.38); --outline-strong: #fb8c3c;
+    --text: #fbf0e6; --muted: #cfa588; --accent: #ff6600; --accent-ink: #2b1200;
+    --quote: #fbd8b6; --code: #fbbe85;
+  }
+
   * { box-sizing: border-box; }
-  body { margin: 0; font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
-         background: #0e1116; color: #e6edf3; line-height: 1.5; }
-  header { padding: 20px 28px; background: #161b22; border-bottom: 2px solid #2d333b; }
-  h1 { margin: 0; font-size: 22px; }
-  .sub { color: #8b949e; font-size: 14px; margin-top: 4px; }
-  main { padding: 24px 28px; max-width: 1100px; }
-  button { font: inherit; font-size: 15px; padding: 12px 20px; margin: 4px 8px 4px 0;
-           border: 1px solid #3fb950; background: #238636; color: #fff; border-radius: 8px; cursor: pointer; }
-  button.secondary { background: #21262d; border-color: #3fb950; color: #3fb950; }
-  button.danger { background: #21262d; border-color: #f85149; color: #f85149; }
-  button:disabled { opacity: .4; cursor: not-allowed; }
-  .card { background: #161b22; border: 1px solid #2d333b; border-radius: 10px; padding: 16px 18px; margin: 14px 0; }
-  .label { color: #58a6ff; font-size: 13px; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px; }
-  pre { white-space: pre-wrap; word-break: break-all; margin: 0; font-size: 14px; }
-  .code { color: #f0883e; }
-  .muted { color: #8b949e; }
-  .ok { color: #3fb950; }
-  .err { color: #f85149; }
+  body { margin: 0; font-family: var(--font-sans); font-size: 15px; line-height: 1.6;
+         color: var(--text); background-color: var(--bg);
+         background-image:
+           radial-gradient(ellipse 90% 40% at 50% -5%, var(--glow), transparent 70%),
+           radial-gradient(var(--dot) 1px, transparent 1.6px);
+         background-size: 100% 100%, 22px 22px; background-attachment: fixed; }
+  header { position: relative; padding: 22px 28px 18px;
+           background: color-mix(in srgb, var(--surface) 72%, transparent);
+           border-bottom: 1px solid var(--outline); backdrop-filter: blur(4px); }
+  h1 { margin: 0; font-size: 21px; font-weight: 700; letter-spacing: -0.01em; }
+  .sub { color: var(--muted); font-size: 13px; margin-top: 5px; }
+  main { padding: 26px 28px 48px; max-width: 1100px; margin: 0 auto; }
+  .quote { font-family: var(--font-quote); font-style: italic; font-weight: 500;
+           font-size: 26px; line-height: 1.35; color: var(--quote);
+           margin: 6px 0 22px; padding-left: 42px; position: relative; }
+  .quote::before { content: "\201C"; position: absolute; left: 0; top: -12px;
+                   font-size: 56px; font-weight: 600; color: var(--accent); opacity: .9; }
+  button { font-family: var(--font-sans); font-size: 14.5px; font-weight: 600;
+           padding: 11px 20px; margin: 4px 8px 4px 0; border: 1px solid transparent;
+           border-radius: 10px; background: var(--accent); color: var(--accent-ink);
+           cursor: pointer; transition: transform .12s, box-shadow .12s; }
+  button:hover:not(:disabled) { transform: translateY(-1px);
+           box-shadow: 0 4px 18px color-mix(in srgb, var(--accent) 40%, transparent); }
+  button.secondary { background: transparent; border-color: var(--outline-strong); color: var(--accent); }
+  button.danger { background: transparent; border-color: var(--danger); color: var(--danger); }
+  button:disabled { opacity: .38; cursor: not-allowed; }
+  .card { background: var(--surface); border: 1px solid var(--outline);
+          border-radius: 12px; padding: 16px 18px; margin: 14px 0; }
+  .label { color: var(--accent); font-size: 11.5px; font-weight: 700;
+           text-transform: uppercase; letter-spacing: .12em; margin-bottom: 8px; }
+  pre { white-space: pre-wrap; word-break: break-all; margin: 0;
+        font-family: var(--font-mono); font-size: 13px; line-height: 1.55; }
+  code, .code { font-family: var(--font-mono); font-size: .92em; color: var(--code); }
+  .muted { color: var(--muted); }
+  .ok { color: var(--ok); }
+  .err { color: var(--danger); }
   .row { display: flex; flex-wrap: wrap; gap: 12px; }
   .row > .card { flex: 1 1 460px; }
-  .step { color: #d2a8ff; font-weight: bold; }
-  a { color: #58a6ff; }
+  .step { color: var(--quote); font-weight: bold; }
+  a { color: var(--accent); }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .theme-dots { position: absolute; top: 22px; right: 26px; display: flex; gap: 9px; }
+  button.theme-dot { width: 18px; height: 18px; padding: 0; margin: 0; border-radius: 50%;
+           border: 1px solid rgba(255,255,255,.4); cursor: pointer; transition: transform .12s; box-shadow: none; }
+  button.theme-dot:hover { transform: scale(1.2); box-shadow: none; }
+  button.theme-dot[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent); }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; } }
 </style>
+<script>
+// Theme switcher (inline copy of the hosted client's /theme.js — keep in sync).
+(function () {
+  const THEMES = [
+    { id: "maroon", label: "Velvet Maroon", bg: "#23080f", accent: "#ff7ab8" },
+    { id: "ember",  label: "Ember Orange",  bg: "#200e03", accent: "#ff6600" },
+  ];
+  const KEY = "kt-theme";
+  let saved = null;
+  try { saved = localStorage.getItem(KEY); } catch (e) {}
+  document.documentElement.dataset.theme =
+    THEMES.some((t) => t.id === saved) ? saved : THEMES[0].id;
+  function select(id, dots) {
+    document.documentElement.dataset.theme = id;
+    try { localStorage.setItem(KEY, id); } catch (e) {}
+    dots.forEach((d) => d.setAttribute("aria-pressed", String(d.dataset.themeId === id)));
+  }
+  window.addEventListener("DOMContentLoaded", function () {
+    const header = document.querySelector("header");
+    if (!header) return;
+    const wrap = document.createElement("div");
+    wrap.className = "theme-dots";
+    wrap.setAttribute("role", "group");
+    wrap.setAttribute("aria-label", "Color theme");
+    const dots = THEMES.map((t) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "theme-dot";
+      b.dataset.themeId = t.id;
+      b.title = t.label;
+      b.setAttribute("aria-label", "Theme: " + t.label);
+      b.setAttribute("aria-pressed", String(document.documentElement.dataset.theme === t.id));
+      b.style.background = "linear-gradient(135deg, " + t.bg + " 55%, " + t.accent + " 55%)";
+      b.addEventListener("click", () => select(t.id, dots));
+      wrap.appendChild(b);
+      return b;
+    });
+    header.appendChild(wrap);
+  });
+})();
+</script>
 </head>
 <body>
 <header>
   <h1>OAuth 2.0 — Authorization Code + PKCE</h1>
-  <div class="sub">Demo B · public SPA client <code>kt-spa</code> · IdP = Keycloak realm <code>finco-idp</code></div>
+  <div class="sub">Demo B · public SPA client <code>kt-spa</code> · IdP = Keycloak realm <code>KT-idp</code></div>
 </header>
 <main>
+  <p class="quote">A stolen code is worthless without its verifier.</p>
   <div id="controls">
     <button id="loginBtn">1 · Log in (start the flow)</button>
     <button id="refreshBtn" class="secondary" disabled>Refresh the access token</button>
@@ -80,7 +176,7 @@
 
 <script>
 // ---- Config: points at the Keycloak realm imported by this lab -------------
-const AUTH = "http://localhost:8080/realms/finco-idp/protocol/openid-connect";
+const AUTH = "http://localhost:8080/realms/KT-idp/protocol/openid-connect";
 const CLIENT_ID = "kt-spa";
 const REDIRECT_URI = "http://localhost:9000/";
 const SCOPE = "openid profile email";

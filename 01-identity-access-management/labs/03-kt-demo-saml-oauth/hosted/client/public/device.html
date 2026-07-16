@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Device Authorization (device code)</title>
 <link rel="stylesheet" href="/style.css">
+<script src="/theme.js"></script>
 </head>
 <body>
 <header>
@@ -12,6 +13,7 @@
   <div class="sub"><a class="back" href="/oauth.html">← OAuth flows</a> &nbsp;·&nbsp; public client <span class="code">kt-device</span> · polling runs server-side</div>
 </header>
 <main>
+  <p class="quote">Type the code where the keyboard lives.</p>
   <p class="note"><b>No keyboard.</b> The "device" gets a short code; you approve it on a trusted device (your phone/another tab). The device just <b>polls</b> until you approve — the password never touches the untrusted device.</p>
   <div class="panel">
     <button id="start">Start device flow</button>
