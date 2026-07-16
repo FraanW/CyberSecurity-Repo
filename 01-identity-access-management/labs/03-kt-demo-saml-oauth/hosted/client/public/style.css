@@ -1,38 +1,248 @@
-/* Self-contained styles — no external CDN/fonts (company blocks them). */
-:root { color-scheme: dark; }
+/* ============================================================================
+   KT demo design system — "Velvet Wire" (theme: Velvet Maroon)
+   Self-contained: fonts are self-hosted woff2 in /fonts (no CDN — company
+   network blocks external font hosts).
+   Type roles: Open Sans = body/UI · Playfair Display italic = .quote only
+               mono = anything that travels on the wire (tokens, codes)
+   ========================================================================== */
+
+@font-face {
+  font-family: "Open Sans";
+  src: url("/fonts/OpenSans-Var.woff2") format("woff2");
+  font-weight: 300 800;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Open Sans";
+  src: url("/fonts/OpenSans-Italic-Var.woff2") format("woff2");
+  font-weight: 300 800;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Playfair Display";
+  src: url("/fonts/PlayfairDisplay-Italic-Var.woff2") format("woff2");
+  font-weight: 400 900;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* ---- Theme tokens --------------------------------------------------------- */
+:root {
+  color-scheme: dark;
+  /* Velvet Maroon */
+  --bg: #23080f;
+  --surface: #2e0d18;
+  --surface-2: #3b1120;
+  --dot: rgba(255, 122, 184, 0.14);
+  --glow: rgba(255, 122, 184, 0.09);
+  --outline: rgba(244, 114, 182, 0.36);
+  --outline-strong: #f472b6;
+  --text: #f8ecf1;
+  --muted: #cfa0b3;
+  --accent: #ff7ab8;
+  --accent-ink: #33091a;
+  --quote: #ffd3e6;
+  --ok: #74e0b3;
+  --warn: #f2c14e;
+  --danger: #ff6d7f;
+  --code: #ffb27e;
+
+  --font-sans: "Open Sans", "Segoe UI", system-ui, sans-serif;
+  --font-quote: "Playfair Display", Georgia, "Times New Roman", serif;
+  --font-mono: ui-monospace, "Cascadia Code", Consolas, monospace;
+}
+
+/* ---- Base ------------------------------------------------------------------ */
 * { box-sizing: border-box; }
-body { margin: 0; font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
-       background: #0e1116; color: #e6edf3; line-height: 1.55; }
-a { color: #58a6ff; text-decoration: none; }
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text);
+  background-color: var(--bg);
+  /* the dotted sky: an ambient glow up top + a pink dot grid */
+  background-image:
+    radial-gradient(ellipse 90% 40% at 50% -5%, var(--glow), transparent 70%),
+    radial-gradient(var(--dot) 1px, transparent 1.6px);
+  background-size: 100% 100%, 22px 22px;
+  background-attachment: fixed;
+}
+
+a { color: var(--accent); text-decoration: none; }
 a:hover { text-decoration: underline; }
-header { padding: 20px 26px; background: #161b22; border-bottom: 2px solid #2d333b; }
-header h1 { margin: 0; font-size: 20px; }
-header .sub { color: #8b949e; font-size: 13px; margin-top: 4px; }
+a:focus-visible, button:focus-visible, input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ---- Header ---------------------------------------------------------------- */
+header {
+  position: relative;
+  padding: 22px 28px 18px;
+  background: color-mix(in srgb, var(--surface) 72%, transparent);
+  border-bottom: 1px solid var(--outline);
+  backdrop-filter: blur(4px);
+}
+header h1 {
+  margin: 0;
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+header .sub { color: var(--muted); font-size: 13px; margin-top: 5px; }
 header .back { font-size: 13px; }
-main { max-width: 1000px; margin: 0 auto; padding: 24px 22px; }
-h2 { font-size: 18px; }
-.cards { display: flex; flex-wrap: wrap; gap: 18px; margin-top: 10px; }
-.card { flex: 1 1 300px; background: #161b22; border: 1px solid #2d333b; border-radius: 12px;
-        padding: 20px; transition: border-color .15s; }
-.card:hover { border-color: #3fb950; }
-.card h3 { margin: 0 0 8px; font-size: 17px; }
-.card p { color: #8b949e; font-size: 14px; margin: 6px 0; }
-.card .tag { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 20px;
-             border: 1px solid #3fb950; color: #3fb950; margin-bottom: 8px; }
-.card .tag.warn { border-color: #e3b341; color: #e3b341; }
-.card .tag.dead { border-color: #f85149; color: #f85149; }
-.panel { background: #161b22; border: 1px solid #2d333b; border-radius: 10px; padding: 16px 18px; margin: 14px 0; }
-.label { color: #58a6ff; font-size: 12px; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px; }
-button { font: inherit; font-size: 15px; padding: 11px 18px; margin: 4px 8px 4px 0;
-         border: 1px solid #3fb950; background: #238636; color: #fff; border-radius: 8px; cursor: pointer; }
-button.secondary { background: #21262d; border-color: #3fb950; color: #3fb950; }
-button.danger { background: #21262d; border-color: #f85149; color: #f85149; }
-button:disabled { opacity: .4; cursor: not-allowed; }
-pre { white-space: pre-wrap; word-break: break-all; margin: 0; font-size: 13px; }
-.code { color: #f0883e; }
-.muted { color: #8b949e; }
-.ok { color: #3fb950; }
-.err { color: #f85149; }
+
+/* ---- Layout ---------------------------------------------------------------- */
+main { max-width: 1000px; margin: 0 auto; padding: 26px 22px 48px; }
+h2 { font-size: 18px; font-weight: 700; }
+
+/* ---- The signature: Playfair pull-quote (one aphorism per page) ------------ */
+.quote {
+  font-family: var(--font-quote);
+  font-style: italic;
+  font-weight: 500;
+  font-size: 22px;
+  line-height: 1.35;
+  color: var(--quote);
+  margin: 4px 0 20px;
+  padding-left: 36px;
+  position: relative;
+}
+.quote::before {
+  content: "\201C";
+  position: absolute;
+  left: 0;
+  top: -10px;
+  font-size: 48px;
+  font-weight: 600;
+  color: var(--accent);
+  opacity: 0.9;
+}
+
+/* ---- Cards (protocol/flow pickers) ------------------------------------------ */
+.cards { display: flex; flex-wrap: wrap; gap: 18px; margin-top: 12px; }
+.card {
+  flex: 1 1 300px;
+  background: var(--surface);
+  border: 1px solid var(--outline);
+  border-radius: 14px;
+  padding: 20px;
+  transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s;
+}
+.card:hover {
+  border-color: var(--outline-strong);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px color-mix(in srgb, var(--accent) 18%, transparent);
+  text-decoration: none;
+}
+.card h3 { margin: 0 0 8px; font-size: 17px; font-weight: 600; color: var(--text); }
+.card p { color: var(--muted); font-size: 14px; margin: 6px 0; }
+.card b { color: var(--text); }
+
+.card .tag {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 20px;
+  border: 1px solid var(--outline-strong);
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+.card .tag.warn { border-color: var(--warn); color: var(--warn); }
+.card .tag.dead { border-color: var(--danger); color: var(--danger); }
+
+/* ---- Panels ------------------------------------------------------------------ */
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--outline);
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin: 14px 0;
+}
+.label {
+  color: var(--accent);
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin-bottom: 8px;
+}
+.label.ok { color: var(--ok); }
+.note {
+  background: color-mix(in srgb, var(--surface-2) 80%, transparent);
+  border: 1px solid var(--outline);
+  border-left: 3px solid var(--accent);
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+}
 .two { display: flex; flex-wrap: wrap; gap: 14px; }
 .two > .panel { flex: 1 1 420px; }
-.note { background: #1c2230; border-left: 3px solid #58a6ff; padding: 10px 14px; border-radius: 6px; font-size: 14px; color: #c9d1d9; }
+
+/* ---- Controls ------------------------------------------------------------------ */
+button {
+  font-family: var(--font-sans);
+  font-size: 14.5px;
+  font-weight: 600;
+  padding: 11px 20px;
+  margin: 4px 8px 4px 0;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  cursor: pointer;
+  transition: transform 0.12s, box-shadow 0.12s;
+}
+button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 18px color-mix(in srgb, var(--accent) 40%, transparent);
+}
+button.secondary { background: transparent; border-color: var(--outline-strong); color: var(--accent); }
+button.danger { background: transparent; border-color: var(--danger); color: var(--danger); }
+button:disabled { opacity: 0.38; cursor: not-allowed; }
+
+input {
+  font-family: var(--font-sans);
+  font-size: 14.5px;
+  padding: 10px 12px;
+  border: 1px solid var(--outline);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--bg) 55%, var(--surface));
+  color: var(--text);
+  width: 240px;
+}
+input::placeholder { color: var(--muted); opacity: 0.7; }
+input:focus { border-color: var(--outline-strong); outline: none; }
+
+/* ---- On-the-wire text (mono) ---------------------------------------------------- */
+pre {
+  white-space: pre-wrap;
+  word-break: break-all;
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.55;
+}
+code, .code { font-family: var(--font-mono); font-size: 0.92em; color: var(--code); }
+
+/* ---- Text utilities --------------------------------------------------------------- */
+.muted { color: var(--muted); }
+.ok { color: var(--ok); }
+.err { color: var(--danger); }
+
+/* ---- Quality floor ------------------------------------------------------------------ */
+@media (max-width: 560px) {
+  header { padding: 18px 18px 14px; }
+  .quote { font-size: 19px; }
+  main { padding: 20px 16px 40px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; }
+}

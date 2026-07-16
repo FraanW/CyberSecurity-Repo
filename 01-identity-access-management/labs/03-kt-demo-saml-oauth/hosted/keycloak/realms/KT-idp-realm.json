@@ -1,7 +1,7 @@
 {
-  "realm": "finco-idp",
+  "realm": "KT-idp",
   "enabled": true,
-  "displayName": "FinCo Corporate IdP (KT lab · hosted)",
+  "displayName": "Fintech Corporate IdP (KT lab · hosted)",
   "sslRequired": "none",
   "registrationAllowed": false,
   "loginWithEmailAllowed": true,
@@ -15,13 +15,28 @@
   "refreshTokenMaxReuse": 0,
   "roles": {
     "realm": [
-      { "name": "iam-team", "description": "IAM engineering team" },
-      { "name": "payments-read", "description": "Read-only access to payments data" },
-      { "name": "payments-initiate", "description": "May initiate a payment (sensitive)" }
+      {
+        "name": "iam-team",
+        "description": "IAM engineering team"
+      },
+      {
+        "name": "payments-read",
+        "description": "Read-only access to payments data"
+      },
+      {
+        "name": "payments-initiate",
+        "description": "May initiate a payment (sensitive)"
+      }
     ]
   },
   "groups": [
-    { "name": "iam-engineers", "realmRoles": ["iam-team", "payments-read"] }
+    {
+      "name": "iam-engineers",
+      "realmRoles": [
+        "iam-team",
+        "payments-read"
+      ]
+    }
   ],
   "users": [
     {
@@ -32,9 +47,20 @@
       "email": "farhaan@example.com",
       "firstName": "Farhaan",
       "lastName": "Ahmed",
-      "credentials": [ { "type": "password", "value": "Passw0rd!", "temporary": false } ],
-      "realmRoles": ["iam-team", "payments-read"],
-      "groups": ["/iam-engineers"]
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Passw0rd!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "iam-team",
+        "payments-read"
+      ],
+      "groups": [
+        "/iam-engineers"
+      ]
     },
     {
       "id": "22222222-2222-2222-2222-222222222222",
@@ -44,8 +70,16 @@
       "email": "priya@example.com",
       "firstName": "Priya",
       "lastName": "Sharma",
-      "credentials": [ { "type": "password", "value": "Passw0rd!", "temporary": false } ],
-      "realmRoles": ["payments-read"]
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Passw0rd!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "payments-read"
+      ]
     }
   ],
   "clients": [
@@ -59,8 +93,13 @@
       "implicitFlowEnabled": false,
       "directAccessGrantsEnabled": false,
       "consentRequired": true,
-      "redirectUris": ["__CLIENT_ORIGIN__/*"],
-      "webOrigins": ["__CLIENT_ORIGIN__", "+"],
+      "redirectUris": [
+        "__CLIENT_ORIGIN__/*"
+      ],
+      "webOrigins": [
+        "__CLIENT_ORIGIN__",
+        "+"
+      ],
       "fullScopeAllowed": true,
       "attributes": {
         "pkce.code.challenge.method": "S256",
@@ -77,8 +116,12 @@
       "standardFlowEnabled": true,
       "implicitFlowEnabled": false,
       "directAccessGrantsEnabled": true,
-      "redirectUris": ["__CLIENT_ORIGIN__/*"],
-      "webOrigins": ["+"],
+      "redirectUris": [
+        "__CLIENT_ORIGIN__/*"
+      ],
+      "webOrigins": [
+        "+"
+      ],
       "fullScopeAllowed": true,
       "attributes": {}
     },
@@ -103,7 +146,9 @@
       "standardFlowEnabled": false,
       "directAccessGrantsEnabled": false,
       "fullScopeAllowed": true,
-      "attributes": { "oauth2.device.authorization.grant.enabled": "true" }
+      "attributes": {
+        "oauth2.device.authorization.grant.enabled": "true"
+      }
     },
     {
       "clientId": "kt-implicit",
@@ -114,8 +159,12 @@
       "standardFlowEnabled": false,
       "implicitFlowEnabled": true,
       "directAccessGrantsEnabled": false,
-      "redirectUris": ["__CLIENT_ORIGIN__/*"],
-      "webOrigins": ["+"],
+      "redirectUris": [
+        "__CLIENT_ORIGIN__/*"
+      ],
+      "webOrigins": [
+        "+"
+      ],
       "fullScopeAllowed": true
     },
     {
@@ -145,28 +194,47 @@
           "protocol": "saml",
           "protocolMapper": "saml-user-property-mapper",
           "consentRequired": false,
-          "config": { "user.attribute": "email", "friendly.name": "email", "attribute.name": "email", "attribute.nameformat": "Basic" }
+          "config": {
+            "user.attribute": "email",
+            "friendly.name": "email",
+            "attribute.name": "email",
+            "attribute.nameformat": "Basic"
+          }
         },
         {
           "name": "given name",
           "protocol": "saml",
           "protocolMapper": "saml-user-property-mapper",
           "consentRequired": false,
-          "config": { "user.attribute": "firstName", "friendly.name": "givenName", "attribute.name": "givenName", "attribute.nameformat": "Basic" }
+          "config": {
+            "user.attribute": "firstName",
+            "friendly.name": "givenName",
+            "attribute.name": "givenName",
+            "attribute.nameformat": "Basic"
+          }
         },
         {
           "name": "family name",
           "protocol": "saml",
           "protocolMapper": "saml-user-property-mapper",
           "consentRequired": false,
-          "config": { "user.attribute": "lastName", "friendly.name": "surname", "attribute.name": "surname", "attribute.nameformat": "Basic" }
+          "config": {
+            "user.attribute": "lastName",
+            "friendly.name": "surname",
+            "attribute.name": "surname",
+            "attribute.nameformat": "Basic"
+          }
         },
         {
           "name": "roles",
           "protocol": "saml",
           "protocolMapper": "saml-role-list-mapper",
           "consentRequired": false,
-          "config": { "single": "true", "attribute.name": "Role", "attribute.nameformat": "Basic" }
+          "config": {
+            "single": "true",
+            "attribute.name": "Role",
+            "attribute.nameformat": "Basic"
+          }
         }
       ]
     },
@@ -178,7 +246,9 @@
       "protocol": "saml",
       "frontchannelLogout": true,
       "adminUrl": "__CLIENT_ORIGIN__/saml/acs",
-      "redirectUris": ["__CLIENT_ORIGIN__/saml/acs"],
+      "redirectUris": [
+        "__CLIENT_ORIGIN__/saml/acs"
+      ],
       "attributes": {
         "saml.assertion.signature": "true",
         "saml.server.signature": "true",
@@ -198,28 +268,47 @@
           "protocol": "saml",
           "protocolMapper": "saml-user-property-mapper",
           "consentRequired": false,
-          "config": { "user.attribute": "email", "friendly.name": "email", "attribute.name": "email", "attribute.nameformat": "Basic" }
+          "config": {
+            "user.attribute": "email",
+            "friendly.name": "email",
+            "attribute.name": "email",
+            "attribute.nameformat": "Basic"
+          }
         },
         {
           "name": "given name",
           "protocol": "saml",
           "protocolMapper": "saml-user-property-mapper",
           "consentRequired": false,
-          "config": { "user.attribute": "firstName", "friendly.name": "givenName", "attribute.name": "givenName", "attribute.nameformat": "Basic" }
+          "config": {
+            "user.attribute": "firstName",
+            "friendly.name": "givenName",
+            "attribute.name": "givenName",
+            "attribute.nameformat": "Basic"
+          }
         },
         {
           "name": "family name",
           "protocol": "saml",
           "protocolMapper": "saml-user-property-mapper",
           "consentRequired": false,
-          "config": { "user.attribute": "lastName", "friendly.name": "surname", "attribute.name": "surname", "attribute.nameformat": "Basic" }
+          "config": {
+            "user.attribute": "lastName",
+            "friendly.name": "surname",
+            "attribute.name": "surname",
+            "attribute.nameformat": "Basic"
+          }
         },
         {
           "name": "roles",
           "protocol": "saml",
           "protocolMapper": "saml-role-list-mapper",
           "consentRequired": false,
-          "config": { "single": "true", "attribute.name": "Role", "attribute.nameformat": "Basic" }
+          "config": {
+            "single": "true",
+            "attribute.name": "Role",
+            "attribute.nameformat": "Basic"
+          }
         }
       ]
     }

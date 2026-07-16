@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# OAuth 2.0 grant-type demos against the KT lab (Keycloak realm: finco-idp)
+# OAuth 2.0 grant-type demos against the KT lab (Keycloak realm: KT-idp)
 # Bash + curl. Decodes JWTs with python3 (falls back to raw if absent).
 # Start the stack first:  docker compose up -d
 #
@@ -10,7 +10,7 @@
 #   ./oauth-demos.sh ropc                 # BONUS — the DEPRECATED password grant
 
 set -euo pipefail
-REALM="http://localhost:8080/realms/finco-idp/protocol/openid-connect"
+REALM="http://localhost:8080/realms/KT-idp/protocol/openid-connect"
 
 jwt() {   # decode the header+payload of a JWT passed on stdin arg
   local t="$1"

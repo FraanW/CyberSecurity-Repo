@@ -1,7 +1,7 @@
 {
-  "realm": "finco-idp",
+  "realm": "KT-idp",
   "enabled": true,
-  "displayName": "FinCo Corporate IdP (KT lab)",
+  "displayName": "Fintech Corporate IdP (KT lab)",
   "sslRequired": "none",
   "registrationAllowed": false,
   "loginWithEmailAllowed": true,
@@ -17,13 +17,28 @@
   "refreshTokenMaxReuse": 0,
   "roles": {
     "realm": [
-      { "name": "iam-team", "description": "IAM engineering team" },
-      { "name": "payments-read", "description": "Read-only access to payments data" },
-      { "name": "payments-initiate", "description": "May initiate a payment (sensitive)" }
+      {
+        "name": "iam-team",
+        "description": "IAM engineering team"
+      },
+      {
+        "name": "payments-read",
+        "description": "Read-only access to payments data"
+      },
+      {
+        "name": "payments-initiate",
+        "description": "May initiate a payment (sensitive)"
+      }
     ]
   },
   "groups": [
-    { "name": "iam-engineers", "realmRoles": ["iam-team", "payments-read"] }
+    {
+      "name": "iam-engineers",
+      "realmRoles": [
+        "iam-team",
+        "payments-read"
+      ]
+    }
   ],
   "users": [
     {
@@ -35,10 +50,19 @@
       "firstName": "Farhaan",
       "lastName": "Ahmed",
       "credentials": [
-        { "type": "password", "value": "Passw0rd!", "temporary": false }
+        {
+          "type": "password",
+          "value": "Passw0rd!",
+          "temporary": false
+        }
       ],
-      "realmRoles": ["iam-team", "payments-read"],
-      "groups": ["/iam-engineers"]
+      "realmRoles": [
+        "iam-team",
+        "payments-read"
+      ],
+      "groups": [
+        "/iam-engineers"
+      ]
     },
     {
       "id": "22222222-2222-2222-2222-222222222222",
@@ -49,9 +73,15 @@
       "firstName": "Priya",
       "lastName": "Sharma",
       "credentials": [
-        { "type": "password", "value": "Passw0rd!", "temporary": false }
+        {
+          "type": "password",
+          "value": "Passw0rd!",
+          "temporary": false
+        }
       ],
-      "realmRoles": ["payments-read"]
+      "realmRoles": [
+        "payments-read"
+      ]
     }
   ],
   "clients": [
@@ -66,8 +96,13 @@
       "implicitFlowEnabled": false,
       "directAccessGrantsEnabled": false,
       "serviceAccountsEnabled": false,
-      "redirectUris": ["http://localhost:9000/*"],
-      "webOrigins": ["http://localhost:9000", "+"],
+      "redirectUris": [
+        "http://localhost:9000/*"
+      ],
+      "webOrigins": [
+        "http://localhost:9000",
+        "+"
+      ],
       "fullScopeAllowed": true,
       "attributes": {
         "pkce.code.challenge.method": "S256",
@@ -86,8 +121,13 @@
       "implicitFlowEnabled": false,
       "directAccessGrantsEnabled": true,
       "serviceAccountsEnabled": false,
-      "redirectUris": ["http://localhost:9000/*", "http://localhost:9999/callback"],
-      "webOrigins": ["+"],
+      "redirectUris": [
+        "http://localhost:9000/*",
+        "http://localhost:9999/callback"
+      ],
+      "webOrigins": [
+        "+"
+      ],
       "fullScopeAllowed": true,
       "attributes": {
         "pkce.code.challenge.method": "S256"
@@ -134,8 +174,13 @@
       "implicitFlowEnabled": true,
       "directAccessGrantsEnabled": false,
       "serviceAccountsEnabled": false,
-      "redirectUris": ["http://localhost:9000/*", "http://localhost:9999/callback"],
-      "webOrigins": ["+"],
+      "redirectUris": [
+        "http://localhost:9000/*",
+        "http://localhost:9999/callback"
+      ],
+      "webOrigins": [
+        "+"
+      ],
       "fullScopeAllowed": true
     },
     {

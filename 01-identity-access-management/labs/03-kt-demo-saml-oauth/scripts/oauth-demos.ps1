@@ -1,4 +1,4 @@
-# OAuth 2.0 grant-type demos against the KT lab (Keycloak realm: finco-idp)
+# OAuth 2.0 grant-type demos against the KT lab (Keycloak realm: KT-idp)
 # Windows PowerShell 5+ or PowerShell 7. Run the stack first:  docker compose up -d
 #
 # Dot-source this file to load the functions, then call them one at a time:
@@ -10,7 +10,7 @@
 #
 # All flows print the raw token response AND decode the JWTs so the room sees inside.
 
-$Realm = "http://localhost:8080/realms/finco-idp/protocol/openid-connect"
+$Realm = "http://localhost:8080/realms/KT-idp/protocol/openid-connect"
 
 function Decode-Jwt($jwt) {
   if (-not $jwt) { return "(no token)" }

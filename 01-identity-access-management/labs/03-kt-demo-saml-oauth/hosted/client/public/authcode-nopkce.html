@@ -12,6 +12,7 @@
   <div class="sub"><a class="back" href="/oauth.html">← OAuth flows</a> &nbsp;·&nbsp; confidential client <span class="code">kt-web</span> · code exchanged server-side with a secret</div>
 </header>
 <main>
+  <p class="quote">Confidential means the secret never leaves the server.</p>
   <p class="note">The <b>classic server-side web-app</b> flow (pre-PKCE default). A <b>confidential</b> client proves itself with a <b>client secret</b> instead of PKCE. Because the secret must never reach the browser, the code→token exchange happens <b>on this app's server</b>, not in the page.</p>
   <div class="panel" id="controls">
     <button id="login">Log in (start the flow)</button>

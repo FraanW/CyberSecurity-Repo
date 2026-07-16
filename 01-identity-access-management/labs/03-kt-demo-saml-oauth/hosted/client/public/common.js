@@ -1,6 +1,6 @@
 // Shared helpers, loaded after /config.js. No external dependencies.
 const CFG = window.APP_CONFIG || {};
-const OIDC = CFG.OIDC;                       // https://<kc>/realms/finco-idp/protocol/openid-connect
+const OIDC = CFG.OIDC;                       // https://<kc>/realms/KT-idp/protocol/openid-connect
 
 function b64url(bytes) {
   return btoa(String.fromCharCode(...new Uint8Array(bytes)))

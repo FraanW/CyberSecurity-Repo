@@ -12,12 +12,13 @@
   <div class="sub"><a class="back" href="/oauth.html">← OAuth flows</a> &nbsp;·&nbsp; confidential client <span class="code">kt-web</span> · direct grant</div>
 </header>
 <main>
+  <p class="quote">An app that holds your password holds your identity.</p>
   <p class="note"><b>The app collects the password itself.</b> Type your credentials into <i>this app's own form</i> below — no redirect to the IdP — and the app sends them to the token endpoint. That's the defining trait (and the risk) of ROPC.</p>
 
   <div class="panel">
     <div class="label">Log in — directly to the app (not the IdP)</div>
-    <p><input id="u" placeholder="username" value="farhaan" style="font:inherit;padding:9px;border-radius:6px;border:1px solid #2d333b;background:#0e1116;color:#e6edf3;width:220px"></p>
-    <p><input id="p" type="password" placeholder="password" value="Passw0rd!" style="font:inherit;padding:9px;border-radius:6px;border:1px solid #2d333b;background:#0e1116;color:#e6edf3;width:220px"></p>
+    <p><input id="u" placeholder="username" value="farhaan"></p>
+    <p><input id="p" type="password" placeholder="password" value="Passw0rd!"></p>
     <button id="go">Log in (grant_type=password)</button>
   </div>
 
