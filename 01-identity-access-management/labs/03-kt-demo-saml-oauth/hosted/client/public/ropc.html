@@ -10,7 +10,7 @@
 <body>
 <header>
   <h1>5 · Resource Owner Password Credentials <span class="muted">(ROPC)</span></h1>
-  <div class="sub"><a class="back" href="/oauth.html">← OAuth flows</a> &nbsp;·&nbsp; confidential client <span class="code">kt-web</span> · direct grant</div>
+  <div class="sub"><a class="back" href="/oauth.html">OAuth flows</a> &nbsp;·&nbsp; confidential client <span class="code">kt-web</span> · direct grant</div>
 </header>
 <main>
   <p class="quote">An app that holds your password holds your identity.</p>
@@ -39,6 +39,14 @@
       <li>❌ <b>Never third-party or public apps</b> — handing your password to someone else's app is exactly what OAuth exists to prevent.</li>
       <li>⚠️ <b>The costs:</b> the app <b>sees the raw password</b>, and there's no place for <b>MFA</b>, passkeys, or a consent screen in the flow.</li>
       <li>📜 Deprecated by the OAuth Security BCP (RFC 9700) and removed in <b>OAuth 2.1</b> — but still common on internal, trusted systems. Prefer <b>Auth Code + PKCE</b> when you can.</li>
+    </ul>
+  </div>
+  <div class="panel">
+    <div class="label">On the wire — front channel vs back channel</div>
+    <p class="muted"><b>Front channel</b> = rides the browser's address bar (redirects). <b>Back channel</b> = a direct HTTPS call. IdP endpoints live under <span class="code">/realms/KT-idp/protocol/openid-connect</span>.</p>
+    <ul class="muted">
+      <li><b>Back channel</b> — <span class="code">POST /token</span> <i>from our server</i> (<span class="code">/api/ropc</span>, <span class="code">grant_type=password</span>): your username, your password, and the <span class="code">client_secret</span> travel in a single call.</li>
+      <li><b>No front channel</b> — you were never redirected to the IdP. That's exactly why there's no place for <b>MFA</b>, passkeys, consent, or SSO in this flow.</li>
     </ul>
   </div>
 </main>

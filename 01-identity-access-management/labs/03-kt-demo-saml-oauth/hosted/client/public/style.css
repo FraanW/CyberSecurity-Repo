@@ -114,6 +114,20 @@ header h1 {
 }
 header .sub { color: var(--muted); font-size: 13px; margin-top: 5px; }
 header .back { font-size: 13px; }
+/* Back link gets a left-arrow icon that nudges left on hover */
+.back::before {
+  content: "";
+  display: inline-block;
+  width: 0.9em;
+  height: 0.9em;
+  margin-right: 5px;
+  vertical-align: -0.12em;
+  background-color: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 12H5M11 6l-6 6 6 6'/%3E%3C/svg%3E") no-repeat center / contain;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 12H5M11 6l-6 6 6 6'/%3E%3C/svg%3E") no-repeat center / contain;
+  transition: transform 0.15s;
+}
+.back:hover::before { transform: translateX(-4px); }
 
 /* Theme switcher (injected by /theme.js) */
 .theme-dots {
@@ -243,6 +257,8 @@ h2 { font-size: 18px; font-weight: 700; }
 }
 .note ul { margin: 8px 0 2px; padding-left: 22px; }
 .note li { margin: 4px 0; }
+.panel ul { margin: 8px 0 2px; padding-left: 22px; }
+.panel li { margin: 5px 0; }
 .two { display: flex; flex-wrap: wrap; gap: 14px; }
 .two > .panel { flex: 1 1 420px; }
 
@@ -267,6 +283,21 @@ button:hover:not(:disabled) {
 button.secondary { background: transparent; border-color: var(--outline-strong); color: var(--accent); }
 button.danger { background: transparent; border-color: var(--danger); color: var(--danger); }
 button:disabled { opacity: 0.38; cursor: not-allowed; }
+/* Buttons that navigate/launch (class "go") end in an arrow icon that nudges
+   right on hover. currentColor keeps it readable on filled + outlined buttons. */
+button.go::after {
+  content: "";
+  display: inline-block;
+  width: 0.9em;
+  height: 0.9em;
+  margin-left: 8px;
+  vertical-align: -0.1em;
+  background-color: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 12h15M13 6l6 6-6 6'/%3E%3C/svg%3E") no-repeat center / contain;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 12h15M13 6l6 6-6 6'/%3E%3C/svg%3E") no-repeat center / contain;
+  transition: transform 0.15s;
+}
+button.go:hover:not(:disabled)::after { transform: translateX(4px); }
 
 input {
   font-family: var(--font-sans);
