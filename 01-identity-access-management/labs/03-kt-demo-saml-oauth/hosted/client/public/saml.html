@@ -49,7 +49,7 @@
       <button id="fullLogoutBtn" class="danger">Full reset (end the IdP session)</button>
       <ul class="muted">
         <li><b>Access again / App-only logout then log in:</b> no password — the IdP session carries you straight through. <b>That's SSO.</b></li>
-        <li><b>Full reset:</b> ends the IdP session, so the next login asks for the password again — proving the SSO session is what made it seamless.</li>
+        <li><b>Full reset:</b> real <b>SAML Single Log-Out</b> — the app sends the IdP a <span class="code">LogoutRequest</span> (with your <span class="code">NameID</span> + <span class="code">SessionIndex</span>), the IdP kills the SSO session and answers with a <span class="code">LogoutResponse</span>. Watch both in SAML-tracer. Next login asks for the password again — proving the SSO session is what made it seamless.</li>
       </ul>
     </div>
   </div>

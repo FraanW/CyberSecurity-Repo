@@ -47,3 +47,6 @@ Thumbs.db
 
 # Keep folder placeholders
 !.gitkeep
+
+# Node dependencies (installed locally for dev; Render/Netlify install their own)
+node_modules/

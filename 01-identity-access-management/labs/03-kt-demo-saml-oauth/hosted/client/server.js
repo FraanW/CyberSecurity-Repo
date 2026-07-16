@@ -175,10 +175,27 @@ const server = http.createServer(async (req, res) => {
     if (p === '/saml/acs' && req.method === 'POST') {            // ACS: both SP-init and IdP-init land here
       if (!SAML) return send(res, 500, { error: 'node-saml not installed' });
       const body = Object.fromEntries(new URLSearchParams(await readBody(req)));
-      // Not a login assertion? A SAML LogoutRequest/Response can arrive on this
-      // same endpoint (it's also the Master SAML Processing URL). Don't feed
-      // node-saml an undefined SAMLResponse — just clear the session.
+      // This endpoint is also the Master SAML Processing URL, so THREE message
+      // types can land here — a login assertion, a LogoutRequest, a LogoutResponse.
+      // 1) Front-channel LogoutRequest from the IdP (logout started at the IdP or
+      //    another app). SLO rule: we MUST answer with a LogoutResponse so the IdP
+      //    can finish ending the session. Swallowing it leaves the IdP session
+      //    half-alive — the "logout only works on the second try" bug.
+      if (body.SAMLRequest) {
+        try {
+          const sp = await samlSP();
+          const { profile } = await sp.validatePostRequestAsync(body);
+          const url = await sp.getLogoutResponseUrlAsync(profile, body.RelayState || '', {}, true);
+          return clearSession(res, url);           // clear our cookie, send the answer back to the IdP
+        } catch (e) {
+          return clearSession(res, '/saml.html?loggedout=idp');
+        }
+      }
       if (!body.SAMLResponse) return clearSession(res, '/saml.html?loggedout=idp');
+      // 2) LogoutResponse — the IdP confirming OUR LogoutRequest. SLO complete.
+      const xml = Buffer.from(body.SAMLResponse, 'base64').toString('utf8');
+      if (xml.includes('LogoutResponse')) return clearSession(res, '/saml.html?loggedout=idp');
+      // 3) A login assertion (SP-initiated or IdP-initiated SSO).
       const sp = await samlSP();
       const { profile } = await sp.validatePostResponseAsync(body);
       return setSession(res, profile, '/saml.html?loggedin=1');
@@ -195,8 +212,21 @@ const server = http.createServer(async (req, res) => {
     if (p === '/saml/slogout') {                                 // app-only logout (IdP session stays alive -> SSO)
       return clearSession(res, '/saml.html?loggedout=app');
     }
-    if (p === '/saml/logout') {                                  // full reset: clear app + end the IdP session
-      return clearSession(res, `${OIDC}/logout`);
+    if (p === '/saml/logout') {                                  // full reset: real SAML Single Log-Out
+      // Proper SLO: send the IdP a SAML LogoutRequest carrying the NameID +
+      // SessionIndex from login. The IdP ends the SSO session and POSTs a
+      // LogoutResponse back to our ACS (case 2 above). One click, fully dead.
+      if (!SAML) return clearSession(res, '/saml.html');
+      const c = cookies(req).kt_saml;
+      let s = null;
+      try { s = c ? JSON.parse(Buffer.from(decodeURIComponent(c), 'base64').toString('utf8')) : null; } catch { /* fall through */ }
+      if (!s || !s.name) return clearSession(res, '/saml.html?loggedout=app');   // no session — nothing to SLO
+      const sp = await samlSP();
+      const url = await sp.getLogoutUrlAsync(
+        { nameID: s.name, nameIDFormat: 'urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress', sessionIndex: s.sessionIndex },
+        '', {}
+      );
+      return clearSession(res, url);               // clear our cookie, carry the LogoutRequest to the IdP
     }
 
     // ---- Static files ----
