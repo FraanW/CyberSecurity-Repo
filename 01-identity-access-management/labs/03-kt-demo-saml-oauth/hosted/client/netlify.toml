@@ -28,6 +28,11 @@
   status = 200
 
 [[redirects]]
+  from = "/api/authcode-refresh"
+  to = "/.netlify/functions/authcode-refresh"
+  status = 200
+
+[[redirects]]
   from = "/api/ropc"
   to = "/.netlify/functions/ropc"
   status = 200

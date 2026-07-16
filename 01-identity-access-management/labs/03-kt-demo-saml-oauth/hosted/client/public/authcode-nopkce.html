@@ -10,13 +10,15 @@
 <body>
 <header>
   <h1>1b · Authorization Code <span class="muted">— no PKCE (confidential client)</span></h1>
-  <div class="sub"><a class="back" href="/oauth.html">← OAuth flows</a> &nbsp;·&nbsp; confidential client <span class="code">kt-web</span> · code exchanged server-side with a secret</div>
+  <div class="sub"><a class="back" href="/oauth.html">OAuth flows</a> &nbsp;·&nbsp; confidential client <span class="code">kt-web</span> · code exchanged server-side with a secret</div>
 </header>
 <main>
   <p class="quote">Confidential means the secret never leaves the server.</p>
   <p class="note">The <b>classic server-side web-app</b> flow (pre-PKCE default). A <b>confidential</b> client proves itself with a <b>client secret</b> instead of PKCE. Because the secret must never reach the browser, the code→token exchange happens <b>on this app's server</b>, not in the page.</p>
   <div class="panel" id="controls">
     <button id="login">Log in (start the flow)</button>
+    <button id="refresh" class="secondary" disabled>Refresh the access token</button>
+    <button id="logout" class="danger" disabled>Log out</button>
   </div>
   <div class="panel muted" id="status">Not logged in. Watch DevTools → Network: <span class="code">/authorize</span> has <b>no</b> <span class="code">code_challenge</span> this time; the token exchange happens on our server (<span class="code">/api/authcode-exchange</span>), so the secret stays server-side.</div>
 
@@ -40,6 +42,16 @@
   </div>
 
   <p class="note" style="margin-top:18px"><b>PKCE vs no-PKCE:</b> a <b>public</b> client (SPA/mobile) can't hide a secret, so it proves itself with <b>PKCE</b> (flow 1). A <b>confidential</b> server app can keep a <b>secret</b>, so historically it skipped PKCE — this flow. Modern guidance (RFC 9700 / OAuth 2.1): use <b>PKCE for both</b>.</p>
+  <div class="panel">
+    <div class="label">On the wire — front channel vs back channel</div>
+    <p class="muted"><b>Front channel</b> = rides the browser's address bar (redirects — visible, interceptable). <b>Back channel</b> = a direct HTTPS call the user never sees. IdP endpoints live under <span class="code">/realms/KT-idp/protocol/openid-connect</span>.</p>
+    <ul class="muted">
+      <li><b>Front channel</b> — <span class="code">GET /auth</span>: the login redirect — this time with <b>no</b> <span class="code">code_challenge</span>; returns with the one-time <span class="code">?code=</span>.</li>
+      <li><b>Back channel</b> — <span class="code">POST /token</span> <i>from our server</i> (<span class="code">/api/authcode-exchange</span>): code + <span class="code">client_secret</span>. The secret never enters the browser.</li>
+      <li><b>Back channel</b> — <span class="code">POST /token</span> <i>from our server</i> (<span class="code">/api/authcode-refresh</span>): <span class="code">grant_type=refresh_token</span> + the same secret.</li>
+      <li><b>Front channel</b> — <span class="code">GET /logout</span>: redirect that ends the IdP session.</li>
+    </ul>
+  </div>
 </main>
 <script src="/config.js"></script>
 <script src="/common.js"></script>
@@ -60,19 +72,42 @@ $("login").onclick = () => {
   window.location.assign(url.toString());
 };
 
+function showTokens(t, ok, msg) {
+  reveal("rawPanel"); setText("raw", JSON.stringify(t, null, 2));
+  if (!ok || t.error) { status("Request failed: <span class='err'>" + (t.error_description || t.error) + "</span>", "err"); return; }
+  sessionStorage.setItem("np_rt", t.refresh_token || "");
+  if (t.access_token) { setText("at", decodeJwt(t.access_token)); reveal("atPanel"); }
+  if (t.id_token) { setText("id", decodeJwt(t.id_token)); reveal("idPanel"); }
+  status(msg, "ok");
+  $("login").disabled = true;      // already logged in — button goes muted
+  $("refresh").disabled = false; $("logout").disabled = false;
+}
+
 async function exchange(code) {
   setText("code", code); reveal("codePanel");
   const res = await fetch("/api/authcode-exchange", {
     method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({ code, redirect_uri: REDIRECT })
   });
-  const t = await res.json();
-  reveal("rawPanel"); setText("raw", JSON.stringify(t, null, 2));
-  if (!res.ok || t.error) { status("Exchange failed: <span class='err'>" + (t.error_description || t.error) + "</span>", "err"); return; }
-  if (t.access_token) { setText("at", decodeJwt(t.access_token)); reveal("atPanel"); }
-  if (t.id_token) { setText("id", decodeJwt(t.id_token)); reveal("idPanel"); }
-  status("Logged in ✅ — the server exchanged the code using <span class='code'>kt-web</span>'s <b>secret</b> (no PKCE). The browser never saw the secret.", "ok");
+  showTokens(await res.json(), res.ok,
+    "Logged in ✅ — the server exchanged the code using <span class='code'>kt-web</span>'s <b>secret</b> (no PKCE). The browser never saw the secret.");
 }
+
+$("refresh").onclick = async () => {
+  const res = await fetch("/api/authcode-refresh", {
+    method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({ refresh_token: sessionStorage.getItem("np_rt") })
+  });
+  showTokens(await res.json(), res.ok,
+    "Refreshed ✅ — the <b>server</b> swapped the refresh token using <span class='code'>kt-web</span>'s secret. Note a <b>new refresh_token</b> came back (rotation).");
+};
+
+$("logout").onclick = () => {
+  sessionStorage.clear();
+  const url = new URL(OIDC + "/logout");
+  url.search = new URLSearchParams({ client_id: CLIENT_ID, post_logout_redirect_uri: REDIRECT }).toString();
+  window.location.assign(url.toString());
+};
 
 (function init() {
   const q = new URLSearchParams(window.location.search);

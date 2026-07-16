@@ -10,7 +10,7 @@
 <body>
 <header>
   <h1>1 · Authorization Code + PKCE <span class="muted">(OIDC)</span></h1>
-  <div class="sub"><a class="back" href="/oauth.html">← OAuth flows</a> &nbsp;·&nbsp; public client <span class="code">kt-spa</span> · keep DevTools → Network open</div>
+  <div class="sub"><a class="back" href="/oauth.html">OAuth flows</a> &nbsp;·&nbsp; public client <span class="code">kt-spa</span> · keep DevTools → Network open</div>
 </header>
 <main>
   <p class="quote">A stolen code is worthless without its verifier.</p>
@@ -50,6 +50,17 @@
   <div class="panel" id="rawPanel" style="display:none">
     <div class="label">Raw /token response (back channel)</div>
     <pre id="raw"></pre>
+  </div>
+  <div class="panel">
+    <div class="label">On the wire — front channel vs back channel</div>
+    <p class="muted"><b>Front channel</b> = rides the browser's address bar (redirects — visible, interceptable). <b>Back channel</b> = a direct HTTPS call the user never sees. IdP endpoints live under <span class="code">/realms/KT-idp/protocol/openid-connect</span>.</p>
+    <ul class="muted">
+      <li><b>Front channel</b> — <span class="code">GET /auth</span>: the login redirect. Carries <span class="code">client_id</span>, <span class="code">code_challenge</span>, <span class="code">state</span>; returns with the one-time <span class="code">?code=</span>.</li>
+      <li><b>Back channel</b> — <span class="code">POST /token</span>: this page's fetch swaps <span class="code">code + code_verifier</span> for the tokens. Public client — no secret.</li>
+      <li><b>Back channel</b> — <span class="code">POST /token</span> (<span class="code">grant_type=refresh_token</span>): silent renewal, no user interaction.</li>
+      <li><b>Back channel</b> — <span class="code">GET /userinfo</span>: Bearer access token — how a Resource Server reads claims.</li>
+      <li><b>Front channel</b> — <span class="code">GET /logout</span>: redirect that ends the IdP session.</li>
+    </ul>
   </div>
 </main>
 <script src="/config.js"></script>

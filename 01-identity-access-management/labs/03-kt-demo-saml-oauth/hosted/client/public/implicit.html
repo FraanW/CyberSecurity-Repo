@@ -10,13 +10,13 @@
 <body>
 <header>
   <h1>4 · Implicit <span class="err">(deprecated ☠)</span></h1>
-  <div class="sub"><a class="back" href="/oauth.html">← OAuth flows</a> &nbsp;·&nbsp; public client <span class="code">kt-implicit</span></div>
+  <div class="sub"><a class="back" href="/oauth.html">OAuth flows</a> &nbsp;·&nbsp; public client <span class="code">kt-implicit</span></div>
 </header>
 <main>
   <p class="quote">Tokens don't belong in URLs.</p>
   <p class="note"><b>Why we show it:</b> the old way SPAs worked before PKCE. The access token is returned <b>directly in the URL fragment</b> — so it leaks into history, referrer headers, and logs. And there's no code to protect. OAuth 2.1 removed it.</p>
   <div class="panel">
-    <button id="go">Log in with the Implicit flow →</button>
+    <button id="go" class="go">Log in with the Implicit flow</button>
     <p class="muted">Uses <span class="code">response_type=token</span> (not <span class="code">code</span>) — that single change is the whole anti-pattern.</p>
   </div>
   <div class="panel" id="fragPanel" style="display:none">
@@ -27,6 +27,15 @@
   <div class="panel" id="atPanel" style="display:none">
     <div class="label">Access token — decoded</div>
     <pre id="at"></pre>
+  </div>
+  <div class="panel">
+    <div class="label">On the wire — front channel vs back channel</div>
+    <p class="muted"><b>Front channel</b> = rides the browser's address bar (redirects — visible, interceptable). <b>Back channel</b> = a direct HTTPS call. IdP endpoints live under <span class="code">/realms/KT-idp/protocol/openid-connect</span>.</p>
+    <ul class="muted">
+      <li><b>Front channel</b> — <span class="code">GET /auth</span> (<span class="code">response_type=token</span>): the login redirect.</li>
+      <li><b>Front channel</b> — the <b>return</b> redirect carries the <b>access token itself</b> in the URL fragment (<span class="code">#access_token=…</span>).</li>
+      <li><b>No back channel at all</b> — and that's the flaw: tokens belong on the back channel. This flow ships them through the address bar, so they leak into history, logs and referrers.</li>
+    </ul>
   </div>
 </main>
 <script src="/config.js"></script>

@@ -10,7 +10,7 @@
 <body>
 <header>
   <h1>3 · Device Authorization <span class="muted">(smart TV / CLI)</span></h1>
-  <div class="sub"><a class="back" href="/oauth.html">← OAuth flows</a> &nbsp;·&nbsp; public client <span class="code">kt-device</span> · polling runs server-side</div>
+  <div class="sub"><a class="back" href="/oauth.html">OAuth flows</a> &nbsp;·&nbsp; public client <span class="code">kt-device</span> · polling runs server-side</div>
 </header>
 <main>
   <p class="quote">Type the code where the keyboard lives.</p>
@@ -38,6 +38,15 @@
   <div class="panel" id="idPanel" style="display:none">
     <div class="label">ID token — decoded</div>
     <pre id="id"></pre>
+  </div>
+  <div class="panel">
+    <div class="label">On the wire — front channel vs back channel</div>
+    <p class="muted"><b>Front channel</b> = rides a browser's address bar (redirects). <b>Back channel</b> = a direct HTTPS call. IdP endpoints live under <span class="code">/realms/KT-idp/protocol/openid-connect</span>.</p>
+    <ul class="muted">
+      <li><b>Back channel</b> — <span class="code">POST /auth/device</span> <i>from our server</i>: returns the <span class="code">device_code</span>, the human-friendly <span class="code">user_code</span>, and the verification URL.</li>
+      <li><b>Front channel</b> — <span class="code">GET /realms/KT-idp/device</span> <i>on your phone / other tab</i>: the trusted device where the human logs in and approves the code.</li>
+      <li><b>Back channel</b> — <span class="code">POST /token</span> (<span class="code">grant_type=…:device_code</span>): the device polls this until the approval lands, then tokens drop.</li>
+    </ul>
   </div>
 </main>
 <script src="/config.js"></script>

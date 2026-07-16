@@ -132,6 +132,18 @@ const server = http.createServer(async (req, res) => {
       });
       return send(res, r.status, r.json);
     }
+    // Auth Code (no PKCE) refresh — the confidential client refreshes server-side
+    // with its secret, same place the original code exchange happened.
+    if (p === '/api/authcode-refresh' && req.method === 'POST') {
+      const body = new URLSearchParams(await readBody(req));
+      const r = await postForm(`${OIDC}/token`, {
+        grant_type: 'refresh_token',
+        refresh_token: body.get('refresh_token'),
+        client_id: 'kt-web',
+        client_secret: 'kt-web-secret'
+      });
+      return send(res, r.status, r.json);
+    }
     // ROPC — the app collects the user's password and exchanges it server-side.
     if (p === '/api/ropc' && req.method === 'POST') {
       const body = new URLSearchParams(await readBody(req));
