@@ -183,6 +183,21 @@ h2 { font-size: 18px; font-weight: 700; }
   text-decoration: none;
 }
 .card h3 { margin: 0 0 8px; font-size: 17px; font-weight: 600; color: var(--text); }
+/* Arrow icon after each card heading — nudges right when the card is hovered.
+   Inline-SVG mask so it always takes the theme's accent color. */
+.card h3::after {
+  content: "";
+  display: inline-block;
+  width: 0.95em;
+  height: 0.95em;
+  margin-left: 9px;
+  vertical-align: -0.12em;
+  background-color: var(--accent);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 12h15M13 6l6 6-6 6'/%3E%3C/svg%3E") no-repeat center / contain;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 12h15M13 6l6 6-6 6'/%3E%3C/svg%3E") no-repeat center / contain;
+  transition: transform 0.15s;
+}
+.card:hover h3::after { transform: translateX(5px); }
 .card p { color: var(--muted); font-size: 14px; margin: 6px 0; }
 .card b { color: var(--text); }
 
