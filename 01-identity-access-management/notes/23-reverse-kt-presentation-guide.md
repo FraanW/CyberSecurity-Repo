@@ -509,6 +509,46 @@ sequenceDiagram
 - **Both removed in OAuth 2.1.** Replacement for both: **Authorization Code + PKCE** (or Client Credentials if there was never really a user)
 - **Interview one-liner:** *"Implicit put the token in the URL; ROPC put the password in the app. Both break OAuth's core promise, so 2.1 removes them."*
 
+**Implicit (`response_type=token`) — the token comes back in the URL**
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor U as User / Browser
+    participant C as Client (SPA)
+    participant AS as Auth Server
+    participant API as Resource Server (API)
+    Note over C: response_type=token - asks for the token DIRECTLY, no code
+    U->>AS: 1. FRONT: GET /authorize?response_type=token&client_id&redirect_uri&scope
+    AS->>AS: 2. Authenticate user + consent
+    AS-->>U: 3. FRONT: redirect to redirect_uri#access_token=... (URL fragment)
+    Note over U,AS: token now sits IN THE URL - leaks via history, referrer, logs, extensions
+    U->>C: 4. Browser hands the access_token straight to the JS app
+    C->>API: 5. GET /api  Authorization: Bearer access_token
+    API-->>C: 6. protected data
+    Note over C: no code = NO PKCE possible, and no safe refresh - dead in OAuth 2.1
+```
+
+**ROPC / Password (`grant_type=password`) — the app handles the real password**
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor U as User
+    participant C as Client (app)
+    participant AS as Auth Server
+    participant API as Resource Server (API)
+    U->>C: 1. User types their REAL username + password into the app
+    Note over C: the app now SEES the password - the exact thing OAuth exists to kill
+    C->>AS: 2. BACK: POST /token grant_type=password&username&password&client_id
+    AS-->>C: 3. access_token (+ refresh_token)
+    C->>API: 4. GET /api  Authorization: Bearer access_token
+    API-->>C: 5. protected data
+    Note over U,AS: no browser redirect = nowhere to insert MFA / passkey / consent
+```
+
+- **Read the diagrams side by side:** Implicit's fatal step is **3** (token in the URL fragment); ROPC's is **1** (the app touches the raw password). Neither has a step where a **code** or **PKCE** could protect anything.
+
 **Talk track**
 > "Two flows you'll still find in old configs, and your job is to recognize and migrate them. Implicit returned the access token *directly in the URL* — which means it leaked into browser history, referrer headers, server logs, everywhere. And you can't protect it with PKCE because there's no code. Dead. ROPC is worse: the app collects your actual username and password and forwards them. That's the exact thing OAuth was invented to eliminate, and it breaks MFA entirely — there's nowhere in the flow for a second factor. Both are removed in OAuth 2.1. If you see either at FinCo, it's on the migration list, and the answer is almost always Authorization Code plus PKCE."
 
@@ -538,6 +578,24 @@ sequenceDiagram
 | `exp` / `iat` | expiry / issued-at | short; consumed once at login |
 | `nonce` | echoes what you sent | must match → blocks replay/injection |
 | `acr` / `amr` | assurance / methods (`mfa`, `pwd`) | **how you prove MFA happened** — auditors ask |
+
+**The important OAuth 2.0 / OIDC endpoints (one reference table)**
+
+*Rule of thumb: everything on the **front channel** happens in the browser (user-facing); everything on the **back channel** is a direct server-to-server call the browser never sees.*
+
+| Endpoint | Also called | Channel | What it's for | FinCo / Ping note |
+|---|---|---|---|---|
+| `/authorize` | Authorization endpoint (RFC 6749) | Front | Where the user lands to log in + consent; hands back the one-time `code` | The adapter/policy tree runs here — this is where MFA fires |
+| `/token` | Token endpoint (RFC 6749) | Back | Swap a `code`, refresh token, or client creds for the actual tokens | The valuable step — never reachable from the browser |
+| `/introspect` | Introspection (RFC 7662) | Back | Resource server asks "is this **opaque** token still valid, and what's in it?" | Used when tokens are reference strings, not JWTs |
+| `/revoke` | Revocation (RFC 7009) | Back | Kill an access or refresh token **now** (logout, breach, offboarding) | Your Leaver-event kill switch for tokens |
+| `/device_authorization` | Device Authorization (RFC 8628) | Back | Starts the device-code flow; returns `user_code` + `verification_uri` | TVs, CLIs, anything with no browser/keyboard |
+| `/userinfo` | UserInfo (OIDC Core) | Back | Call **with the access token** for extra identity claims | Claims beyond what's in the ID token |
+| `/.well-known/openid-configuration` | Discovery (OIDC Discovery) | Front (GET) | Machine-readable list of **every** endpoint + `issuer` + `jwks_uri` | Paste this URL in a browser to self-serve any Ping config |
+| `jwks_uri` | JWKS (RFC 7517) | Back (GET) | The AS's **public signing keys** — verify JWT signatures, auto-pick-up key rotation | Never hard-code keys; always fetch from here |
+| `end_session_endpoint` | RP-Initiated Logout (OIDC) | Front | End the OP session / trigger single logout | Front-channel, like login — it's a redirect |
+
+- **The one to memorize:** `/.well-known/openid-configuration` — it points to every other endpoint, so if you know it you can discover the rest. *"Lost? Hit the discovery URL first."*
 
 **Talk track**
 > "So how do we do *login* properly? OpenID Connect. It's a thin layer on the exact same OAuth flow, and the magic switch is one scope: add `openid` to the request and the AS hands back an *ID token* alongside the access token. The ID token is a signed JWT that says who authenticated, when, and how — and crucially it's minted *for your app*, not for an API. OIDC also standardizes the plumbing SAML made you hand-wire: a discovery document lists every endpoint, and a JWKS URL publishes the public keys so your app can verify signatures and even pick up key rotation automatically. The claims on the right are what your app must validate — and note `sub` is the stable ID you key on, and `amr`/`acr` are how you *prove* MFA happened to an auditor."
