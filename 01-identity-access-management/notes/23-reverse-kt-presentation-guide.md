@@ -389,7 +389,7 @@ sequenceDiagram
     U->>AS: 1. FRONT: GET /authorize?response_type=code&client_id&<br/>redirect_uri&scope=openid...&state&code_challenge=S256
     AS->>AS: 2. Authenticate user (password + MFA) + consent
     AS-->>U: 3. FRONT: redirect to redirect_uri?code=SHORTCODE&state
-    U->>C: 4. Browser delivers code; client checks state matches
+    U->>C: 4. Browser delivers code, client checks state matches
     C->>AS: 5. BACK: POST /token grant_type=authorization_code,<br/>code, code_verifier (+ client_secret if confidential)
     AS-->>C: 6. BACK: access_token + id_token (+ refresh_token)
     C->>API: 7. GET /api  Authorization: Bearer <access_token>
