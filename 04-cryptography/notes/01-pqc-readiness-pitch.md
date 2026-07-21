@@ -87,4 +87,6 @@ Don't ask for a migration program. Ask for **readiness**, ~zero budget:
 - **HNDL** and **Mosca's inequality (X + Y > Z)** are the two ideas that defeat "we have time."
 - Key exchange first, long-lived keys second, signatures last — and each tower (PAM / SailPoint / AuthN) has a concrete first question.
 
-**Next:** build the actual demo — a lab capturing a hybrid `X25519MLKEM768` TLS handshake vs. a classical one in Wireshark (`04-cryptography/labs/01-pqc-tls-handshake/`, to be created).
+**Next:**
+- The full deep dive tied to our actual stack (PingFederate + Entra ID), with vendor reality-check and objection handling: [`02-pqc-iam-deep-dive-pingfederate-entra.md`](02-pqc-iam-deep-dive-pingfederate-entra.md).
+- Build the actual demo — a lab capturing a hybrid `X25519MLKEM768` TLS handshake vs. a classical one in Wireshark (`04-cryptography/labs/01-pqc-tls-handshake/`, to be created).

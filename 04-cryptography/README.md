@@ -104,6 +104,7 @@ The order matters. Each block assumes the one before it. Don't skip ahead — th
 - A sufficiently large quantum computer would break RSA and ECC (via Shor's algorithm), while only weakening symmetric crypto and hashes (Grover's — mitigated by doubling key/output sizes).
 - **NIST has standardized post-quantum algorithms** (2024): **ML-KEM** (Kyber, key encapsulation — FIPS 203), **ML-DSA** (Dilithium, signatures — FIPS 204), and **SLH-DSA** (SPHINCS+ — FIPS 205).
 - Watch for **"harvest now, decrypt later"** — adversaries recording encrypted traffic today to decrypt once quantum computers arrive. Fintech is already planning **hybrid** (classical + PQC) migrations. You don't need to implement this yet, but know the vocabulary.
+- **Going deeper (PQC for our IAM job):** [`notes/01-pqc-readiness-pitch.md`](notes/01-pqc-readiness-pitch.md) — the one-page pitch to leadership; and [`notes/02-pqc-iam-deep-dive-pingfederate-entra.md`](notes/02-pqc-iam-deep-dive-pingfederate-entra.md) — the full deep dive tied to our actual stack (**PingFederate** for customers, **Entra ID** for workforce): where the breakable crypto lives, what Ping and Microsoft actually ship today, and the priority order.
 
 ---
 
