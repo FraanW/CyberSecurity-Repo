@@ -8,7 +8,7 @@
 >
 > **The live demos** (Section 5) run on **Keycloak** + **SAML-tracer** + browser DevTools. The step-by-step lab is at [`../labs/03-kt-demo-saml-oauth/README.md`](../labs/03-kt-demo-saml-oauth/README.md) — point the room there, don't type commands into slides.
 >
-> **Deck length:** 33 slides. Comfortable in ~45–60 min with demos; ~30 min slides-only.
+> **Deck length:** 33 slides (+ optional Slide 16b on pre-PKCE Auth Code). Comfortable in ~45–60 min with demos; ~30 min slides-only.
 
 ---
 
@@ -405,6 +405,43 @@ sequenceDiagram
 **Presenter note**
 - **PKCE in one breath:** *"Client invents a random secret, sends only its SHA-256 hash up front, and reveals the original when it swaps the code. A thief with just the code can't complete the exchange."*
 - Public vs confidential: *"A server app can also hold a client secret; a SPA or mobile app can't, so PKCE *is* its protection. RFC 9700 now says use PKCE for everyone."*
+
+---
+
+## Slide 16b — Authorization Code *without* PKCE (the original flow — and why PKCE replaced it)
+
+**On the slide** — *the 2012 flow: a **confidential** server-side web app, protected only by its client secret*
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor U as User / Browser
+    participant C as Client (confidential web app + server)
+    participant AS as Auth Server (PingFederate/Keycloak)
+    participant API as Resource Server (API)
+    Note over C: NO code_verifier / code_challenge —<br/>only state (+ nonce for OIDC)
+    U->>AS: 1. FRONT: GET /authorize?response_type=code&client_id&<br/>redirect_uri&scope=openid...&state
+    AS->>AS: 2. Authenticate user (password + MFA) + consent
+    AS-->>U: 3. FRONT: redirect to redirect_uri?code=SHORTCODE&state
+    U->>C: 4. Browser delivers code, client checks state matches
+    C->>AS: 5. BACK: POST /token grant_type=authorization_code,<br/>code, redirect_uri + client_secret
+    AS-->>C: 6. BACK: access_token + id_token (+ refresh_token)
+    C->>API: 7. GET /api  Authorization: Bearer <access_token>
+    API-->>C: 8. protected data
+```
+
+- **Same shape as Slide 16, one thing missing:** there is **no `code_challenge`/`code_verifier`**. The *only* thing that stops a stolen `code` being redeemed is the **`client_secret`** at step 5.
+- **Front channel:** steps 1, 3, 4 (the code) · **Back channel:** steps 5–6 (secret + tokens)
+- **Why it was "safe enough" in 2012:** a server-side web app can actually *keep* a secret, so a code intercepted in the browser is useless without the secret held on the server.
+- **Why that broke:** **public clients — SPAs and mobile apps — can't hold a secret** (it ships in the download / the JS bundle). For them the code, once stolen, is fully redeemable → the **authorization-code interception attack**. **PKCE** (Slide 16) closes exactly that gap, which is why **RFC 9700 / OAuth 2.1 now mandate PKCE for *everyone*, secret or not.**
+
+**Talk track**
+> "Before PKCE existed, this was *the* Authorization Code flow — and you'll still meet it in older configs, so recognize it. Look closely: it's identical to the previous slide except the PKCE pieces are gone. There's no `code_challenge` going up and no `code_verifier` coming back. So what protects the code here? Just one thing — the `client_secret` the app presents at step 5. For a classic server-side web app that's genuinely fine: the secret lives on a server the user never sees, so even if someone grabs the `code` out of the browser redirect, they can't redeem it without the secret. The problem appeared when we pointed this same flow at *public* clients — single-page apps and mobile apps. Those ship their code to the user's device, so there's nowhere to hide a secret. Strip the secret and this diagram has **nothing** guarding the code — anyone who intercepts it at step 3 or 4 can walk up to the token endpoint and cash it in. That's the authorization-code interception attack, and it's the exact hole PKCE was invented to plug. So the modern rule is simple: don't run this bare flow — add PKCE, even when you also have a secret. Contrast it with Slide 16, and the value of PKCE becomes obvious."
+
+**Presenter note**
+- Say the one-line distinction out loud: *"No-PKCE Auth Code leans entirely on the client secret. That's acceptable **only** for a confidential server-side client — never a SPA or mobile app."*
+- Pair the attack with its defense (Law 9): *"Attack — code interception on a public client with no secret. Defense — PKCE binds the `/token` exchange to whoever started the flow, so a stolen code alone is worthless. Same idea as SAML's `InResponseTo`: tie the response back to the request."*
+- Ping tie-in: *"In PingFederate this is a per-client toggle — the OAuth client's 'Require Proof Key for Code Exchange (PKCE)' setting. For new clients we turn it on regardless; auditing old clients that still have it *off* is a real hardening task."* (See [note 21](21-oauth2-complete-reference.md).)
 
 ---
 
