@@ -110,10 +110,10 @@ sequenceDiagram
     B->>A: create credential (CTAP2)<br/>+ the ORIGIN and challenge
     A->>U: prompt (tap / biometric / PIN = User Verification)
     U->>A: presence / verification
-    A->>A: generate key pair for this RP ID<br/>store private key; build attestation object
+    A->>A: generate key pair for this RP ID<br/>store private key, build attestation object
     A->>B: new public key + credential ID + attestation + signed clientDataJSON
     B->>RP: attestation response
-    RP->>RP: verify challenge, origin, RP ID,<br/>(optional) attestation; STORE public key + credential ID
+    RP->>RP: verify challenge, origin, RP ID,<br/>(optional) attestation, then STORE public key + credential ID
     RP-->>U: registered ✅
 ```
 
@@ -136,10 +136,10 @@ sequenceDiagram
     B->>A: get assertion (CTAP2) + ORIGIN + challenge
     A->>U: prompt (tap / biometric / PIN)
     U->>A: presence / verification
-    A->>A: sign(authenticatorData + hash(clientDataJSON))<br/>with the private key; increment counter
+    A->>A: sign(authenticatorData + hash(clientDataJSON))<br/>with the private key, increment counter
     A->>B: signature + authenticatorData + clientDataJSON + credential ID
     B->>RP: assertion response
-    RP->>RP: look up public key by credential ID;<br/>verify signature, challenge, ORIGIN, RP ID, counter
+    RP->>RP: look up public key by credential ID,<br/>verify signature, challenge, ORIGIN, RP ID, counter
     RP-->>U: authenticated ✅
 ```
 
