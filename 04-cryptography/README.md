@@ -6,6 +6,19 @@
 
 ---
 
+## 📓 Notes in this folder
+
+Deep-dive study notes (written to [Lefler's Laws](../LEFLER-LAWS.md)). The quantum trilogy (02→03→04) is meant to be read in order — it's the crypto → quantum → post-quantum arc.
+
+| # | Note | Read it for |
+|---|---|---|
+| 01 | [Pitching PQC readiness to leadership](notes/01-pqc-readiness-pitch.md) | The boardroom ask — HNDL, Mosca's inequality, the live demo, objection handling |
+| 02 | [Cryptography deep dive](notes/02-cryptography-deep-dive.md) | The whole subject from the word up — encoding/hashing/encryption, symmetric/asymmetric, MACs vs signatures, PKI, TLS, steganography, and the algorithms we run today |
+| 03 | [Quantum computing & the quantum realm](notes/03-quantum-computing-the-quantum-realm.md) | What "quantum" means in physics vs computing vs crypto — qubits, superposition/entanglement/interference, Shor vs Grover, where the field really is |
+| 04 | [Post-quantum cryptography](notes/04-post-quantum-cryptography.md) | The fix — PQC math families, the NIST standards (ML-KEM/ML-DSA/SLH-DSA), hybrid mode, and how a fintech becomes PQC-resilient |
+
+---
+
 ## Core concepts (learn in this order)
 
 The order matters. Each block assumes the one before it. Don't skip ahead — the confusion people carry for years usually comes from muddling the first block.
