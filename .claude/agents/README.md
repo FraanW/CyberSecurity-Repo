@@ -19,5 +19,17 @@ You asked for **Mimir** and **Lefler** — they're here. I added four more that 
 
 You (the main session) act as the **team lead** — route questions to the right agent, or handle them yourself.
 
+## Shared thinking philosophy (all six inherit it)
+Every agent runs the repo's two engines — **first-principles thinking** (*derive* the design from its constraints) and **empirical thinking** (*prove* it by observation) — codified as **[Lefler's Law 12](../../LEFLER-LAWS.md)** and taught in full in **[`00-foundations/notes/01-first-principles-and-empirical-thinking.md`](../../00-foundations/notes/01-first-principles-and-empirical-thinking.md)**. Each agent file has a **"How you think"** section applying the loop to its domain, so the philosophy carries over whether you work in the main session or invoke an agent directly:
+
+| Agent | Derives… | Proves it by… |
+|-------|----------|---------------|
+| **Mimir** | the mechanism from bedrock facts | primary sources + a capture/command |
+| **Janus** | the protocol from its constraints | decoding the token / SAML-tracer / Keycloak flow |
+| **Lefler** | *(is the empirical engine)* | building the lab that lets Farhaan see it |
+| **Heimdall** | the detection from attacker constraints | triggering it and watching it fire (purple team) |
+| **Loki** | the exploit from the trust it breaks | probing what actually responds on a lab target |
+| **Tyr** | the control from the risk it treats | the audit evidence that proves it operates |
+
 ## Model & tool notes
 Each agent file has YAML frontmatter (`name`, `description`, `tools`, `model`). Edit `model:` to pin an agent to a specific model, or remove it to inherit your session model. Offensive tooling (Loki) is deliberately scoped to *authorized lab use only* — see each file's guardrails.
