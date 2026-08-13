@@ -16,6 +16,7 @@ They're written **generic/portable** (usable on any codebase) — except **Mento
 | ⚔️ **Eurylochus** | Worker | Executes a well-specified task crisply; **stops and asks** when the spec is ambiguous. Pairs with Odysseus. | **light → mid** |
 | 🏛️ **Mentor** | IAM/Sec system design | Senior security architect — best practices, trade-offs, threat modeling, IAM patterns for real systems. | **superior** |
 | 🎨 **Circe** | Frontend design | Interfaces that look designed, not generic. Clarifies the direction first, then builds anti-slop UI. | **mid → superior** |
+| 🔨 **Hephaestus** | Agent forge | *Builds new agents.* A guided interview → a custom, ready-to-drop agent file to your spec (purpose, behavior, model tier, tokens, guardrails). | **mid → superior** |
 
 ## The skills (shared reference playbooks)
 
@@ -24,6 +25,7 @@ They're written **generic/portable** (usable on any codebase) — except **Mento
 | `frontend-design-system` | Circe | The full anti-AI-slop UI/UX playbook: direction, tokens, type, color, spacing, layout, motion, a11y. |
 | `note-taking-lefler` | Phemius | Lefler's Laws + token-thrift rules + docs folder structure. |
 | `task-delegation` | Odysseus / Eurylochus | Triage rubric, model-tier map, hand-off spec format. |
+| `agent-forge` | Hephaestus | Interview question bank, model-tier guidance, agent-file template, validation checklist for building any new agent. |
 
 ## Model tiers (the token-conservation play)
 The whole point: **run each agent on the cheapest model that does its job well.**
@@ -73,6 +75,8 @@ Copilot supports **custom chat modes** (`.github/chatmodes/*.chatmode.md`) and i
 2. **Design** (if non-trivial) → 🏛️ Mentor for architecture/security; 🎨 Circe for UI.
 3. **Build** → 🧭 Odysseus triages and delegates to ⚔️ Eurylochus (cheap model) or handles it directly.
 4. **Document** → 📜 Phemius writes it up, cheaply.
+
+**Need a crew member that isn't here?** → 🔨 Hephaestus interviews you and forges a new agent to spec.
 
 ---
 
