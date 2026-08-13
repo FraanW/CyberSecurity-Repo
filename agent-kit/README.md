@@ -17,6 +17,7 @@ They're written **generic/portable** (usable on any codebase) — except **Mento
 | 🏛️ **Mentor** | IAM/Sec system design | Senior security architect — best practices, trade-offs, threat modeling, IAM patterns for real systems. | **superior** |
 | 🎨 **Circe** | Frontend design | Interfaces that look designed, not generic. Clarifies the direction first, then builds anti-slop UI. | **mid → superior** |
 | 🔨 **Hephaestus** | Agent forge | *Builds new agents.* A guided interview → a custom, ready-to-drop agent file to your spec (purpose, behavior, model tier, tokens, guardrails). | **mid → superior** |
+| 🔍 **Eurycleia** | Secret scanner *(example forge)* | Pre-commit scan of staged changes for leaked secrets/PII — read-only, reports location + fix, never prints the value. Built by Hephaestus as a worked example. | **mid** |
 
 ## The skills (shared reference playbooks)
 
