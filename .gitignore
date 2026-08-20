@@ -3,6 +3,8 @@
 .env*
 *.pem
 *.key
+*.crt
+*.csr
 *.p12
 *.pfx
 credentials*
@@ -50,3 +52,6 @@ Thumbs.db
 
 # Node dependencies (installed locally for dev; Render/Netlify install their own)
 node_modules/
+
+# Java build output (the Spring Boot lab apps build their own jars; Render builds in Docker)
+target/

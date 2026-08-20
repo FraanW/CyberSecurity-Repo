@@ -1,0 +1,58 @@
+# Every value here comes from an environment variable, so nothing about your PingFederate
+# server — not its hostname, not its certificate — ever lands in git.
+server:
+  port: ${PORT:8080}
+  # Render terminates TLS at its edge and forwards over plain HTTP. Without this, Spring would
+  # build http:// ACS URLs and PingFederate would reject the AuthnRequest's Destination.
+  forward-headers-strategy: framework
+  servlet:
+    session:
+      cookie:
+        same-site: none   # the IdP POSTs the assertion cross-site; Lax would drop the session
+        secure: ${COOKIE_SECURE:true}
+
+spring:
+  application:
+    name: pingfed-saml-sp
+  mvc:
+    problemdetails:
+      enabled: true
+
+lab:
+  saml:
+    registration-id: ${LAB_SAML_REGISTRATION_ID:pingfed}
+    public-base-url: ${PUBLIC_BASE_URL:}
+    sp-entity-id: ${LAB_SAML_SP_ENTITY_ID:}
+    idp-metadata-url: ${LAB_SAML_IDP_METADATA_URL:}
+    idp-entity-id: ${LAB_SAML_IDP_ENTITY_ID:}
+    idp-sso-url: ${LAB_SAML_IDP_SSO_URL:}
+    idp-sso-binding: ${LAB_SAML_IDP_SSO_BINDING:REDIRECT}
+    idp-slo-url: ${LAB_SAML_IDP_SLO_URL:}
+    idp-slo-binding: ${LAB_SAML_IDP_SLO_BINDING:REDIRECT}
+    idp-certificate: ${LAB_SAML_IDP_CERTIFICATE:}
+    sign-authn-requests: ${LAB_SAML_SIGN_AUTHN_REQUESTS:true}
+    sp-private-key: ${LAB_SAML_SP_PRIVATE_KEY:}
+    sp-certificate: ${LAB_SAML_SP_CERTIFICATE:}
+
+  # The app's own username/password login — what makes this deployable and usable before any
+  # PingFederate configuration exists. Leave the password blank and one is generated per boot
+  # and printed in the startup logs.
+  local:
+    username: ${LAB_LOCAL_USERNAME:farhaan}
+    password: ${LAB_LOCAL_PASSWORD:}
+    roles: ${LAB_LOCAL_ROLES:USER,LAB}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+logging:
+  level:
+    # Turn this up to DEBUG when an assertion is rejected — it logs the exact validation failure.
+    org.springframework.security.saml2: ${LAB_SAML_LOG_LEVEL:INFO}

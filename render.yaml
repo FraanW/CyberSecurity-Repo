@@ -1,0 +1,140 @@
+# Render Blueprint — deploys the two PingFederate onboarding lab apps.
+#
+# Lab: 01-identity-access-management/labs/04-pingfederate-app-onboarding/
+#
+# How to use it
+#   1. Render dashboard → New → Blueprint → pick this repo.
+#   2. Render finds this file and offers both services.
+#   3. It prompts for every variable marked `sync: false`. You can leave the PingFederate
+#      ones blank for now — both apps boot fine unconfigured and fall back to their own
+#      username/password login. Fill them in later and redeploy.
+#
+# Nothing secret lives in this file. Every credential is `sync: false`, which means Render
+# asks you for it at deploy time and stores it encrypted — it is never committed here.
+
+services:
+  # ---------------------------------------------------------------- SAML 2.0 Service Provider
+  - type: web
+    name: pingfed-saml-sp
+    runtime: docker
+    plan: free
+    region: singapore          # closest Render region to Chennai
+    rootDir: 01-identity-access-management/labs/04-pingfederate-app-onboarding/saml-sp
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health
+    autoDeploy: false          # deploy on purpose, not on every commit to the repo
+    envVars:
+      # Render terminates TLS at its edge, so the app must be told its own public HTTPS origin.
+      # Without this the ACS URL in our metadata would say http:// and PingFederate would
+      # reject the AuthnRequest's Destination.
+      - key: PUBLIC_BASE_URL
+        fromService:
+          type: web
+          name: pingfed-saml-sp
+          property: host
+
+      # --- the app's own login, so the service is usable before any IdP exists ---
+      - key: LAB_LOCAL_USERNAME
+        value: farhaan
+      - key: LAB_LOCAL_PASSWORD
+        sync: false            # leave blank and one is generated per boot, printed in the logs
+
+      # --- PingFederate, option A: one metadata URL and you are done ---
+      - key: LAB_SAML_IDP_METADATA_URL
+        sync: false
+
+      # --- PingFederate, option B: type the three values by hand ---
+      - key: LAB_SAML_IDP_ENTITY_ID
+        sync: false
+      - key: LAB_SAML_IDP_SSO_URL
+        sync: false
+      - key: LAB_SAML_IDP_SLO_URL
+        sync: false
+      - key: LAB_SAML_IDP_CERTIFICATE
+        sync: false
+
+      # --- our own SAML signing keypair ---
+      # Leave both blank and the app mints a throwaway pair at startup. That works, but it
+      # rotates on every restart. Run scripts/generate-sp-keypair.sh and paste the output here
+      # once you want a connection that survives a redeploy.
+      - key: LAB_SAML_SP_PRIVATE_KEY
+        sync: false
+      - key: LAB_SAML_SP_CERTIFICATE
+        sync: false
+      - key: LAB_SAML_SP_ENTITY_ID
+        sync: false
+
+      # Flip to DEBUG when PingFederate's assertion is rejected — it logs the exact reason.
+      - key: LAB_SAML_LOG_LEVEL
+        value: INFO
+
+  # ------------------------------------------------------------- OAuth 2.0 / OIDC client app
+  - type: web
+    name: pingfed-oauth-client
+    runtime: docker
+    plan: free
+    region: singapore
+    rootDir: 01-identity-access-management/labs/04-pingfederate-app-onboarding/oauth-client
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health
+    autoDeploy: false
+    envVars:
+      - key: PUBLIC_BASE_URL
+        fromService:
+          type: web
+          name: pingfed-oauth-client
+          property: host
+
+      # --- the app's own login, so the service is usable before any client exists ---
+      - key: LAB_LOCAL_USERNAME
+        value: farhaan
+      - key: LAB_LOCAL_PASSWORD
+        sync: false
+
+      # --- PingFederate, option A: discovery finds every endpoint from one issuer URL ---
+      - key: LAB_OAUTH_ISSUER_URI
+        sync: false
+
+      # --- PingFederate, option B: type the endpoints by hand ---
+      - key: LAB_OAUTH_AUTHORIZATION_URI
+        sync: false
+      - key: LAB_OAUTH_TOKEN_URI
+        sync: false
+      - key: LAB_OAUTH_JWKS_URI
+        sync: false
+      - key: LAB_OAUTH_USERINFO_URI
+        sync: false
+
+      # Not always published in the discovery document — usually set by hand.
+      - key: LAB_OAUTH_INTROSPECTION_URI
+        sync: false
+      - key: LAB_OAUTH_END_SESSION_URI
+        sync: false
+
+      # --- the client you create in the PingFederate console ---
+      - key: LAB_OAUTH_CLIENT_ID
+        sync: false
+      - key: LAB_OAUTH_CLIENT_SECRET
+        sync: false
+      - key: LAB_OAUTH_SCOPES
+        value: openid,profile,email
+      - key: LAB_OAUTH_CLIENT_AUTH_METHOD
+        value: client_secret_basic
+      - key: LAB_OAUTH_USE_PKCE
+        value: "true"
+
+      # --- optional second client, restricted to the Client Credentials grant ---
+      - key: LAB_OAUTH_MACHINE_CLIENT_ID
+        sync: false
+      - key: LAB_OAUTH_MACHINE_CLIENT_SECRET
+        sync: false
+      - key: LAB_OAUTH_MACHINE_SCOPES
+        sync: false
+
+      # Full token values in the API responses. True is what makes this a teaching lab.
+      # Set it to false the moment this points at anything that is not a throwaway test client.
+      - key: LAB_OAUTH_REVEAL_TOKENS
+        value: "true"
+
+      - key: LAB_OAUTH_LOG_LEVEL
+        value: INFO

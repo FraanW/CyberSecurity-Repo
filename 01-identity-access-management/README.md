@@ -40,6 +40,7 @@ Full written walkthroughs now live in [`notes/`](notes/), in learning order:
 **Hands-on labs** in [`labs/`](labs/):
 - [**Lab 01 — Keycloak as your own IdP (OIDC end to end)**](labs/01-keycloak-idp/README.md) — run a full login by hand and mint real tokens.
 - [**Lab 02 — SAML assertion anatomy**](labs/02-saml-assertion-anatomy/README.md) — decode a real assertion and run the debugging checklist.
+- [**Lab 04 — App onboarding with PingFederate (SAML SP + OAuth client)**](labs/04-pingfederate-app-onboarding/README.md) ⭐ — two deployable **Java Spring Boot** apps, each frontend + backend in one Docker image, built to be **onboarded into your own PingFederate**: one as a **SAML 2.0 SP connection**, one as an **OAuth 2.0 / OIDC client**. Download the SP metadata, paste the redirect URI, then read every assertion field and every token on screen. Ships a local username/password login so both apps are live *before* any IdP exists. Deploys to Render from [`render.yaml`](../render.yaml).
 - [**Lab 03 — Reverse-KT demo stack (SAML + OAuth 2.0)**](labs/03-kt-demo-saml-oauth/README.md) 🎤 — one-command Keycloak that's both a **SAML IdP** and an **OAuth/OIDC Authorization Server**, plus a browser app: demo **SAML SSO** and **all 4 OAuth grant types** live, captured with **SAML-tracer** + DevTools. Built to present alongside [note 23](notes/23-reverse-kt-presentation-guide.md).
 
 ---
@@ -140,6 +141,7 @@ Everything in this domain is a refinement of those two questions — plus the li
 | 7 | Configure **MFA** (TOTP) and then break weak MFA; try WebAuthn/passkey | Strong vs weak authentication |
 | 8 | Set up an **access review / certification** simulation; enforce a SoD rule | IGA governance mechanics |
 | 9 | **PAM concepts**: vault a credential, rotate it, record a session (open-source PAM) | Privileged access hygiene |
+| 10 | ✅ [**Onboard two apps into PingFederate** — a SAML SP and an OAuth client, deployed for real](labs/04-pingfederate-app-onboarding/README.md) | The day-job ticket, end to end: metadata, ACS URLs, redirect URIs, attribute contracts, access token managers |
 
 Each lab lives in `labs/NN-name/` with its own writeup. Purple-team: after each attack lab, ask Heimdall what it would detect.
 

@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PingFederate SAML SP — IAM Lab</title>
+  <link rel="stylesheet" href="/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='13' font-size='13'>&#128273;</text></svg>">
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <h1>🔐 SAML 2.0 Service Provider <span id="statusBadge" class="badge">checking…</span></h1>
+    <p class="sub">The app that <em>trusts</em> the login. Onboard it into PingFederate as an <strong>SP connection</strong>, then watch the assertion arrive.</p>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- Step 0 — the app's own login, so it is usable before any IdP exists -->
+  <section class="card" id="localCard">
+    <div class="step">Step 0 · The app's own login</div>
+    <h2>Log in without any IdP</h2>
+    <p class="hint">This is the app <em>before</em> federation: it checks your password itself. Use it to confirm the deployment is healthy, then compare it with the SAML login in Step 3 — same app, same session cookie, a completely different trust story.</p>
+    <form id="localForm" class="grid" style="max-width:520px">
+      <input type="text" id="username" name="username" placeholder="username" autocomplete="username" required>
+      <input type="password" id="password" name="password" placeholder="password" autocomplete="current-password" required>
+      <div><button type="submit">Log in locally</button></div>
+    </form>
+    <p class="hint">Credentials come from <code>LAB_LOCAL_USERNAME</code> / <code>LAB_LOCAL_PASSWORD</code>. If you did not set a password, one was generated and printed in the service logs at startup.</p>
+    <p class="err" id="localError"></p>
+  </section>
+
+  <!-- Step 1 — the values you paste into the Ping console -->
+  <section class="card">
+    <div class="step">Step 1 · Onboarding values</div>
+    <h2>What PingFederate asks you for</h2>
+    <p class="hint">Create <strong>SP Connection → Browser SSO → SAML 2.0</strong> in the PingFederate admin console and paste these in. They are this deployment's real URLs, not examples.</p>
+    <p><a class="btn" href="/api/sp-metadata.xml">⬇ Download SP metadata XML</a>
+       <a class="btn ghost" href="/saml2/service-provider-metadata/pingfed" target="_blank" rel="noopener">View it in the browser</a></p>
+    <p class="hint">Import that file in PingFederate (<strong>SP Connection → Browser SSO → Import Metadata</strong>) and the entity ID, ACS URL, bindings and signing certificate are filled in for you. Everything in the table below comes from the same file.</p>
+    <table id="spTable"><tbody><tr><td class="muted">loading…</td></tr></tbody></table>
+    <div id="certBlock" class="hidden">
+      <h2 style="margin-top:18px">SP signing certificate <button class="copy" data-copy="cert">copy PEM</button></h2>
+      <p class="hint" id="certHint"></p>
+      <pre id="certPem"></pre>
+    </div>
+  </section>
+
+  <!-- Step 2 — what we know about the IdP -->
+  <section class="card">
+    <div class="step">Step 2 · The IdP side</div>
+    <h2>Who this app trusts</h2>
+    <p class="hint">Pulled from <code>LAB_SAML_IDP_METADATA_URL</code>, or from the entity-ID / SSO-URL / certificate you set by hand.</p>
+    <table id="idpTable"><tbody><tr><td class="muted">loading…</td></tr></tbody></table>
+    <div id="missingBlock" class="hidden">
+      <p class="hint" style="color:var(--warn)">⚠️ Not configured yet. Set these environment variables and redeploy:</p>
+      <ul class="checklist" id="missingList"></ul>
+    </div>
+  </section>
+
+  <!-- Step 3 — run the flow -->
+  <section class="card">
+    <div class="step">Step 3 · Run the SSO flow</div>
+    <h2 id="sessionTitle">You are not logged in</h2>
+    <p class="hint">“Log in” sends a signed <strong>AuthnRequest</strong> to PingFederate. PingFederate authenticates you, then POSTs a signed <strong>assertion</strong> back to the ACS URL above.</p>
+    <div id="loggedOut">
+      <a class="btn" id="loginBtn" href="#">Log in with PingFederate →</a>
+      <button class="ghost" id="pingBtn">Test /api/public/ping</button>
+      <p class="hint" id="loginDisabledHint"></p>
+    </div>
+    <div id="loggedIn" class="hidden">
+      <table id="whoTable"><tbody></tbody></table>
+      <form method="post" action="/logout" id="logoutForm" style="margin-top:10px">
+        <button type="submit">Log out (Single Logout)</button>
+      </form>
+      <a class="btn ghost" href="/api/assertion" target="_blank" rel="noopener">Open raw assertion XML</a>
+    </div>
+    <p class="err" id="flowError"></p>
+  </section>
+
+  <!-- Step 4 — read the assertion -->
+  <section class="card hidden" id="assertionCard">
+    <div class="step">Step 4 · Read the assertion</div>
+    <h2>Attributes PingFederate sent</h2>
+    <p class="hint">This is the <strong>attribute contract</strong> from the Ping console, seen from the app's side. If a claim is missing here, it is missing in the connection's attribute contract.</p>
+    <table id="attrTable"><tbody></tbody></table>
+
+    <h2 style="margin-top:20px">The fields that break onboarding</h2>
+    <p class="hint">Audience must equal your SP entity ID. Destination must equal your ACS URL. Conditions must not have expired — that one is usually clock skew.</p>
+    <table id="highlightTable"><tbody></tbody></table>
+
+    <h2 style="margin-top:20px">Raw SAML Response <button class="copy" data-copy="xml">copy XML</button></h2>
+    <p class="hint">Exactly what arrived on the wire — the same bytes SAML-tracer would show you.</p>
+    <pre id="rawXml">loading…</pre>
+  </section>
+
+  <!-- Endpoint reference -->
+  <section class="card">
+    <div class="step">Reference</div>
+    <h2>Every endpoint this app exposes</h2>
+    <table>
+      <tbody>
+        <tr><th><code>GET /</code></th><td>This dashboard.</td></tr>
+        <tr><th><code>GET /api/health</code></th><td>Liveness. Public.</td></tr>
+        <tr><th><code>GET /api/public/ping</code></th><td>Unauthenticated smoke test. Public.</td></tr>
+        <tr><th><code>GET /api/config</code></th><td>Every value to paste into PingFederate. Public.</td></tr>
+        <tr><th><code>GET /api/whoami</code></th><td>NameID, session index, attributes. <em>Needs a SAML session.</em></td></tr>
+        <tr><th><code>GET /api/attributes</code></th><td>Just the attribute contract. <em>Needs a SAML session.</em></td></tr>
+        <tr><th><code>GET /api/assertion</code></th><td>Raw pretty-printed SAML Response XML. <em>Needs a SAML session.</em></td></tr>
+        <tr><th><code>GET /api/assertion/highlights</code></th><td>Issuer, audience, conditions, NameID format. <em>Needs a SAML session.</em></td></tr>
+        <tr><th><code>GET /api/sp-metadata.xml</code></th><td><strong>SP metadata as a download</strong> — the file to import into PingFederate. Public.</td></tr>
+        <tr><th><code>GET /saml2/service-provider-metadata/pingfed</code></th><td>The same metadata, rendered in the browser.</td></tr>
+        <tr><th><code>POST /login</code></th><td>The app's own username/password login.</td></tr>
+        <tr><th><code>GET /saml2/authenticate/pingfed</code></th><td>Starts SSO (sends the AuthnRequest).</td></tr>
+        <tr><th><code>POST /login/saml2/sso/pingfed</code></th><td><strong>ACS</strong> — where PingFederate POSTs the assertion.</td></tr>
+        <tr><th><code>POST /logout</code></th><td>Starts Single Logout.</td></tr>
+        <tr><th><code>* /logout/saml2/slo</code></th><td>Receives PingFederate's LogoutRequest / LogoutResponse.</td></tr>
+      </tbody>
+    </table>
+  </section>
+</main>
+
+<footer>Authorized-lab-only · dummy users only · never paste a real FinCo assertion into a screenshot</footer>
+<script src="/app.js"></script>
+</body>
+</html>

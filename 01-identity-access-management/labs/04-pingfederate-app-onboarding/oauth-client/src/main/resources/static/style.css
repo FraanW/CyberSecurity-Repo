@@ -1,0 +1,95 @@
+/* Shared look for both lab apps: dark, high-contrast, no build step, no CDN. */
+:root {
+  --bg: #0d1117;
+  --panel: #161b22;
+  --panel-2: #1c2431;
+  --line: #2b3444;
+  --text: #e6edf3;
+  --muted: #8b98a9;
+  --accent: #4a9eff;
+  --accent-2: #2d7de0;
+  --good: #3fb950;
+  --warn: #d29922;
+  --bad: #f85149;
+  --mono: ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 15px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+header {
+  border-bottom: 1px solid var(--line);
+  background: linear-gradient(180deg, #12181f, var(--bg));
+  padding: 28px 20px 22px;
+}
+
+.wrap { max-width: 1000px; margin: 0 auto; padding: 0 20px; }
+
+h1 { margin: 0 0 6px; font-size: 24px; letter-spacing: -0.3px; }
+h2 { margin: 0 0 4px; font-size: 17px; }
+.sub { color: var(--muted); margin: 0; font-size: 14px; }
+
+.badge {
+  display: inline-block; padding: 3px 10px; border-radius: 999px;
+  font-size: 12px; font-weight: 600; letter-spacing: 0.02em;
+  border: 1px solid var(--line); background: var(--panel-2); color: var(--muted);
+}
+.badge.ok   { color: var(--good); border-color: #1d572b; background: #0f2916; }
+.badge.warn { color: var(--warn); border-color: #5c4708; background: #2a2109; }
+.badge.bad  { color: var(--bad);  border-color: #6b2020; background: #2c1214; }
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 18px 20px;
+  margin: 16px 0;
+}
+.card .step {
+  color: var(--accent); font-size: 12px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px;
+}
+.hint { color: var(--muted); font-size: 13px; margin: 6px 0 14px; }
+
+button, .btn {
+  font: inherit; font-weight: 600; cursor: pointer;
+  background: var(--accent-2); color: #fff; border: 0;
+  border-radius: 7px; padding: 9px 16px; text-decoration: none;
+  display: inline-block; margin: 4px 6px 4px 0;
+}
+button:hover, .btn:hover { background: var(--accent); }
+button.ghost, .btn.ghost { background: transparent; border: 1px solid var(--line); color: var(--text); }
+button.ghost:hover, .btn.ghost:hover { background: var(--panel-2); }
+button:disabled { opacity: 0.45; cursor: not-allowed; }
+
+table { width: 100%; border-collapse: collapse; margin: 8px 0; font-size: 14px; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { color: var(--muted); font-weight: 600; width: 32%; white-space: nowrap; }
+td .val { font-family: var(--mono); font-size: 13px; word-break: break-all; }
+
+pre {
+  background: #0b0f16; border: 1px solid var(--line); border-radius: 8px;
+  padding: 14px; overflow: auto; max-height: 460px;
+  font-family: var(--mono); font-size: 12.5px; line-height: 1.55; margin: 8px 0 0;
+}
+
+.copy {
+  background: transparent; border: 1px solid var(--line); color: var(--muted);
+  font-size: 11px; padding: 2px 8px; border-radius: 5px; margin-left: 8px;
+}
+.copy:hover { color: var(--text); background: var(--panel-2); }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+.hidden { display: none !important; }
+.muted { color: var(--muted); }
+.err { color: var(--bad); font-family: var(--mono); font-size: 13px; white-space: pre-wrap; }
+footer { color: var(--muted); font-size: 13px; padding: 30px 20px 50px; text-align: center; }
+code { font-family: var(--mono); background: var(--panel-2); padding: 1px 5px; border-radius: 4px; font-size: 13px; }
+ul.checklist { margin: 6px 0; padding-left: 20px; }
+ul.checklist li { margin: 4px 0; font-family: var(--mono); font-size: 13px; }
