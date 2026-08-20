@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PingFederate OAuth 2.0 Client — IAM Lab</title>
+  <link rel="stylesheet" href="/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='13' font-size='13'>&#127915;</text></svg>">
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <h1>🎫 OAuth 2.0 / OIDC Client <span id="statusBadge" class="badge">checking…</span></h1>
+    <p class="sub">The app that <em>receives a token</em>. Onboard it into PingFederate as an <strong>OAuth client</strong>, then read every token it issues.</p>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- Step 0 — the app's own login, so it is usable before any client exists -->
+  <section class="card" id="localCard">
+    <div class="step">Step 0 · The app's own login</div>
+    <h2>Log in without any authorization server</h2>
+    <p class="hint">This is the app <em>before</em> OAuth: it checks your password itself and issues no tokens at all. Use it to confirm the deployment is healthy, then compare with Step 3 — same app, same session cookie, a completely different trust story.</p>
+    <form id="localForm" class="grid" style="max-width:520px">
+      <input type="text" id="username" name="username" placeholder="username" autocomplete="username" required>
+      <input type="password" id="password" name="password" placeholder="password" autocomplete="current-password" required>
+      <div><button type="submit">Log in locally</button></div>
+    </form>
+    <p class="hint">Credentials come from <code>LAB_LOCAL_USERNAME</code> / <code>LAB_LOCAL_PASSWORD</code>. If you did not set a password, one was generated and printed in the service logs at startup.</p>
+    <p class="err" id="localError"></p>
+  </section>
+
+  <!-- Step 1 -->
+  <section class="card">
+    <div class="step">Step 1 · Onboarding values</div>
+    <h2>What PingFederate asks you for</h2>
+    <p class="hint">In the admin console: <strong>Applications → OAuth → Clients → Add Client</strong>. The redirect URI must match <em>exactly</em> — one trailing slash difference and you get <code>invalid_redirect_uri</code>.</p>
+    <table id="clientTable"><tbody><tr><td class="muted">loading…</td></tr></tbody></table>
+  </section>
+
+  <!-- Step 2 -->
+  <section class="card">
+    <div class="step">Step 2 · The endpoints in play</div>
+    <h2>Where this app talks to PingFederate</h2>
+    <p class="hint">Set <code>LAB_OAUTH_ISSUER_URI</code> and discovery fills all of these in for you from <code>/.well-known/openid-configuration</code>.</p>
+    <table id="endpointTable"><tbody><tr><td class="muted">loading…</td></tr></tbody></table>
+    <div id="missingBlock" class="hidden">
+      <p class="hint" style="color:var(--warn)">⚠️ Not configured yet. Set these environment variables and redeploy:</p>
+      <ul class="checklist" id="missingList"></ul>
+    </div>
+  </section>
+
+  <!-- Step 3 -->
+  <section class="card">
+    <div class="step">Step 3 · Authorization Code + PKCE</div>
+    <h2 id="sessionTitle">You are not logged in</h2>
+    <p class="hint">“Log in” sends you to PingFederate's authorization endpoint. You authenticate there, PingFederate redirects back with a one-time <strong>code</strong>, and this backend swaps that code for tokens — over a back channel your browser never sees.</p>
+    <div id="loggedOut">
+      <a class="btn" id="loginBtn" href="#">Log in with PingFederate →</a>
+      <p class="hint" id="loginDisabledHint"></p>
+    </div>
+    <div id="loggedIn" class="hidden">
+      <table id="whoTable"><tbody></tbody></table>
+      <form method="post" action="/logout" id="logoutForm" style="margin-top:10px">
+        <button type="submit">Log out (RP-initiated)</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- Step 4 -->
+  <section class="card hidden" id="tokenCard">
+    <div class="step">Step 4 · Read the tokens</div>
+    <h2>Access token</h2>
+    <p class="hint" id="atNote"></p>
+    <table id="atTable"><tbody></tbody></table>
+    <pre id="atPayload" class="hidden"></pre>
+
+    <h2 style="margin-top:22px">ID token</h2>
+    <p class="hint">Proof of <em>who logged in</em>. It is for this app to read — never send it to an API as a credential; that is what the access token is for.</p>
+    <table id="itTable"><tbody></tbody></table>
+    <pre id="itPayload"></pre>
+
+    <h2 style="margin-top:22px">Refresh token</h2>
+    <p class="hint">Only issued when <code>offline_access</code> is in your scopes <em>and</em> the client allows the Refresh Token grant.</p>
+    <table id="rtTable"><tbody></tbody></table>
+  </section>
+
+  <!-- Step 5 -->
+  <section class="card">
+    <div class="step">Step 5 · Exercise the other grants</div>
+    <h2>Four buttons, four PingFederate calls</h2>
+    <p class="hint">Each button makes one real HTTP call and shows you the raw response body — errors included, which is when they teach the most.</p>
+    <button id="ccBtn">Client Credentials grant</button>
+    <button id="refreshBtn" class="ghost">Refresh the access token</button>
+    <button id="introspectBtn" class="ghost">Introspect (RFC 7662)</button>
+    <button id="userinfoBtn" class="ghost">Call UserInfo</button>
+    <pre id="output">Press a button — the raw JSON response lands here.</pre>
+  </section>
+
+  <!-- Reference -->
+  <section class="card">
+    <div class="step">Reference</div>
+    <h2>Every endpoint this app exposes</h2>
+    <table>
+      <tbody>
+        <tr><th><code>GET /</code></th><td>This dashboard.</td></tr>
+        <tr><th><code>GET /api/health</code></th><td>Liveness. Public.</td></tr>
+        <tr><th><code>GET /api/public/ping</code></th><td>Unauthenticated smoke test. Public.</td></tr>
+        <tr><th><code>GET /api/config</code></th><td>Redirect URI, scopes, resolved endpoints. Public.</td></tr>
+        <tr><th><code>GET /api/whoami</code></th><td>ID token claims. <em>Needs login.</em></td></tr>
+        <tr><th><code>GET /api/tokens</code></th><td>Access / ID / refresh tokens, decoded. <em>Needs login.</em></td></tr>
+        <tr><th><code>GET /api/userinfo</code></th><td>Live call to PingFederate's UserInfo endpoint. <em>Needs login.</em></td></tr>
+        <tr><th><code>POST /api/refresh</code></th><td>Refresh Token grant; stores the result. <em>Needs login.</em></td></tr>
+        <tr><th><code>POST /api/introspect</code></th><td>RFC 7662 introspection of the current access token. <em>Needs login.</em></td></tr>
+        <tr><th><code>POST /api/client-credentials</code></th><td>Client Credentials grant. <strong>No login needed</strong> — that is the point.</td></tr>
+        <tr><th><code>GET /oauth2/authorization/pingfed</code></th><td>Starts the Authorization Code flow.</td></tr>
+        <tr><th><code>GET /login/oauth2/code/pingfed</code></th><td><strong>Redirect URI</strong> — whitelist this one in PingFederate.</td></tr>
+        <tr><th><code>POST /login</code></th><td>The app's own username/password login.</td></tr>
+        <tr><th><code>POST /logout</code></th><td>Local logout, then PingFederate's end-session endpoint.</td></tr>
+      </tbody>
+    </table>
+  </section>
+</main>
+
+<footer>Authorized-lab-only · test clients and dummy users only · never screenshot a live FinCo token</footer>
+<script src="/app.js"></script>
+</body>
+</html>
