@@ -154,6 +154,12 @@ short version:
 4. Save, then **enable** the connection.
 5. Back in the app → **Step 3** → **Log in with PingFederate**.
 
+**No metadata URL, or want to understand what the import actually did?**
+**[`PINGFED-SETUP.md`](PINGFED-SETUP.md) §1.7** walks through entering the entity ID, ACS URL,
+bindings and certificate by hand, and **§1.8** covers the piece metadata import never touches at
+all: building the **IdP Adapter** and **Authentication Policy** that actually check the user's
+credential before the assertion is signed.
+
 **✅ Checkpoint — you are logged in via SAML.** The dashboard now says *"via PingFederate (SAML)"*,
 and **Step 4** fills in with the attributes, the parsed highlights, and the raw XML.
 
