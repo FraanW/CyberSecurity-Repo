@@ -1,13 +1,17 @@
 package com.finco.lab.samlsp;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.web.client.RestClient;
 
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
@@ -21,6 +25,19 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class UnconfiguredAppSmokeTest {
+
+    @TempDir
+    static Path stateDir;
+
+    /**
+     * Point the import state directory at a scratch path. Without this the test would read
+     * whatever a previous run left in the default directory and "unconfigured" would stop
+     * being true — a false green that only shows up on the second run.
+     */
+    @DynamicPropertySource
+    static void isolateState(DynamicPropertyRegistry registry) {
+        registry.add("lab.saml.state-dir", () -> stateDir.toString());
+    }
 
     @LocalServerPort
     int port;

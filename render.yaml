@@ -39,11 +39,27 @@ services:
       - key: LAB_LOCAL_PASSWORD
         sync: false            # leave blank and one is generated per boot, printed in the logs
 
-      # --- PingFederate, option A: one metadata URL and you are done ---
+      # --- PingFederate, option A: import the metadata file in the app's UI ---
+      # Leave every variable below blank. Deploy, log in with the local password, then use
+      # Step 2 → "Import the IdP's metadata". It takes effect on the next login with no
+      # redeploy, and it carries the signing certificate — so there is nothing to mistype and
+      # nothing that goes stale on a key rotation. Best first move.
+      #
+      # It survives a restart but not a redeploy (Render rebuilds the filesystem from the
+      # image). The import screen prints the variables below, ready to paste back here when you
+      # want the configuration pinned.
+
+      # --- PingFederate, option B: one metadata URL, fetched at startup ---
+      # Must include the connection parameter, or you get the server's DEFAULT signing
+      # certificate rather than this connection's:
+      #   https://pf.example.com/pf/federation_metadata.ping?PartnerSpId=<the app's SP entity ID>
       - key: LAB_SAML_IDP_METADATA_URL
         sync: false
 
-      # --- PingFederate, option B: type the three values by hand ---
+      # --- PingFederate, option C: type the three values by hand ---
+      # LAB_SAML_IDP_CERTIFICATE accepts SEVERAL concatenated PEM blocks. During a key rotation
+      # PingFederate publishes two certificates and may sign with either — paste both and the
+      # switchover cannot lock you out.
       - key: LAB_SAML_IDP_ENTITY_ID
         sync: false
       - key: LAB_SAML_IDP_SSO_URL
@@ -65,6 +81,8 @@ services:
         sync: false
 
       # Flip to DEBUG when PingFederate's assertion is rejected — it logs the exact reason.
+      # You usually will not need to: a rejected assertion now shows a diagnosis in the app,
+      # naming the key it was signed with and the keys the app trusts.
       - key: LAB_SAML_LOG_LEVEL
         value: INFO
 

@@ -93,3 +93,64 @@ footer { color: var(--muted); font-size: 13px; padding: 30px 20px 50px; text-ali
 code { font-family: var(--mono); background: var(--panel-2); padding: 1px 5px; border-radius: 4px; font-size: 13px; }
 ul.checklist { margin: 6px 0; padding-left: 20px; }
 ul.checklist li { margin: 4px 0; font-family: var(--mono); font-size: 13px; }
+
+/* ---- Added with the IdP metadata import + signature diagnosis feature ---- */
+
+/* The failure banner. Loud on purpose: a rejected assertion used to be a blank page. */
+.banner {
+  border: 1px solid #6b2020; background: #2c1214; color: var(--text);
+  border-radius: 10px; padding: 14px 18px; margin: 16px 0;
+}
+.banner h2 { color: var(--bad); }
+.banner.ok { border-color: #1d572b; background: #0f2916; }
+.banner.ok h2 { color: var(--good); }
+
+/* Drop zone for the metadata file. */
+.drop {
+  border: 1.5px dashed var(--line); border-radius: 10px; padding: 22px;
+  text-align: center; color: var(--muted); background: var(--panel-2);
+  cursor: pointer; transition: border-color .15s, color .15s;
+}
+.drop:hover, .drop.over { border-color: var(--accent); color: var(--text); }
+.drop strong { color: var(--text); display: block; margin-bottom: 4px; }
+
+/* Tabs for the three ways in: file, paste, URL. */
+.tabs { display: flex; gap: 6px; margin: 10px 0 12px; flex-wrap: wrap; }
+.tabs button {
+  background: transparent; border: 1px solid var(--line); color: var(--muted);
+  padding: 6px 14px; border-radius: 7px; font-size: 13px; margin: 0;
+}
+.tabs button.active { background: var(--panel-2); color: var(--text); border-color: var(--accent); }
+
+input[type=text], input[type=password], input[type=url], textarea {
+  width: 100%; font: inherit; background: #0b0f16; color: var(--text);
+  border: 1px solid var(--line); border-radius: 7px; padding: 9px 11px;
+}
+textarea { font-family: var(--mono); font-size: 12.5px; min-height: 130px; resize: vertical; }
+input:focus, textarea:focus { outline: none; border-color: var(--accent); }
+
+/* A certificate, shown so the fingerprint is the thing your eye lands on. */
+.cert {
+  border: 1px solid var(--line); border-left: 3px solid var(--accent);
+  border-radius: 8px; padding: 10px 14px; margin: 8px 0; background: var(--panel-2);
+}
+.cert.match { border-left-color: var(--good); }
+.cert.mismatch { border-left-color: var(--bad); }
+.cert .fp { font-family: var(--mono); font-size: 12.5px; word-break: break-all; color: var(--text); }
+.cert .meta { color: var(--muted); font-size: 12px; margin-top: 4px; word-break: break-all; }
+
+/* The diagnosis verdict block. */
+.verdict { border-radius: 8px; padding: 12px 16px; margin: 10px 0; border: 1px solid var(--line); }
+.verdict.bad  { border-color: #6b2020; background: #2c1214; }
+.verdict.warn { border-color: #5c4708; background: #2a2109; }
+.verdict.ok   { border-color: #1d572b; background: #0f2916; }
+.verdict .title { font-weight: 700; margin-bottom: 4px; }
+
+ul.steps { margin: 8px 0 0; padding-left: 20px; }
+ul.steps li { margin: 6px 0; font-size: 13.5px; }
+ul.warnings { margin: 6px 0; padding-left: 20px; color: var(--warn); }
+ul.warnings li { margin: 5px 0; font-size: 13px; }
+ul.plain { margin: 6px 0; padding-left: 20px; }
+ul.plain li { margin: 4px 0; font-family: var(--mono); font-size: 12.5px; word-break: break-all; }
+.row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.spinner { color: var(--muted); font-size: 13px; }
