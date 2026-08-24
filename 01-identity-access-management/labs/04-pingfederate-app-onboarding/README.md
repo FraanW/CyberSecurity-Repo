@@ -163,6 +163,46 @@ credential before the assertion is signed.
 **✅ Checkpoint — you are logged in via SAML.** The dashboard now says *"via PingFederate (SAML)"*,
 and **Step 4** fills in with the attributes, the parsed highlights, and the raw XML.
 
+### Point the app at your IdP — import the metadata (new)
+
+Steps 1–5 above tell **PingFederate** about the app. This is the other direction: telling **the
+app** about PingFederate. It needs exactly three facts — the IdP's **entity ID**, its **SSO URL**,
+and its **signing certificate** — and the certificate is the one that decides whether a login
+succeeds or comes back `Invalid Signature`.
+
+You can type all three into environment variables. **Don't.** Import the metadata instead:
+
+1. In PingFederate: **System → Protocol Metadata → Metadata Export** → save the XML.
+   *(Or fetch the published URL — see the `PartnerSpId` gotcha below.)*
+2. In the app: **Step 2 → Import the IdP's metadata → Upload a file → Preview**.
+3. **Read the SHA-256 fingerprint** in the preview and check it against the Ping console
+   (*SP Connection → Credentials → Digital Signature Settings*).
+4. Click **Import and trust this IdP**.
+
+**Live on the next login. No redeploy.** The app swaps the registration in memory.
+
+> ⚠️ **The `PartnerSpId` gotcha.** PingFederate's metadata URL takes a parameter:
+> `…/pf/federation_metadata.ping?PartnerSpId=<your SP entity ID>`. **With** it you get the
+> certificate *your connection* signs with. **Without** it you get the server default, which can be
+> a different certificate entirely — and that mismatch is invisible until every login fails.
+
+> ⚠️ **Importing is a trust decision.** A metadata file is not self-authenticating. Unless it is
+> XML-signed by a key you already hold, importing it means trusting whoever gave you the file.
+> That is exactly why Preview and Import are two separate buttons: the gap between them is where
+> you check the fingerprint. The app requires a login before it will let you import at all —
+> anyone who could re-point this SP at an IdP they control could walk in as anybody.
+
+**Why bother, when three environment variables also work?** Because two of the three are URLs you
+can typo and the third is a 1,600-character base64 blob that can be mangled on paste or go stale on
+rotation. Metadata deletes the transcription step, and with it the most common cause of
+`Invalid Signature`. It also trusts **every** certificate the IdP publishes, so a key rotation
+mid-flight cannot lock you out.
+
+**Undo it:** *Revert to environment config* drops the imported file and falls back to
+`LAB_SAML_IDP_*`. **Make it permanent:** the import screen prints the equivalent environment
+variables — an import survives a restart, but not a redeploy (Render rebuilds the filesystem from
+the image).
+
 ### Before you have real key material
 
 The app mints a **throwaway signing keypair at startup** so it can boot with nothing configured.
@@ -255,7 +295,8 @@ connection*, and each maps to a control you will be asked about in an audit.
 | Symptom | Almost always | Fix |
 |---|---|---|
 | SAML: `Invalid destination` / `Invalid audience` | Your app is behind Render's TLS proxy and built an `http://` URL | Set `PUBLIC_BASE_URL` to the full `https://…onrender.com` origin, redeploy, re-import the metadata |
-| SAML: `Invalid signature` | PingFederate has an old copy of your SP certificate | You redeployed with an ephemeral keypair. Generate a fixed one (§3) and re-import the metadata |
+| SAML: `Invalid signature` **on the assertion** (login fails at the app) | The app is holding the **wrong public key** for the IdP | **Import the IdP's metadata** (§3). Then read the diagnosis below |
+| SAML: PingFederate rejects the **AuthnRequest**'s signature (login fails at Ping) | Ping has an old copy of **your SP** certificate | You redeployed with an ephemeral keypair. Generate a fixed one (§3) and re-import the SP metadata into Ping |
 | SAML: assertion rejected as expired | Clock skew | Check the SP host's time. Assertions live for minutes |
 | OAuth: `invalid_redirect_uri` | One character off | Compare `/api/config → client.redirectUri` against the console, character by character |
 | OAuth: `invalid_client` | Wrong client auth method | Try `LAB_OAUTH_CLIENT_AUTH_METHOD=client_secret_post` — some clients are configured that way |
@@ -269,6 +310,64 @@ connection*, and each maps to a control you will be asked about in an audit.
 LAB_SAML_LOG_LEVEL=DEBUG      # on the SAML app
 LAB_OAUTH_LOG_LEVEL=DEBUG     # on the OAuth app
 ```
+
+### `Invalid Signature` on the assertion — the 60-second RCA
+
+This is the most common onboarding failure and it has one dominant cause, so it gets its own
+procedure. Full derivation — what a signature is, why it must exist, and how the maths works — is in
+**[note 34 — "Invalid Signature": how SAML signature verification really works](../../notes/34-saml-invalid-signature-rca.md)**.
+
+**The one-line version:** the IdP signed with a **private key**; your app checks with the matching
+**public key**. `Invalid signature` almost always means those two are not a pair — the app is
+holding a *different certificate* from the one PingFederate is signing with.
+
+**Your AuthnRequest going out fine is a strong signal.** It proves the SSO URL, the entity ID and
+the ACS URL are all right. The certificate is the one field none of that exercises.
+
+**Let the app diagnose it:**
+
+1. Let the SAML login fail. You land back on the dashboard with a red banner.
+2. **Log in with the app's own username and password (Step 0).** The diagnosis contains the
+   assertion — somebody's name, email and groups — so it needs a session. The local login is
+   deliberately independent of the IdP, which is why it still works when SSO is broken.
+3. Click **"Show me why →"**.
+
+You get the fingerprint the IdP signed with, next to the fingerprints you trust:
+
+```
+The key the IdP signed with
+  SHA-256  5E:EB:5F:E0:01:76:C3:11:C1:0A:7C:7D:D0:49:2E:07:…   ✗ we do NOT trust this key
+
+The keys this app trusts
+  SHA-256  9A:F2:9F:70:0B:15:E0:9F:B5:FD:67:80:1B:FE:1A:22:…
+```
+
+Two different fingerprints is the root cause, stated in one line. The same panel also cross-checks
+**Issuer**, **Audience**, **Destination** and the **Conditions** window, so you find out about the
+next failure before you go round again.
+
+> 🔍 **Compare fingerprints, not subject names.** Two certificates can share a subject, an issuer
+> and an overlapping validity window and still be different keys — which is exactly what a rotation
+> leaves you with. A SHA-256 fingerprint is a hash of the whole certificate, so it cannot lie. It is
+> the same value `openssl x509 -fingerprint -sha256 -noout` prints and the same one the Ping console
+> shows.
+
+**The four sub-causes, in order of likelihood:**
+
+| Sub-cause | Tell | Fix |
+|---|---|---|
+| **Key rotation** | worked yesterday, nothing changed on your side | re-import the metadata |
+| **Wrong certificate pasted** — Ping's SSL/server cert instead of its **SAML signing** cert | subject looks right (same hostname!), fingerprint does not match | re-import the metadata |
+| **Metadata fetched without `?PartnerSpId=…`** | you have the server default, not your connection's cert | re-fetch **with** the parameter |
+| **Only one of a rotating pair trusted** | intermittent — some logins work | import metadata (trusts all published certs), or paste **both** PEM blocks into `LAB_SAML_IDP_CERTIFICATE` |
+
+**Diagnose a capture from somewhere else:** grab the `SAMLResponse` with SAML-tracer and POST it to
+`/api/saml/diagnose` — same analysis, without needing the failure to happen on this machine.
+
+> ⚠️ **The certificate inside the response is a clue, never a credential.** It came out of the very
+> message you are trying to validate, so anyone could have put it there. The app compares it against
+> your configured trust anchors and *never* verifies against it. An SP that verified against the
+> embedded `KeyInfo` would accept an assertion signed by anybody — see note 34 §9.
 
 ---
 
@@ -293,6 +392,10 @@ LAB_OAUTH_LOG_LEVEL=DEBUG     # on the OAuth app
 - **The same login, two trust stories.** Local login means the app checked your password. SSO
   means the app never saw one. Both produce the same session cookie — and that is exactly why
   compromising the IdP compromises every app behind it.
+- **A signature is a claim of authorship only one party could make.** The IdP signs the assertion
+  with its private key; the app verifies with the public half. `Invalid signature` is nearly always
+  "wrong public key", not "someone tampered with your login" — and **importing metadata** removes
+  that whole class of failure, because the file carries the certificate the IdP actually uses.
 - PingFederate's **Access Token Manager** is the setting that decides whether your APIs can
   validate tokens offline or must call home on every request. That is an architecture decision
   disguised as a dropdown.
@@ -303,6 +406,8 @@ LAB_OAUTH_LOG_LEVEL=DEBUG     # on the OAuth app
   [note 21 — OAuth 2.0 complete reference](../../notes/21-oauth2-complete-reference.md) §resource servers.
 - Compare with [Lab 03](../03-kt-demo-saml-oauth/README.md), which runs the *IdP* side locally in
   Keycloak. Lab 03 teaches you the server; this lab teaches you the app.
+- Go deep on the failure you will hit most:
+  [note 34 — "Invalid Signature": how SAML signature verification really works](../../notes/34-saml-invalid-signature-rca.md).
 - Read the assertion and token fields against
   [note 16 — SAML bindings and certificates](../../notes/16-saml-bindings-and-certificates.md) and
   [note 22 — OAuth grant types](../../notes/22-oauth2-grant-types-and-scenarios.md).

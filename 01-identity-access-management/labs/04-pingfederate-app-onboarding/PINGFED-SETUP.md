@@ -77,7 +77,7 @@ That file contains everything Ping needs, so you will not have to type any of it
 
 | Screen | What to set |
 |---|---|
-| Digital Signature Settings | pick your IdP **signing certificate**, and **RSA SHA256** |
+| Digital Signature Settings | pick your IdP **signing certificate**, and **RSA SHA256**. **Note its SHA-256 fingerprint now** — you will compare it against the app in §1.5b, and it is what turns a signature ticket from an hour into a minute. Also tick **include the certificate in `<KeyInfo>`** if the option is offered: it lets the app tell you *which* key signed a rejected assertion instead of only that the one it holds did not work |
 | Signature Verification Settings | **already imported from the metadata** — this is our SP certificate |
 
 ### 1.5 Save and enable
@@ -87,16 +87,72 @@ Save the connection, then set its status to **Active** on the SP Connections lis
 **✅ Checkpoint.** In the app: **Step 3 → Log in with PingFederate**. You should land back on the
 dashboard with *"via PingFederate (SAML)"* and a populated **Step 4**.
 
+### 1.5b Give the app *your* metadata — the other half of the handshake
+
+**Everything above tells PingFederate about the app. This tells the app about PingFederate.** Both
+halves are needed, and forgetting this one is the single most common reason a brand-new connection
+fails with `Invalid Signature` on the first login.
+
+The app needs three facts about your IdP — **entity ID**, **SSO URL**, and **signing certificate**.
+Hand it the metadata document rather than typing them:
+
+1. **System → Protocol Metadata → Metadata Export**
+   | Screen | What to choose |
+   |---|---|
+   | Metadata Role | **I am the Identity Provider (IdP)** |
+   | Metadata Signing | signing it is optional but better — a signed document is one somebody can verify came from you |
+   | Export | save the `.xml` file |
+
+2. In the app: **Step 2 → Import the IdP's metadata → Upload a file → Preview**.
+
+3. **Check the SHA-256 fingerprint** shown in the preview against **Security → Certificate & Key
+   Management → Signing & Decryption Keys & Certificates** (or the fingerprint on the certificate
+   you picked in §1.4). They must be the same value.
+
+4. **Import and trust this IdP.** Live on the next login — no redeploy.
+
+> ⚠️ **The metadata URL gotcha.** If you use the published URL instead of the export, it **must**
+> carry the connection parameter:
+> `https://pf.example.com/pf/federation_metadata.ping?PartnerSpId=<the app's SP entity ID>`
+>
+> **Without `PartnerSpId`** PingFederate serves its *default* signing certificate. If this
+> connection is configured (§1.4) to sign with a different one, everything imports cleanly and every
+> login still fails. This is a genuinely nasty one because nothing looks wrong.
+
+> ⚠️ **Import is a trust decision, not a data transfer.** Unless the document is XML-signed by a key
+> you already hold, importing it means trusting whoever handed you the file. Fetch it over HTTPS
+> from a host you trust, or export it yourself — and check the fingerprint in the preview before you
+> commit. That is why the app splits **Preview** from **Import**.
+
+**Doing it by hand instead:** set `LAB_SAML_IDP_ENTITY_ID`, `LAB_SAML_IDP_SSO_URL` and
+`LAB_SAML_IDP_CERTIFICATE`. During a key rotation, paste **both** PEM blocks into the certificate
+variable one after the other — the app trusts all of them, so the switchover cannot lock you out.
+
+---
+
 ### 1.6 If the login fails
 
 Read **`server/default/log/audit.log`** first — one line per SSO transaction, and it names the
 connection and the failure. `server.log` has the stack trace when you need it.
 
+**Work out which direction failed first.** The two are different problems with opposite fixes:
+
+| Where it dies | Which signature | Which certificate is wrong |
+|---|---|---|
+| PingFederate rejects the **AuthnRequest** — you never reach a login page | **ours**, on the request we sent | Ping's copy of **our SP** certificate is stale |
+| The app rejects the **assertion** — you log in at Ping, then bounce back to an error | **Ping's**, on the assertion it sent | the app's copy of **PingFederate's signing** certificate is wrong |
+
 | audit.log says | Means | Fix |
 |---|---|---|
-| `Signature verification failed` | Ping has a stale copy of our certificate | Re-import the metadata after fixing the SP keypair |
+| `Signature verification failed` on an incoming AuthnRequest | Ping has a stale copy of **our** certificate | You redeployed with an ephemeral SP keypair. Generate a fixed one (README §3), then re-import the SP metadata here |
+| Transaction succeeds in Ping, but the app shows `Invalid Signature` | The **app** has the wrong copy of **Ping's** signing certificate | §1.5b — import the IdP metadata into the app. Then open the app's diagnosis panel: it prints the fingerprint Ping signed with next to the ones the app trusts |
 | `Unknown connection` / entity ID mismatch | The app's entity ID changed | It defaults to the app's metadata URL — if you set `PUBLIC_BASE_URL` after creating the connection, it moved. Re-import |
 | Nothing at all appears | The AuthnRequest never arrived | Check the app's Step 2 table — is the SSO URL right? Is PingFederate reachable from your browser? |
+
+> 🔍 **Compare SHA-256 fingerprints, not subject names.** Two certificates can share a subject, an
+> issuer and an overlapping validity window and still be different keys — which is exactly what a
+> rotation leaves behind. Full walk-through:
+> [note 34 — "Invalid Signature": how SAML signature verification really works](../../notes/34-saml-invalid-signature-rca.md).
 
 ### 1.7 Configuring without the metadata file — by hand
 

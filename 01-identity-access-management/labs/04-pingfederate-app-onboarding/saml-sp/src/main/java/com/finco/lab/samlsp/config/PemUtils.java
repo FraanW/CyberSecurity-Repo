@@ -19,13 +19,16 @@ import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.PrivateKey;
 import java.security.Security;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPrivateKey;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Small helpers for turning PEM text (as pasted into a Render environment variable) into the
@@ -71,6 +74,38 @@ public final class PemUtils {
             throw new IllegalArgumentException("Could not read the X.509 certificate. "
                     + "Paste the whole PEM block, BEGIN/END lines included.", ex);
         }
+    }
+
+    /**
+     * Reads <b>every</b> certificate in a PEM blob, not just the first.
+     *
+     * <p><b>Why plural matters.</b> An IdP that is rotating its signing key publishes two
+     * certificates at once — the one it is signing with today and the one it will sign with
+     * tomorrow — and it may switch between them without telling you. If the SP trusts only one,
+     * the rotation shows up as a sudden {@code invalid_signature} on every login. Trusting all
+     * of them costs nothing: a signature still has to verify against one of the keys, and an
+     * attacker gains nothing from a longer list of public keys they do not hold.</p>
+     *
+     * <p>So {@code LAB_SAML_IDP_CERTIFICATE} accepts several concatenated PEM blocks.</p>
+     */
+    public static List<X509Certificate> readCertificates(String pem) {
+        String normalised = normalise(pem, "CERTIFICATE");
+        List<X509Certificate> certificates = new ArrayList<>();
+        try {
+            CertificateFactory factory = CertificateFactory.getInstance("X.509");
+            for (Certificate certificate : factory.generateCertificates(
+                    new ByteArrayInputStream(normalised.getBytes(StandardCharsets.UTF_8)))) {
+                certificates.add((X509Certificate) certificate);
+            }
+        } catch (Exception ex) {
+            throw new IllegalArgumentException("Could not read the X.509 certificate(s). "
+                    + "Paste whole PEM blocks, BEGIN/END lines included. "
+                    + "For a rotation, paste both blocks one after the other.", ex);
+        }
+        if (certificates.isEmpty()) {
+            throw new IllegalArgumentException("No certificate found in that PEM text.");
+        }
+        return certificates;
     }
 
     /** Reads PKCS#8 ("BEGIN PRIVATE KEY") or PKCS#1 ("BEGIN RSA PRIVATE KEY") private keys. */

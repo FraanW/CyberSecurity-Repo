@@ -17,6 +17,18 @@
 
 <main class="wrap">
 
+  <!-- The banner that used to not exist. A rejected assertion sent the browser to /login?error,
+       a page this app does not have, and the reason went only to the server log. -->
+  <section class="banner hidden" id="failureBanner">
+    <h2 id="failureTitle">SAML login was rejected</h2>
+    <p class="hint" id="failureText" style="margin-bottom:8px"></p>
+    <div class="row">
+      <button id="diagnoseBtn">Show me why →</button>
+      <button class="ghost" id="dismissFailureBtn">Dismiss</button>
+    </div>
+    <p class="hint" id="failureHint" style="margin:10px 0 0"></p>
+  </section>
+
   <!-- Step 0 — the app's own login, so it is usable before any IdP exists -->
   <section class="card" id="localCard">
     <div class="step">Step 0 · The app's own login</div>
@@ -47,16 +59,80 @@
     </div>
   </section>
 
-  <!-- Step 2 — what we know about the IdP -->
+  <!-- Step 2 — who this app trusts, and how to change it -->
   <section class="card">
     <div class="step">Step 2 · The IdP side</div>
-    <h2>Who this app trusts</h2>
-    <p class="hint">Pulled from <code>LAB_SAML_IDP_METADATA_URL</code>, or from the entity-ID / SSO-URL / certificate you set by hand.</p>
+    <h2>Who this app trusts <span id="trustBadge" class="badge">checking…</span></h2>
+    <p class="hint">Three facts make an IdP: its <strong>entity ID</strong>, its <strong>SSO URL</strong>, and its <strong>signing certificate</strong>. The certificate is the one that decides whether a login succeeds — it is the public half of the keypair PingFederate signs assertions with. Get it wrong and every assertion comes back <code>invalid_signature</code>, no matter how correct everything else is.</p>
     <table id="idpTable"><tbody><tr><td class="muted">loading…</td></tr></tbody></table>
+
+    <h2 style="margin-top:18px">Signing certificates we trust</h2>
+    <p class="hint">Compare the <strong>SHA-256 fingerprint</strong> with the one in the PingFederate console (<em>SP Connection → Credentials → Digital Signature Settings</em>). Subject names lie — two certificates can share one. A fingerprint is a hash of the whole certificate, so it cannot.</p>
+    <div id="trustedCerts"><p class="muted">loading…</p></div>
+
     <div id="missingBlock" class="hidden">
-      <p class="hint" style="color:var(--warn)">⚠️ Not configured yet. Set these environment variables and redeploy:</p>
+      <p class="hint" style="color:var(--warn)">⚠️ Not configured yet. Fix it with any one of these:</p>
       <ul class="checklist" id="missingList"></ul>
     </div>
+    <ul class="warnings hidden" id="trustWarnings"></ul>
+
+    <!-- The feature: configure the IdP from its own metadata document, at runtime. -->
+    <h2 style="margin-top:22px">Import the IdP's metadata</h2>
+    <p class="hint">The fastest correct fix. A metadata file is those three facts in a document the IdP generated itself — so there is nothing to retype and nothing to mistype. In PingFederate you get it from <strong>System → Protocol Metadata → Metadata Export</strong>, or straight from its published metadata URL. Takes effect on the next login; <strong>no redeploy</strong>.</p>
+    <p class="hint" id="importAuthHint"></p>
+
+    <div id="importPanel">
+      <div class="tabs">
+        <button class="active" data-tab="file">Upload a file</button>
+        <button data-tab="paste">Paste XML</button>
+        <button data-tab="url">Fetch a URL</button>
+      </div>
+
+      <div id="tab-file">
+        <div class="drop" id="dropZone">
+          <strong>Drop <code>idp-metadata.xml</code> here</strong>
+          or click to choose a file
+        </div>
+        <input type="file" id="fileInput" accept=".xml,application/xml,text/xml,application/samlmetadata+xml" class="hidden">
+      </div>
+
+      <div id="tab-paste" class="hidden">
+        <textarea id="xmlInput" placeholder="&lt;EntityDescriptor entityID=&quot;…&quot;&gt; … &lt;/EntityDescriptor&gt;" spellcheck="false"></textarea>
+      </div>
+
+      <div id="tab-url" class="hidden">
+        <input type="url" id="urlInput" placeholder="https://pingfederate.example.com/pf/federation_metadata.ping?PartnerSpId=…">
+        <p class="hint" style="margin-top:8px">Fetched by <em>this server</em>, not your browser — so it only works if PingFederate is reachable from wherever this app runs. If it is on a private network, download the file in your browser and upload it instead.</p>
+      </div>
+
+      <div class="row" style="margin-top:12px">
+        <button id="previewBtn">Preview — change nothing</button>
+        <button class="ghost hidden" id="applyBtn">Import and trust this IdP</button>
+        <button class="ghost" id="resetImportBtn">Revert to environment config</button>
+        <span class="spinner hidden" id="importSpinner">working…</span>
+      </div>
+      <p class="err" id="importError"></p>
+    </div>
+
+    <div id="previewBlock" class="hidden">
+      <h2 style="margin-top:18px">What is in that file</h2>
+      <p class="hint">Nothing has changed yet. Read the fingerprint below, check it against the Ping console, <em>then</em> import — a metadata document is not self-authenticating, so importing one is a decision to trust whoever handed it to you.</p>
+      <div id="previewBody"></div>
+    </div>
+
+    <div id="envBlock" class="hidden">
+      <h2 style="margin-top:18px">Make it permanent <button class="copy" data-copy="env">copy</button></h2>
+      <p class="hint">An import survives a restart but not a redeploy — the container filesystem is rebuilt from the image. Paste these into your host's environment to pin the configuration.</p>
+      <pre id="envPem"></pre>
+    </div>
+  </section>
+
+  <!-- Diagnosis — the RCA panel for a rejected assertion -->
+  <section class="card hidden" id="diagnosisCard">
+    <div class="step">Diagnosis</div>
+    <h2>Why that assertion was rejected</h2>
+    <p class="hint">Signature verification asks one question: <em>was this signed by the private key matching a public key I already hold?</em> So a failure is one of two things — the wrong key, or altered bytes. This tells you which.</p>
+    <div id="diagnosisBody"><p class="muted">loading…</p></div>
   </section>
 
   <!-- Step 3 — run the flow -->
@@ -109,6 +185,13 @@
         <tr><th><code>GET /api/attributes</code></th><td>Just the attribute contract. <em>Needs a SAML session.</em></td></tr>
         <tr><th><code>GET /api/assertion</code></th><td>Raw pretty-printed SAML Response XML. <em>Needs a SAML session.</em></td></tr>
         <tr><th><code>GET /api/assertion/highlights</code></th><td>Issuer, audience, conditions, NameID format. <em>Needs a SAML session.</em></td></tr>
+        <tr><th><code>GET /api/idp</code></th><td>Who this app trusts right now, where that came from, and the fingerprints. Public.</td></tr>
+        <tr><th><code>POST /api/idp/metadata/preview</code></th><td>Parse an IdP metadata file and describe it. <strong>Changes nothing.</strong> <em>Needs a session.</em></td></tr>
+        <tr><th><code>POST /api/idp</code></th><td><strong>Import</strong> the metadata and re-point the SP at that IdP. Live immediately. <em>Needs a session.</em></td></tr>
+        <tr><th><code>DELETE /api/idp/metadata</code></th><td>Drop the imported file; fall back to the environment variables. <em>Needs a session.</em></td></tr>
+        <tr><th><code>GET /api/saml/last-failure</code></th><td>Did the last SAML login fail, and what was it called? No assertion content. Public.</td></tr>
+        <tr><th><code>GET /api/saml/last-failure/detail</code></th><td>The full signature diagnosis and the raw rejected response. <em>Needs a session.</em></td></tr>
+        <tr><th><code>POST /api/saml/diagnose</code></th><td>Diagnose a <code>SAMLResponse</code> you captured yourself. <em>Needs a session.</em></td></tr>
         <tr><th><code>GET /api/sp-metadata.xml</code></th><td><strong>SP metadata as a download</strong> — the file to import into PingFederate. Public.</td></tr>
         <tr><th><code>GET /saml2/service-provider-metadata/pingfed</code></th><td>The same metadata, rendered in the browser.</td></tr>
         <tr><th><code>POST /login</code></th><td>The app's own username/password login.</td></tr>

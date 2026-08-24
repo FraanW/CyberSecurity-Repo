@@ -2,6 +2,7 @@ package com.finco.lab.samlsp.web;
 
 import com.finco.lab.samlsp.config.RelyingPartyConfig.LabSpCredentials;
 import com.finco.lab.samlsp.config.SamlProperties;
+import com.finco.lab.samlsp.saml.IdpTrustStore;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.HttpHeaders;
@@ -35,15 +36,18 @@ public class SamlApiController {
 
     private final SamlProperties properties;
     private final LabSpCredentials credentials;
+    private final IdpTrustStore trustStore;
     private final RelyingPartyRegistrationResolver resolver;
     private final Saml2MetadataResolver metadataResolver = new OpenSaml5MetadataResolver();
     private final Instant startedAt = Instant.now();
 
     public SamlApiController(SamlProperties properties,
                              LabSpCredentials credentials,
+                             IdpTrustStore trustStore,
                              RelyingPartyRegistrationRepository registrations) {
         this.properties = properties;
         this.credentials = credentials;
+        this.trustStore = trustStore;
         this.resolver = new DefaultRelyingPartyRegistrationResolver(registrations);
     }
 
@@ -83,6 +87,7 @@ public class SamlApiController {
         sp.put("signingCertificate", credentials.certificatePem());
         sp.put("signingCertificateIsEphemeral", credentials.ephemeral());
 
+        IdpTrustStore.TrustState trust = trustStore.state();
         var party = registration.getAssertingPartyMetadata();
         Map<String, Object> idp = new LinkedHashMap<>();
         idp.put("entityId", party.getEntityId());
@@ -90,15 +95,24 @@ public class SamlApiController {
         idp.put("singleSignOnServiceBinding", party.getSingleSignOnServiceBinding().getUrn());
         idp.put("singleLogoutServiceUrl", party.getSingleLogoutServiceLocation());
         idp.put("wantAuthnRequestsSigned", party.getWantAuthnRequestsSigned());
-        idp.put("configuredFrom", SamlProperties.hasText(properties.getIdpMetadataUrl())
-                ? "metadata URL" : "explicit settings");
+        idp.put("configuredFrom", trust.source().label());
+        idp.put("configuredFromDetail", trust.origin());
+        idp.put("configuredAt", trust.appliedAt());
+        idp.put("trustedSigningCertificates", trust.idp().signingCertificates());
+        idp.put("trustAnchorIsPlaceholder", trust.trustAnchorIsPlaceholder());
 
-        return Map.of(
-                "configured", properties.isConfigured(),
-                "registrationId", properties.getRegistrationId(),
-                "serviceProvider", sp,
-                "identityProvider", idp,
-                "missing", missingSettings());
+        Map<String, Object> body = new LinkedHashMap<>();
+        // "configured" now means *actually usable right now*, which is not the same as "the
+        // environment variables are set" — a metadata file imported at runtime configures the app
+        // without any of them, and an unreachable metadata URL leaves them set but useless.
+        body.put("configured", !trust.trustAnchorIsPlaceholder());
+        body.put("configuredFromEnvironment", properties.isConfiguredFromEnvironment());
+        body.put("registrationId", properties.getRegistrationId());
+        body.put("serviceProvider", sp);
+        body.put("identityProvider", idp);
+        body.put("warnings", trust.warnings());
+        body.put("missing", missingSettings());
+        return body;
     }
 
     /**
@@ -201,12 +215,14 @@ public class SamlApiController {
     }
 
     private List<String> missingSettings() {
-        if (properties.isConfigured()) {
+        if (!trustStore.state().trustAnchorIsPlaceholder()) {
             return List.of();
         }
         return List.of(
-                "LAB_SAML_IDP_METADATA_URL  (easiest — one URL and you are done)",
-                "or all three of: LAB_SAML_IDP_ENTITY_ID, LAB_SAML_IDP_SSO_URL, LAB_SAML_IDP_CERTIFICATE");
+                "Import the IdP's metadata file at Step 2 — no redeploy, and it carries the signing "
+                        + "certificate, so there is nothing to mistype",
+                "or set LAB_SAML_IDP_METADATA_URL and restart",
+                "or set all three of: LAB_SAML_IDP_ENTITY_ID, LAB_SAML_IDP_SSO_URL, LAB_SAML_IDP_CERTIFICATE");
     }
 
     private String absolute(HttpServletRequest request, String path) {

@@ -59,6 +59,16 @@ public class SamlProperties {
     /** SP certificate (PEM) matching {@link #spPrivateKey}. Blank = mint a throwaway one. */
     private String spCertificate = "";
 
+    /**
+     * Where a metadata file imported through the UI is written so it survives a restart.
+     *
+     * <p>Best-effort by design: on Render the filesystem is rebuilt on every deploy, so an import
+     * is a fast way to fix a broken connection <i>now</i>, not a substitute for setting the
+     * environment variables. The import API hands back the equivalent variables for exactly that
+     * reason.</p>
+     */
+    private String stateDir = System.getProperty("java.io.tmpdir") + "/pingfed-saml-sp";
+
     public String getRegistrationId() { return registrationId; }
     public void setRegistrationId(String registrationId) { this.registrationId = registrationId; }
 
@@ -114,8 +124,17 @@ public class SamlProperties {
     public String getSpCertificate() { return spCertificate; }
     public void setSpCertificate(String spCertificate) { this.spCertificate = spCertificate; }
 
-    /** True when we have enough config to actually reach a PingFederate IdP. */
-    public boolean isConfigured() {
+    public String getStateDir() { return stateDir; }
+    public void setStateDir(String stateDir) { this.stateDir = stateDir; }
+
+    /**
+     * True when the <i>environment</i> alone is enough to reach an IdP.
+     *
+     * <p>This is not the same question as "is the app configured right now" — a metadata file
+     * imported through the UI configures the app without touching any of these. Ask
+     * {@code IdpTrustStore.state()} for the live answer; ask this one only about the environment.</p>
+     */
+    public boolean isConfiguredFromEnvironment() {
         boolean viaMetadata = hasText(idpMetadataUrl);
         boolean viaManual = hasText(idpEntityId) && hasText(idpSsoUrl) && hasText(idpCertificate);
         return viaMetadata || viaManual;
