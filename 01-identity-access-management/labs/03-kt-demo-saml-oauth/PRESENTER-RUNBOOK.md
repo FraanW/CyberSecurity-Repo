@@ -1,6 +1,6 @@
 # 🎤 Presenter runbook — the day-of script (keep this open on a second screen)
 
-> Your single-screen driver for the reverse KT. Slides live in [note 23](../../notes/23-reverse-kt-presentation-guide.md); the full lab reference is [README.md](README.md). **This file is the "what do I click / what do I say" script for the live portion.** Authorized-lab-only; **no real FinCo tokens on screen.**
+> Your single-screen driver for the reverse KT. Slides live in [note 23](../../notes/09-presentations-and-kt/23-reverse-kt-presentation-guide.md); the full lab reference is [README.md](README.md). **This file is the "what do I click / what do I say" script for the live portion.** Authorized-lab-only; **no real FinCo tokens on screen.**
 
 ---
 
@@ -38,7 +38,7 @@
 
 ## PART 1 — Slides first (~30 min)
 
-Run [note 23](../../notes/23-reverse-kt-presentation-guide.md) Sections 1–4 (slides 1–26): IAM foundations → SAML → OAuth/OIDC → PingFederate mapping. Then switch to live demos.
+Run [note 23](../../notes/09-presentations-and-kt/23-reverse-kt-presentation-guide.md) Sections 1–4 (slides 1–26): IAM foundations → SAML → OAuth/OIDC → PingFederate mapping. Then switch to live demos.
 
 ---
 

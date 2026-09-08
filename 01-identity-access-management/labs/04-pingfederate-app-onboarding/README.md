@@ -10,7 +10,7 @@
 
 - **Time:** ~30 min to deploy · ~30 min per onboarding · **Difficulty:** intermediate
 - **Platform:** anything with a browser. Local runs are shown for **Windows 11 (PowerShell)** and Bash.
-- **Prereqs:** [note 02 — SAML deep dive](../../notes/02-saml-deep-dive.md), [note 21 — OAuth 2.0 reference](../../notes/21-oauth2-complete-reference.md), [note 18 — PingFederate explained](../../notes/18-pingfederate-explained.md). A Render account (free tier is enough). Your PingFederate must be reachable from the internet for the browser redirects to work.
+- **Prereqs:** [note 02 — SAML deep dive](../../notes/02-saml/02-saml-deep-dive.md), [note 21 — OAuth 2.0 reference](../../notes/03-oauth-oidc/21-oauth2-complete-reference.md), [note 18 — PingFederate explained](../../notes/06-platforms-and-gateways/18-pingfederate-explained.md). A Render account (free tier is enough). Your PingFederate must be reachable from the internet for the browser redirects to work.
 - **You'll be able to:** create an SP connection from a metadata file, create an OAuth client, read an assertion field by field, tell a JWT access token from a reference token, and run all the grants by hand.
 
 ---
@@ -53,7 +53,7 @@ framework, because the point of the lab is to *watch the protocol*.
 > **Why one image and not two services?** Because a separate frontend origin would drag CORS,
 > cookie `SameSite` rules and a second deploy into a lab about federation. Same-origin keeps the
 > session cookie simple so the protocol stays the star. (Real FinCo apps often *are* split —
-> that split is its own topic, see [note 20 — reverse proxies in IAM](../../notes/20-reverse-proxies-in-iam.md).)
+> that split is its own topic, see [note 20 — reverse proxies in IAM](../../notes/06-platforms-and-gateways/20-reverse-proxies-in-iam.md).)
 
 ---
 
@@ -315,7 +315,7 @@ LAB_OAUTH_LOG_LEVEL=DEBUG     # on the OAuth app
 
 This is the most common onboarding failure and it has one dominant cause, so it gets its own
 procedure. Full derivation — what a signature is, why it must exist, and how the maths works — is in
-**[note 34 — "Invalid Signature": how SAML signature verification really works](../../notes/34-saml-invalid-signature-rca.md)**.
+**[note 34 — "Invalid Signature": how SAML signature verification really works](../../notes/02-saml/34-saml-invalid-signature-rca.md)**.
 
 **The one-line version:** the IdP signed with a **private key**; your app checks with the matching
 **public key**. `Invalid signature` almost always means those two are not a pair — the app is
@@ -403,11 +403,11 @@ next failure before you go round again.
 ## Next
 
 - Wire an actual **resource server** that validates these tokens — start from
-  [note 21 — OAuth 2.0 complete reference](../../notes/21-oauth2-complete-reference.md) §resource servers.
+  [note 21 — OAuth 2.0 complete reference](../../notes/03-oauth-oidc/21-oauth2-complete-reference.md) §resource servers.
 - Compare with [Lab 03](../03-kt-demo-saml-oauth/README.md), which runs the *IdP* side locally in
   Keycloak. Lab 03 teaches you the server; this lab teaches you the app.
 - Go deep on the failure you will hit most:
-  [note 34 — "Invalid Signature": how SAML signature verification really works](../../notes/34-saml-invalid-signature-rca.md).
+  [note 34 — "Invalid Signature": how SAML signature verification really works](../../notes/02-saml/34-saml-invalid-signature-rca.md).
 - Read the assertion and token fields against
-  [note 16 — SAML bindings and certificates](../../notes/16-saml-bindings-and-certificates.md) and
-  [note 22 — OAuth grant types](../../notes/22-oauth2-grant-types-and-scenarios.md).
+  [note 16 — SAML bindings and certificates](../../notes/02-saml/16-saml-bindings-and-certificates.md) and
+  [note 22 — OAuth grant types](../../notes/03-oauth-oidc/22-oauth2-grant-types-and-scenarios.md).

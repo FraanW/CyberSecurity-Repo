@@ -1,8 +1,8 @@
 # Lab 02 — SAML assertion anatomy (decode a real one)
 
-> **Lefler's build, Janus's curriculum.** The single most useful SAML skill is **reading an assertion**. Do it here on a safe sample, then on a live capture, and the [SAML deep dive](../../notes/02-saml-deep-dive.md) becomes something you can *operate*, not just recite. **Authorized-lab-only** — decode only sample or your-own-lab traffic, never captured production/FinCo assertions.
+> **Lefler's build, Janus's curriculum.** The single most useful SAML skill is **reading an assertion**. Do it here on a safe sample, then on a live capture, and the [SAML deep dive](../../notes/02-saml/02-saml-deep-dive.md) becomes something you can *operate*, not just recite. **Authorized-lab-only** — decode only sample or your-own-lab traffic, never captured production/FinCo assertions.
 
-- **Time:** 30–60 min · **Difficulty:** beginner-friendly · **Prereqs:** [note 02](../../notes/02-saml-deep-dive.md)
+- **Time:** 30–60 min · **Difficulty:** beginner-friendly · **Prereqs:** [note 02](../../notes/02-saml/02-saml-deep-dive.md)
 - **You'll learn:** base64 decode a SAML Response, locate every security-critical field, run the 60-second debugging checklist, capture a live assertion with SAML-tracer.
 
 ---
@@ -100,7 +100,7 @@ Study these **only** on this sample or your own lab:
 - **XML Signature Wrapping (XSW):** duplicate the `<saml:Assertion>`, give the forged copy different attributes, and position it so a weak SP validates the signature on the *real* one but reads the *forged* one. **Defense:** hardened SAML libraries that process exactly the signed element; reject multiple assertions. Ask **Loki** to demo, **Heimdall** what a SIEM would flag (multiple assertions, signature-validation failures, unexpected IdP cert).
 - **Unsigned-assertion acceptance:** strip `<ds:Signature>` and see whether a (misconfigured) SP still accepts it. **Defense:** require the Assertion itself to be signed.
 
-Full attack table: [note 02 §9](../../notes/02-saml-deep-dive.md#9-attacks--defenses-always-pair-them--claudemd-rule).
+Full attack table: [note 02 §9](../../notes/02-saml/02-saml-deep-dive.md#9-attacks--defenses-always-pair-them--claudemd-rule).
 
 ---
 
@@ -108,7 +108,7 @@ Full attack table: [note 02 §9](../../notes/02-saml-deep-dive.md#9-attacks--def
 
 - The shipped sample uses **dummy data** — safe to keep in the repo.
 - **Never commit a real captured assertion** — it can contain real names, emails, group memberships (PII/CDE). Decode it, learn from it, delete it. (The repo `.gitignore` already blocks `*.pem`/`*.key`/`*.p12` so exported certs won't sneak in, but assertions aren't auto-ignored — mind what you save.)
-- **Never paste a real production assertion into an online decoder or AI tool** — same rule as [note 05 §D](../../notes/05-first-week-questions.md#d-ai-dev-in-resolving-incidentstickets--the-honest-version-fintech-guardrails). Decode locally with the PowerShell above.
+- **Never paste a real production assertion into an online decoder or AI tool** — same rule as [note 05 §D](../../notes/01-foundations/05-first-week-questions.md#d-ai-dev-in-resolving-incidentstickets--the-honest-version-fintech-guardrails). Decode locally with the PowerShell above.
 
 ---
 
@@ -118,6 +118,6 @@ Full attack table: [note 02 §9](../../notes/02-saml-deep-dive.md#9-attacks--def
 - You can reason about the validity window (clock skew), audience, signature, and attribute mapping — the four things behind most SAML tickets.
 - You've seen SP-init vs IdP-init on the wire.
 
-**Next:** revisit the [note 02 §13 debugging checklist](../../notes/02-saml-deep-dive.md#13-the-60-second-saml-debugging-checklist-tape-this-to-your-monitor) and the [first-week questions](../../notes/05-first-week-questions.md) — you're now equipped to ask about *your* environment's SAML setup with real understanding.
+**Next:** revisit the [note 02 §13 debugging checklist](../../notes/02-saml/02-saml-deep-dive.md#13-the-60-second-saml-debugging-checklist-tape-this-to-your-monitor) and the [first-week questions](../../notes/01-foundations/05-first-week-questions.md) — you're now equipped to ask about *your* environment's SAML setup with real understanding.
 
 *Built for Farhaan's IAM track · authorized-lab-only 🔐*

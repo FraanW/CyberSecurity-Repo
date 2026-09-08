@@ -47,9 +47,9 @@ Try to rebuild federated SSO knowing only bedrock facts:
 | 4 | Two servers that never met share no secret key | Use **asymmetric crypto** — exchange public certs ahead of time (metadata) |
 | 5 | A signed message could be captured and replayed tomorrow | Add an **expiry** (`NotOnOrAfter`) and a **specific audience** |
 
-Congratulations — you just *derived* the SAML assertion, signing certificates, metadata exchange, and validity conditions from scratch. Everything in [`01-identity-access-management/notes/02-saml-deep-dive.md`](../../01-identity-access-management/notes/02-saml-deep-dive.md) is that table with the details filled in. That's why the protocol *feels inevitable* once you see the constraints — and why memorizing it without the constraints feels arbitrary.
+Congratulations — you just *derived* the SAML assertion, signing certificates, metadata exchange, and validity conditions from scratch. Everything in [`01-identity-access-management/notes/02-saml/02-saml-deep-dive.md`](../../01-identity-access-management/notes/02-saml/02-saml-deep-dive.md) is that table with the details filled in. That's why the protocol *feels inevitable* once you see the constraints — and why memorizing it without the constraints feels arbitrary.
 
-**One more, quick:** why does PKCE exist? Bedrock: *a mobile/single-page app cannot keep a secret* (anyone can decompile it). So the classic "prove you're the real client with a client_secret" is impossible. What CAN a secretless client prove? *That it's the same client that started the flow* — invent a one-time secret per login (code_verifier), send only its hash up front, reveal it at redemption. You've derived PKCE. (Full walkthrough: [`19-oauth2-in-practice.md`](../../01-identity-access-management/notes/19-oauth2-in-practice.md).)
+**One more, quick:** why does PKCE exist? Bedrock: *a mobile/single-page app cannot keep a secret* (anyone can decompile it). So the classic "prove you're the real client with a client_secret" is impossible. What CAN a secretless client prove? *That it's the same client that started the flow* — invent a one-time secret per login (code_verifier), send only its hash up front, reveal it at redemption. You've derived PKCE. (Full walkthrough: [`19-oauth2-in-practice.md`](../../01-identity-access-management/notes/03-oauth-oidc/19-oauth2-in-practice.md).)
 
 ### 1d. When to use it — and the traps
 
@@ -85,7 +85,7 @@ Lineage: **Francis Bacon** formalized it (the scientific method — knowledge co
 
 - **Docs lie and configs drift.** The wiki says MFA is enforced everywhere; the conditional-access policy has a "temporary" exclusion group from 2023 with 40 members in it. Only looking finds that.
 - **Attackers are empiricists.** They don't read your architecture diagram — they *probe what actually responds*. Nmap, credential testing, fuzzing: the entire offensive discipline is structured observation. To defend a system, you must observe it at least as honestly as the attacker will.
-- **Audits are institutionalized empiricism.** A PCI-DSS auditor never accepts "our policy says access is reviewed." They ask for **evidence** — the review records, the logs. When you pull last quarter's access-certification report at FinCo, you are doing empirical thinking with a compliance label on it ([`09-pci-dss-and-iam.md`](../../01-identity-access-management/notes/09-pci-dss-and-iam.md)).
+- **Audits are institutionalized empiricism.** A PCI-DSS auditor never accepts "our policy says access is reviewed." They ask for **evidence** — the review records, the logs. When you pull last quarter's access-certification report at FinCo, you are doing empirical thinking with a compliance label on it ([`09-pci-dss-and-iam.md`](../../01-identity-access-management/notes/07-security-and-compliance/09-pci-dss-and-iam.md)).
 - **Debugging is hypothesis testing.** "User can't SSO into app X" → don't guess: pull the transaction from `audit.log`, capture the browser flow, compare the cert in the Response against the metadata. Every step of the debugging playbooks in this repo is an *experiment with an expected output*.
 
 ### 2d. Traps to respect
@@ -160,4 +160,4 @@ Two ✅ and the concept is genuinely yours — that's the bar this repo now aims
 
 ## Next
 
-→ Apply the two-question test to the newest IAM notes: derive Kerberos's design in [`15-kerberos-explained.md`](../../01-identity-access-management/notes/15-kerberos-explained.md), then *observe* a real token flow in the [Keycloak lab](../../01-identity-access-management/labs/01-keycloak-idp/README.md).
+→ Apply the two-question test to the newest IAM notes: derive Kerberos's design in [`15-kerberos-explained.md`](../../01-identity-access-management/notes/04-directories-and-authn-protocols/15-kerberos-explained.md), then *observe* a real token flow in the [Keycloak lab](../../01-identity-access-management/labs/01-keycloak-idp/README.md).

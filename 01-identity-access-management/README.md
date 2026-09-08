@@ -8,33 +8,58 @@ Ask **Janus** (your IAM agent) for deep dives, **Lefler** to build the labs, and
 
 ## 📚 Deep-dive notes — start here
 
-Full written walkthroughs now live in [`notes/`](notes/), in learning order:
+Full written walkthroughs live in [`notes/`](notes/), grouped into **topic folders** so you can read one subject end to end. The folder-by-folder index — with the reading order inside each — is [`notes/README.md`](notes/README.md).
 
-1. [**The IAM protocol landscape**](notes/01-iam-protocol-landscape.md) — the map: authN vs authZ, federation, the vendor zoo (Entra/Okta/Ping), how a real login flows end to end.
-2. [**The eight domains of IAM**](notes/17-iam-domains-map.md) — the full map of the field: Identity Mgmt, AuthN, AuthZ, PAM, IGA, Federation/SSO, Directory Services, **CIAM** — what each covers, achieves, and by what mechanisms.
-3. [**SSO explained + the buzzword glossary**](notes/08-sso-and-glossary.md) — your dictionary: what SSO *really* means (vs federation) + every IAM term in one line. Skim early, keep open.
-4. [**SAML 2.0 deep dive**](notes/02-saml-deep-dive.md) — the protocol you'll debug most; assertion anatomy, bindings, clock skew, attacks + a 60-second debugging checklist.
-   - ↳ [**SAML mastery — session 2**](notes/13-saml-mastery-session2.md) — a senior's whiteboard deep dive: SP-init vs IdP-init, speed-reading assertions, EntityID's three homes, certificates (sign vs encrypt), and exactly what's encrypted vs merely encoded.
-   - ↳ [**SAML bindings & the two certificates**](notes/16-saml-bindings-and-certificates.md) — how the messages physically travel (Redirect/POST/Artifact/SOAP), where each is configured, and the signing-vs-encryption cert deep-cut with a rollover/outage playbook.
-   - ↳ [**"Invalid Signature" — how SAML signature verification really works, and how to RCA it**](notes/34-saml-invalid-signature-rca.md) 🔍 — the failure you will hit most on a new SP connection, derived from first principles: why a signature has to exist at all, private key vs public key in one paragraph, canonicalise → hash → sign, the **two** ways a signature fails and what each one means, the six root causes ranked, and the one habit that ends these tickets — **compare SHA-256 fingerprints, not subject names**. Pairs with Lab 04's diagnosis panel.
-   - ↳ [**SAML question bank**](notes/14-saml-question-bank.md) — a self-test from *easy → very hard*, tuned for a Ping-expert QnA, with model answers in spoilers.
+| Folder | What's in it |
+|---|---|
+| [`01-foundations/`](notes/01-foundations/) | The mental model, the map of the field, the vocabulary |
+| [`02-saml/`](notes/02-saml/) | SAML 2.0 — the protocol you'll debug most |
+| [`03-oauth-oidc/`](notes/03-oauth-oidc/) | OAuth 2.0 & OpenID Connect — the modern stack |
+| [`04-directories-and-authn-protocols/`](notes/04-directories-and-authn-protocols/) | LDAP/AD/Entra, Kerberos, FIDO2/passkeys |
+| [`05-pam-and-governance/`](notes/05-pam-and-governance/) | PAM and IGA — privileged access, identity lifecycle |
+| [`06-platforms-and-gateways/`](notes/06-platforms-and-gateways/) | PingFederate and reverse proxies — the boxes your team runs |
+| [`07-security-and-compliance/`](notes/07-security-and-compliance/) | The identity attack surface and PCI-DSS |
+| [`08-infrastructure-and-platform/`](notes/08-infrastructure-and-platform/) | TLS/mTLS, Docker, Kubernetes, cloud — the plumbing under Ping |
+| [`09-presentations-and-kt/`](notes/09-presentations-and-kt/) | Decks, scripts and analogies for teaching the room |
+
+> **Note numbers are permanent.** Each file keeps the number it was written under (note 02, note 21, note 34 …) — the notes and labs cross-reference each other that way — so numbers inside a folder aren't consecutive. Read in the order listed, not by number.
+
+The curated learning order across all folders:
+
+1. [**The IAM protocol landscape**](notes/01-foundations/01-iam-protocol-landscape.md) — the map: authN vs authZ, federation, the vendor zoo (Entra/Okta/Ping), how a real login flows end to end.
+2. [**The eight domains of IAM**](notes/01-foundations/17-iam-domains-map.md) — the full map of the field: Identity Mgmt, AuthN, AuthZ, PAM, IGA, Federation/SSO, Directory Services, **CIAM** — what each covers, achieves, and by what mechanisms.
+3. [**SSO explained + the buzzword glossary**](notes/01-foundations/08-sso-and-glossary.md) — your dictionary: what SSO *really* means (vs federation) + every IAM term in one line. Skim early, keep open.
+4. [**SAML 2.0 deep dive**](notes/02-saml/02-saml-deep-dive.md) — the protocol you'll debug most; assertion anatomy, bindings, clock skew, attacks + a 60-second debugging checklist.
+   - ↳ [**SAML mastery — session 2**](notes/02-saml/13-saml-mastery-session2.md) — a senior's whiteboard deep dive: SP-init vs IdP-init, speed-reading assertions, EntityID's three homes, certificates (sign vs encrypt), and exactly what's encrypted vs merely encoded.
+   - ↳ [**SAML bindings & the two certificates**](notes/02-saml/16-saml-bindings-and-certificates.md) — how the messages physically travel (Redirect/POST/Artifact/SOAP), where each is configured, and the signing-vs-encryption cert deep-cut with a rollover/outage playbook.
+   - ↳ [**"Invalid Signature" — how SAML signature verification really works, and how to RCA it**](notes/02-saml/34-saml-invalid-signature-rca.md) 🔍 — the failure you will hit most on a new SP connection, derived from first principles: why a signature has to exist at all, private key vs public key in one paragraph, canonicalise → hash → sign, the **two** ways a signature fails and what each one means, the six root causes ranked, and the one habit that ends these tickets — **compare SHA-256 fingerprints, not subject names**. Pairs with Lab 04's diagnosis panel.
+   - ↳ [**SAML question bank**](notes/02-saml/14-saml-question-bank.md) — a self-test from *easy → very hard*, tuned for a Ping-expert QnA, with model answers in spoilers.
    - ↳ [**SAML — the complete visual guide**](saml-complete-guide.html) — an interactive one-page walkthrough of the whole protocol + the question bank (open in a browser).
-5. [**OAuth 2.0 & OIDC deep dive**](notes/03-oauth-oidc-deep-dive.md) — the modern stack; why **OAuth ≠ login**, Authorization Code + PKCE, ID vs access tokens, JWT attacks.
-   - ↳ [**OAuth 2.0 in practice**](notes/19-oauth2-in-practice.md) — one login, every byte explained: the full Code+PKCE flow wire-by-wire, decoded tokens, refresh rotation, client-credentials vs mTLS, + curl commands against the Keycloak lab.
-   - ↳ [**OAuth 2.0 + OIDC — the complete reference card**](notes/21-oauth2-complete-reference.md) — the look-it-up note: all roles, endpoints, tokens, grant types, the full flow in numbered pointers, 15 attacks paired with defenses, attacker motivations, and the RFC 9700 hardening checklist.
-   - ↳ [**OAuth 2.0 grant types & scenarios**](notes/22-oauth2-grant-types-and-scenarios.md) — the behind-the-screen playbook: a decision tree for picking a grant, **every** grant type walked step-by-step (Auth Code+PKCE, Client Credentials, Device Code, Refresh, + JWT-Bearer/Token-Exchange/CIBA), why Implicit & ROPC are dead, a deeper OIDC section, a real-world scenario gallery, and a brief on **OAuth 2.1**.
-6. [**PingFederate — a field guide**](notes/18-pingfederate-explained.md) — the federation hub your team runs: SP vs IdP connections, adapters, policy trees, attribute contracts, Access Token Managers, and the audit.log debugging playbook.
-   - ↳ [**Reverse proxies in IAM**](notes/20-reverse-proxies-in-iam.md) — the gate that does the logging-in for your apps: forward vs reverse, the authenticating-proxy/PEP pattern, and where it lives in your stack (PingAccess, nginx-ingress forward-auth, Envoy `ext_authz`).
-7. [**LDAP, Active Directory & Entra ID**](notes/04-ldap-ad-entra.md) — the directory layer; DIT/DN, Kerberos, and why Entra ≠ "AD in the cloud".
-   - ↳ [**Kerberos explained**](notes/15-kerberos-explained.md) — how legacy systems do "passwordless" auth: TGT/service tickets step by step, why the password never crosses the wire, keytabs & clock skew, attacks + defenses.
-8. [**HTTPS, TLS & mTLS**](notes/06-tls-https-mtls.md) — transport security from scratch: the padlock, PKI/certs, and **mTLS** (machine auth) incl. the Kubernetes service-mesh pattern.
-9. [**IAM foundations round-up**](notes/07-iam-foundations.md) — MFA & passkeys, sessions/tokens, authZ models (RBAC/ABAC), PAM, IGA/SCIM, Zero Trust.
-10. [**PAM — Privileged Access Management**](notes/11-pam-deep-dive.md) — deep dive: vaulting, rotation, session recording/isolation, JIT & Zero Standing Privilege, service accounts & secrets, tiered admin.
-11. [**IGA — Identity Governance & Administration**](notes/12-iga-deep-dive.md) — deep dive: JML lifecycle, SCIM provisioning, access reviews/certifications, SoD. **Likely your day job.**
-12. [**PCI-DSS × IAM**](notes/09-pci-dss-and-iam.md) — where compliance meets identity: how PCI Req 7/8/10 map onto every IAM layer, and why your daily work *is* the audit evidence.
-13. [**IAM vulnerabilities**](notes/10-iam-vulnerabilities.md) — the identity attack surface, mapped to OWASP (A01/A07) + the API **BOLA** risk; every vuln paired with its defense.
-14. [**First-week questions & incident-channel decoder**](notes/05-first-week-questions.md) — turn all of the above into sharp questions for your manager, seniors, lead, and director (+ AI-in-tickets guardrails).
-15. [**Reverse-KT presentation guide**](notes/23-reverse-kt-presentation-guide.md) 🎤 — a **33-slide** teach-the-room deck for explaining IAM + SAML + OAuth/OIDC end to end: slide content **and** first-person talk track for each slide, **Mermaid flow diagrams** for every protocol (SAML SP/IdP-init, all 4 OAuth grants, OIDC), the full **PingFederate** mapping, live-demo cue cards, and a Q&A prep sheet. Pairs with **Lab 03**.
+5. [**OAuth 2.0 & OIDC deep dive**](notes/03-oauth-oidc/03-oauth-oidc-deep-dive.md) — the modern stack; why **OAuth ≠ login**, Authorization Code + PKCE, ID vs access tokens, JWT attacks.
+   - ↳ [**OAuth 2.0 in practice**](notes/03-oauth-oidc/19-oauth2-in-practice.md) — one login, every byte explained: the full Code+PKCE flow wire-by-wire, decoded tokens, refresh rotation, client-credentials vs mTLS, + curl commands against the Keycloak lab.
+   - ↳ [**OAuth 2.0 + OIDC — the complete reference card**](notes/03-oauth-oidc/21-oauth2-complete-reference.md) — the look-it-up note: all roles, endpoints, tokens, grant types, the full flow in numbered pointers, 15 attacks paired with defenses, attacker motivations, and the RFC 9700 hardening checklist.
+   - ↳ [**OAuth 2.0 grant types & scenarios**](notes/03-oauth-oidc/22-oauth2-grant-types-and-scenarios.md) — the behind-the-screen playbook: a decision tree for picking a grant, **every** grant type walked step-by-step (Auth Code+PKCE, Client Credentials, Device Code, Refresh, + JWT-Bearer/Token-Exchange/CIBA), why Implicit & ROPC are dead, a deeper OIDC section, a real-world scenario gallery, and a brief on **OAuth 2.1**.
+6. [**PingFederate — a field guide**](notes/06-platforms-and-gateways/18-pingfederate-explained.md) — the federation hub your team runs: SP vs IdP connections, adapters, policy trees, attribute contracts, Access Token Managers, and the audit.log debugging playbook.
+   - ↳ [**Reverse proxies in IAM**](notes/06-platforms-and-gateways/20-reverse-proxies-in-iam.md) — the gate that does the logging-in for your apps: forward vs reverse, the authenticating-proxy/PEP pattern, and where it lives in your stack (PingAccess, nginx-ingress forward-auth, Envoy `ext_authz`).
+7. [**LDAP, Active Directory & Entra ID**](notes/04-directories-and-authn-protocols/04-ldap-ad-entra.md) — the directory layer; DIT/DN, Kerberos, and why Entra ≠ "AD in the cloud".
+   - ↳ [**Kerberos explained**](notes/04-directories-and-authn-protocols/15-kerberos-explained.md) — how legacy systems do "passwordless" auth: TGT/service tickets step by step, why the password never crosses the wire, keytabs & clock skew, attacks + defenses.
+8. [**HTTPS, TLS & mTLS**](notes/08-infrastructure-and-platform/06-tls-https-mtls.md) — transport security from scratch: the padlock, PKI/certs, and **mTLS** (machine auth) incl. the Kubernetes service-mesh pattern.
+9. [**IAM foundations round-up**](notes/01-foundations/07-iam-foundations.md) — MFA & passkeys, sessions/tokens, authZ models (RBAC/ABAC), PAM, IGA/SCIM, Zero Trust.
+10. [**PAM — Privileged Access Management**](notes/05-pam-and-governance/11-pam-deep-dive.md) — deep dive: vaulting, rotation, session recording/isolation, JIT & Zero Standing Privilege, service accounts & secrets, tiered admin.
+11. [**IGA — Identity Governance & Administration**](notes/05-pam-and-governance/12-iga-deep-dive.md) — deep dive: JML lifecycle, SCIM provisioning, access reviews/certifications, SoD. **Likely your day job.**
+12. [**PCI-DSS × IAM**](notes/07-security-and-compliance/09-pci-dss-and-iam.md) — where compliance meets identity: how PCI Req 7/8/10 map onto every IAM layer, and why your daily work *is* the audit evidence.
+13. [**IAM vulnerabilities**](notes/07-security-and-compliance/10-iam-vulnerabilities.md) — the identity attack surface, mapped to OWASP (A01/A07) + the API **BOLA** risk; every vuln paired with its defense.
+14. [**First-week questions & incident-channel decoder**](notes/01-foundations/05-first-week-questions.md) — turn all of the above into sharp questions for your manager, seniors, lead, and director (+ AI-in-tickets guardrails).
+15. [**Reverse-KT presentation guide**](notes/09-presentations-and-kt/23-reverse-kt-presentation-guide.md) 🎤 — a **33-slide** teach-the-room deck for explaining IAM + SAML + OAuth/OIDC end to end: slide content **and** first-person talk track for each slide, **Mermaid flow diagrams** for every protocol (SAML SP/IdP-init, all 4 OAuth grants, OIDC), the full **PingFederate** mapping, live-demo cue cards, and a Q&A prep sheet. Pairs with **Lab 03**.
+    - ↳ [**Reverse-KT presentation script**](notes/09-presentations-and-kt/25-reverse-kt-presentation-script.md) — the spoken flow, start to finish.
+    - ↳ [**Analogies & real-world narrative**](notes/09-presentations-and-kt/24-analogies-and-real-world-narrative.md) — the analogies and fresh examples the talk leans on.
+16. [**FIDO2, WebAuthn & passkeys**](notes/04-directories-and-authn-protocols/29-fido2-webauthn-passkeys-complete-reference.md) — phishing-resistant authentication from the key pair up: what's stored where, why a passkey can't be replayed to the wrong site, and how it lands in an enterprise rollout.
+
+**Platform plumbing** — [`notes/08-infrastructure-and-platform/`](notes/08-infrastructure-and-platform/). Support material for running the Ping stack; read a note when its vocabulary is blocking you, not front to back:
+- [**Docker**](notes/08-infrastructure-and-platform/26-docker-complete-reference.md) and [**Kubernetes**](notes/08-infrastructure-and-platform/27-kubernetes-complete-reference.md) complete references, plus the shared [**question bank**](notes/08-infrastructure-and-platform/28-docker-kubernetes-question-bank.md).
+- [**Kubernetes Services & Ingress**](notes/08-infrastructure-and-platform/31-kubernetes-services-and-ingress-deep-dive.md) — how traffic actually reaches a pod.
+- [**Subnets & cluster networking for Ping**](notes/08-infrastructure-and-platform/30-subnets-and-k8s-networking-for-ping.md) and [**subscription → container: how it nests and how to reach each layer**](notes/08-infrastructure-and-platform/32-cloud-to-container-hierarchy-and-reachability.md).
+- [**Istio & the service mesh**](notes/08-infrastructure-and-platform/33-istio-service-mesh-explained.md) — the two-container pod, and where mesh mTLS fits.
 
 > ✍️ Every note & lab here is written to **[Lefler's Laws](../LEFLER-LAWS.md)** — the repo's beginner-first documentation standard.
 
@@ -42,7 +67,7 @@ Full written walkthroughs now live in [`notes/`](notes/), in learning order:
 - [**Lab 01 — Keycloak as your own IdP (OIDC end to end)**](labs/01-keycloak-idp/README.md) — run a full login by hand and mint real tokens.
 - [**Lab 02 — SAML assertion anatomy**](labs/02-saml-assertion-anatomy/README.md) — decode a real assertion and run the debugging checklist.
 - [**Lab 04 — App onboarding with PingFederate (SAML SP + OAuth client)**](labs/04-pingfederate-app-onboarding/README.md) ⭐ — two deployable **Java Spring Boot** apps, each frontend + backend in one Docker image, built to be **onboarded into your own PingFederate**: one as a **SAML 2.0 SP connection**, one as an **OAuth 2.0 / OIDC client**. Download the SP metadata, paste the redirect URI, then read every assertion field and every token on screen. Ships a local username/password login so both apps are live *before* any IdP exists. The SAML app **imports the IdP's metadata file from its own UI** — configure or re-point it at a different PingFederate with no redeploy — and **diagnoses a rejected assertion**, showing the key it was signed with next to the keys the app trusts. Deploys to Render from [`render.yaml`](../render.yaml).
-- [**Lab 03 — Reverse-KT demo stack (SAML + OAuth 2.0)**](labs/03-kt-demo-saml-oauth/README.md) 🎤 — one-command Keycloak that's both a **SAML IdP** and an **OAuth/OIDC Authorization Server**, plus a browser app: demo **SAML SSO** and **all 4 OAuth grant types** live, captured with **SAML-tracer** + DevTools. Built to present alongside [note 23](notes/23-reverse-kt-presentation-guide.md).
+- [**Lab 03 — Reverse-KT demo stack (SAML + OAuth 2.0)**](labs/03-kt-demo-saml-oauth/README.md) 🎤 — one-command Keycloak that's both a **SAML IdP** and an **OAuth/OIDC Authorization Server**, plus a browser app: demo **SAML SSO** and **all 4 OAuth grant types** live, captured with **SAML-tracer** + DevTools. Built to present alongside [note 23](notes/09-presentations-and-kt/23-reverse-kt-presentation-guide.md).
 
 ---
 
