@@ -152,7 +152,7 @@ connection and the failure. `server.log` has the stack trace when you need it.
 > 🔍 **Compare SHA-256 fingerprints, not subject names.** Two certificates can share a subject, an
 > issuer and an overlapping validity window and still be different keys — which is exactly what a
 > rotation leaves behind. Full walk-through:
-> [note 34 — "Invalid Signature": how SAML signature verification really works](../../notes/34-saml-invalid-signature-rca.md).
+> [note 34 — "Invalid Signature": how SAML signature verification really works](../../notes/02-saml/34-saml-invalid-signature-rca.md).
 
 ### 1.7 Configuring without the metadata file — by hand
 

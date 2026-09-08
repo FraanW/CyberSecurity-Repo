@@ -2,12 +2,12 @@
 
 > **Lefler's build, Janus's curriculum.** This is your **presentation lab** for the reverse KT. One command brings up a Keycloak that plays **both** roles your team's PingFederate plays — a **SAML Identity Provider** *and* an **OAuth 2.0 / OIDC Authorization Server** — plus a browser app so you can demo, capture, and *read* every message live with **SAML-tracer** and browser DevTools.
 >
-> Pair it with the slide guide: [note 23 — Reverse-KT presentation guide](../../notes/23-reverse-kt-presentation-guide.md). The demos here are exactly its Demo A–E cue cards. **On the day, drive from [`PRESENTER-RUNBOOK.md`](PRESENTER-RUNBOOK.md)** — the single-screen "what to click / what to say" script.
+> Pair it with the slide guide: [note 23 — Reverse-KT presentation guide](../../notes/09-presentations-and-kt/23-reverse-kt-presentation-guide.md). The demos here are exactly its Demo A–E cue cards. **On the day, drive from [`PRESENTER-RUNBOOK.md`](PRESENTER-RUNBOOK.md)** — the single-screen "what to click / what to say" script.
 >
 > **Authorized-lab-only.** Everything runs on your machine with dummy users. Never put a real FinCo token or assertion on screen.
 
 - **Time:** 60–90 min to rehearse all five demos · **Difficulty:** intermediate (beginner-safe steps) · **Platform:** Windows 11 (Docker Desktop + PowerShell); Bash variants given too.
-- **Prereqs:** [note 22](../../notes/22-oauth2-grant-types-and-scenarios.md) (grants), [note 02](../../notes/02-saml-deep-dive.md) (SAML). Having done [Lab 01](../01-keycloak-idp/README.md) helps but isn't required.
+- **Prereqs:** [note 22](../../notes/03-oauth-oidc/22-oauth2-grant-types-and-scenarios.md) (grants), [note 02](../../notes/02-saml/02-saml-deep-dive.md) (SAML). Having done [Lab 01](../01-keycloak-idp/README.md) helps but isn't required.
 - **You'll be able to demo:** SAML SSO round trip · OAuth Authorization Code + PKCE · Client Credentials · Device Code · Refresh Token — and read the assertion, code, and tokens on the wire.
 
 ---
@@ -269,7 +269,7 @@ Try these **only** on this lab, and narrate the defense:
 
 - **Break redirect-URI security on purpose (OAuth):** repeat Demo B.2 with `redirect_uri=http://evil.example/callback`. Keycloak **refuses** — feel the **exact-match allow-list** defense (slide 24, row 1).
 - **Break `state` (OAuth CSRF):** in the SPA, tamper with the returned `state` — the page aborts with "state mismatch." That's the CSRF guard.
-- **Unsigned-assertion / XSW (SAML):** study only — ask **Loki** to walk XML Signature Wrapping against a captured lab assertion, and **Heimdall** what a SIEM would flag (multiple assertions, signature-validation failures). Full table: [note 02 §9](../../notes/02-saml-deep-dive.md#9-attacks--defenses-always-pair-them--claudemd-rule).
+- **Unsigned-assertion / XSW (SAML):** study only — ask **Loki** to walk XML Signature Wrapping against a captured lab assertion, and **Heimdall** what a SIEM would flag (multiple assertions, signature-validation failures). Full table: [note 02 §9](../../notes/02-saml/02-saml-deep-dive.md#9-attacks--defenses-always-pair-them--claudemd-rule).
 - **JWT `alg:none` / RS256→HS256 (OAuth):** study only — the crypto and the hands-on exploit live in [`../../../04-cryptography/`](../../../04-cryptography/) Lab 9; the fix is "allowlist algorithms, verify via JWKS by `kid`."
 
 ---
@@ -285,7 +285,7 @@ Try these **only** on this lab, and narrate the defense:
 | JWT vs opaque access token | the **Access Token Manager** decision |
 | Keycloak **Events** log | PingFederate **`audit.log`** |
 
-Deep dive: [note 18 — PingFederate field guide](../../notes/18-pingfederate-explained.md). Slide-by-slide Ping mapping: [note 23 slide 26](../../notes/23-reverse-kt-presentation-guide.md).
+Deep dive: [note 18 — PingFederate field guide](../../notes/06-platforms-and-gateways/18-pingfederate-explained.md). Slide-by-slide Ping mapping: [note 23 slide 26](../../notes/09-presentations-and-kt/23-reverse-kt-presentation-guide.md).
 
 ---
 
@@ -307,7 +307,7 @@ Deep dive: [note 18 — PingFederate field guide](../../notes/18-pingfederate-ex
 ## Data-handling note (fintech habit)
 
 - All users/tokens here are **dummy** — safe to demo and screenshot.
-- **Never** put a **real** FinCo assertion or token on screen, in a slide, or into an online decoder — decode sensitive ones **offline** (same rule as [note 05 §D](../../notes/05-first-week-questions.md)). The repo `.gitignore` blocks keys/certs; captures aren't auto-ignored, so don't save real ones.
+- **Never** put a **real** FinCo assertion or token on screen, in a slide, or into an online decoder — decode sensitive ones **offline** (same rule as [note 05 §D](../../notes/01-foundations/05-first-week-questions.md)). The repo `.gitignore` blocks keys/certs; captures aren't auto-ignored, so don't save real ones.
 
 ---
 
@@ -329,7 +329,7 @@ docker compose down -v     # stop and WIPE everything (fresh import next time)
 - [ ] **Demo B** SPA logs in and decodes both tokens (or B.2 manual path ready).
 - [ ] **Demos C, D, E** each run once from `scripts/` (PowerShell dot-sourced).
 - [ ] SAML-tracer pinned; DevTools Network tested; screenshots of each demo saved as a backup.
-- [ ] Mermaid diagrams in [note 23](../../notes/23-reverse-kt-presentation-guide.md) render in your slide tool (export PNGs as fallback).
+- [ ] Mermaid diagrams in [note 23](../../notes/09-presentations-and-kt/23-reverse-kt-presentation-guide.md) render in your slide tool (export PNGs as fallback).
 - [ ] `docker compose down` (not `-v`) so your setup is warm for the event.
 
 ---
@@ -340,6 +340,6 @@ docker compose down -v     # stop and WIPE everything (fresh import next time)
 - You captured and *read* a real **SAML assertion**, an **authorization code**, and decoded **access/ID tokens** — the artifacts you'll actually touch in tickets.
 - You can now demonstrate, not just describe, that you understand these protocols — the whole point of the reverse KT.
 
-**Next:** rehearse against [note 23 — the slide guide](../../notes/23-reverse-kt-presentation-guide.md) until the demos are muscle memory, then skim [note 21 §9](../../notes/21-oauth2-complete-reference.md) (15 attacks) and [note 02 §13](../../notes/02-saml-deep-dive.md) (60-second SAML checklist) as Q&A insurance.
+**Next:** rehearse against [note 23 — the slide guide](../../notes/09-presentations-and-kt/23-reverse-kt-presentation-guide.md) until the demos are muscle memory, then skim [note 21 §9](../../notes/03-oauth-oidc/21-oauth2-complete-reference.md) (15 attacks) and [note 02 §13](../../notes/02-saml/02-saml-deep-dive.md) (60-second SAML checklist) as Q&A insurance.
 
 *Built for Farhaan's reverse KT · authorized-lab-only 🔐*

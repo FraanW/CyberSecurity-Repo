@@ -29,7 +29,7 @@
 
 <blockquote>
 <p><strong>Janus's deep dive, round 2.</strong> This note captures (and levels up) the whiteboard session your senior — the Ping stack expert — ran on <strong>6 July 2026</strong>: SP-initiated vs IdP-initiated, how to <em>speed-read</em> an assertion, what's truly mandatory, where the EntityID lives, how the certificates create trust, and exactly <strong>what is and isn't encrypted</strong> end to end.</p>
-<p><strong>Prereqs:</strong> <a href="02-saml-deep-dive.md">SAML deep dive #1</a> (the fundamentals) and ideally <a href="../labs/02-saml-assertion-anatomy/README.md">Lab 02</a> (you've decoded one assertion by hand). Quiz yourself afterwards with the <a href="14-saml-question-bank.md"><strong>SAML question bank</strong></a>.</p>
+<p><strong>Prereqs:</strong> <a href="../notes/02-saml/02-saml-deep-dive.md">SAML deep dive #1</a> (the fundamentals) and ideally <a href="../labs/02-saml-assertion-anatomy/README.md">Lab 02</a> (you've decoded one assertion by hand). Quiz yourself afterwards with the <a href="../notes/02-saml/14-saml-question-bank.md"><strong>SAML question bank</strong></a>.</p>
 </blockquote>
 
 <hr>
@@ -74,7 +74,7 @@
 
 <h2>2. The cast, and the one identifier that names everybody: EntityID</h2>
 
-<p>Three actors (recap from <a href="02-saml-deep-dive.md">note 02</a>): the <strong>user</strong> (principal), the <strong>IdP</strong> (authenticates, asserts), the <strong>SP</strong> (the app, trusts the assertion). The browser is the courier between them.</p>
+<p>Three actors (recap from <a href="../notes/02-saml/02-saml-deep-dive.md">note 02</a>): the <strong>user</strong> (principal), the <strong>IdP</strong> (authenticates, asserts), the <strong>SP</strong> (the app, trusts the assertion). The browser is the courier between them.</p>
 
 <p>Every IdP and every SP has an <strong>EntityID</strong> — its <strong>globally-unique name</strong> in the federation. Think <em>passport number for a system</em>.</p>
 
@@ -465,9 +465,9 @@
 <h2>Next</h2>
 
 <ul>
-<li><strong>Drill it:</strong> <a href="14-saml-question-bank.md"><strong>note 14 — the SAML question bank</strong></a> — the QnA your senior could run, easy → very hard, with model answers.</li>
+<li><strong>Drill it:</strong> <a href="../notes/02-saml/14-saml-question-bank.md"><strong>note 14 — the SAML question bank</strong></a> — the QnA your senior could run, easy → very hard, with model answers.</li>
 <li><strong>Hands-on:</strong> re-run <a href="../labs/02-saml-assertion-anatomy/README.md">Lab 02</a>, but this time narrate the 60-second drill out loud over the decoded response.</li>
-<li><strong>Compare:</strong> <a href="03-oauth-oidc-deep-dive.md">OAuth/OIDC deep dive</a> — same job, JSON instead of XML; interviewers love "SAML vs OIDC."</li>
+<li><strong>Compare:</strong> <a href="../notes/03-oauth-oidc/03-oauth-oidc-deep-dive.md">OAuth/OIDC deep dive</a> — same job, JSON instead of XML; interviewers love "SAML vs OIDC."</li>
 </ul>
 
 <p><em>— Janus 🔐, from your senior's whiteboard session of 6 July 2026</em></p>

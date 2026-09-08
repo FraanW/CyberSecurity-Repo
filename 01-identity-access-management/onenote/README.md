@@ -16,8 +16,8 @@ OneNote's paste captures the **rendered** look from a browser, not the source. S
 ## Files
 | File | Source note | What's inside |
 |---|---|---|
-| `13-saml-mastery-session2.onenote.html` | [`../notes/13-saml-mastery-session2.md`](../notes/13-saml-mastery-session2.md) | The full SP-init/IdP-init + assertion + certificates + encryption deep dive |
-| `14-saml-question-bank.onenote.html` | [`../notes/14-saml-question-bank.md`](../notes/14-saml-question-bank.md) | The tiered question bank, every answer shown expanded |
+| `13-saml-mastery-session2.onenote.html` | [`../notes/02-saml/13-saml-mastery-session2.md`](../notes/02-saml/13-saml-mastery-session2.md) | The full SP-init/IdP-init + assertion + certificates + encryption deep dive |
+| `14-saml-question-bank.onenote.html` | [`../notes/02-saml/14-saml-question-bank.md`](../notes/02-saml/14-saml-question-bank.md) | The tiered question bank, every answer shown expanded |
 
 > **Tip:** each file → its own OneNote page. Regenerate these whenever the source notes change (ask Janus).
 

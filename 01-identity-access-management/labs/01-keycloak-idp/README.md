@@ -1,8 +1,8 @@
 # Lab 01 — Keycloak as your own Identity Provider (OIDC end to end)
 
-> **Lefler's build, Janus's curriculum.** You'll run your **own IdP** (Keycloak — the open-source stand-in for Okta/Entra ID) and drive a **complete OpenID Connect login by hand**, watching every parameter and every token. When you're done, the [OAuth/OIDC note](../../notes/03-oauth-oidc-deep-dive.md) will feel obvious. **Authorized-lab-only:** everything here runs on your machine.
+> **Lefler's build, Janus's curriculum.** You'll run your **own IdP** (Keycloak — the open-source stand-in for Okta/Entra ID) and drive a **complete OpenID Connect login by hand**, watching every parameter and every token. When you're done, the [OAuth/OIDC note](../../notes/03-oauth-oidc/03-oauth-oidc-deep-dive.md) will feel obvious. **Authorized-lab-only:** everything here runs on your machine.
 
-- **Time:** 45–75 min · **Difficulty:** beginner-friendly · **Prereqs:** [note 03](../../notes/03-oauth-oidc-deep-dive.md)
+- **Time:** 45–75 min · **Difficulty:** beginner-friendly · **Prereqs:** [note 03](../../notes/03-oauth-oidc/03-oauth-oidc-deep-dive.md)
 - **You'll learn:** realms/clients/users, the Authorization Code + PKCE flow, access vs ID vs refresh tokens, JWT decoding, the discovery document, redirect-URI security.
 
 ---
@@ -60,7 +60,7 @@ A **realm** is a self-contained set of users, clients, and config (think: one co
    - *Why 9999?* Nothing runs there — we'll intercept the redirect from the browser URL bar. This is a classic manual-flow trick.
 4. **Credentials** tab → copy the **Client secret** (you'll paste it in step 6).
 
-> 🔒 **Security note you'll actually use:** that redirect URI is an **exact-match allow-list**. Try logging in later with a *different* `redirect_uri` and Keycloak refuses — that's the defense against the redirect-URI attacks from [note 03 §10](../../notes/03-oauth-oidc-deep-dive.md#10-attacks--defenses-table).
+> 🔒 **Security note you'll actually use:** that redirect URI is an **exact-match allow-list**. Try logging in later with a *different* `redirect_uri` and Keycloak refuses — that's the defense against the redirect-URI attacks from [note 03 §10](../../notes/03-oauth-oidc/03-oauth-oidc-deep-dive.md#10-attacks--defenses-table).
 
 ---
 
@@ -121,7 +121,7 @@ function Decode-Jwt($jwt) {
 - **ID token** — `iss` (issuer), `sub` (stable user id — *not* the email!), `aud` = `oidc-lab-app` (**it's for the client**), `exp`, `nonce`, `email`, `preferred_username`.
 - **Access token** — note `aud`/`azp`, `scope`, and `realm_access.roles`. **It's meant for an API**, not for identifying the user.
 
-> That difference — **ID token tells your app who logged in; access token authorizes API calls** — is the #1 confusion from [note 03 §8](../../notes/03-oauth-oidc-deep-dive.md#8-openid-connect--the-authentication-layer). You just saw it firsthand.
+> That difference — **ID token tells your app who logged in; access token authorizes API calls** — is the #1 confusion from [note 03 §8](../../notes/03-oauth-oidc/03-oauth-oidc-deep-dive.md#8-openid-connect--the-authentication-layer). You just saw it firsthand.
 
 ---
 
@@ -182,7 +182,7 @@ Mobile/SPA apps can't keep a secret, so they use **PKCE** instead. Do it once by
      -Uri 'http://localhost:8080/realms/finco-lab/protocol/openid-connect/token' | Format-List
    ```
 
-> **What you just proved:** a thief who stole the `code` from the browser **can't exchange it** without your `code_verifier` — which never left your machine. That's PKCE ([note 03 §6](../../notes/03-oauth-oidc-deep-dive.md#6-pkce--the-piece-everyone-asks-about)).
+> **What you just proved:** a thief who stole the `code` from the browser **can't exchange it** without your `code_verifier` — which never left your machine. That's PKCE ([note 03 §6](../../notes/03-oauth-oidc/03-oauth-oidc-deep-dive.md#6-pkce--the-piece-everyone-asks-about)).
 
 ---
 
@@ -190,7 +190,7 @@ Mobile/SPA apps can't keep a secret, so they use **PKCE** instead. Do it once by
 
 - **See the audit trail:** Realm settings → **Sessions**/user **Sessions**, and enable **Realm settings → Events** (login events) → then log in and watch events appear. That's the raw material your SOC (**Heimdall**) turns into detections. Ask Heimdall: *"what would a login-anomaly alert look like from these events?"*
 - **Break redirect-URI security on purpose:** repeat step 5 with `redirect_uri=http://evil.example/callback`. Keycloak refuses — feel the **exact-match allow-list** defense working.
-- **Token attacks (study on this lab only):** ask **Loki** to walk `alg:none` / RS256→HS256 confusion against a token here; the fix (pin algorithms, verify via JWKS) is in [note 03 §9](../../notes/03-oauth-oidc-deep-dive.md#9-jwt-internals-the-format-under-id-tokens-and-many-access-tokens) and hands-on in `../../../04-cryptography/` Lab 9.
+- **Token attacks (study on this lab only):** ask **Loki** to walk `alg:none` / RS256→HS256 confusion against a token here; the fix (pin algorithms, verify via JWKS) is in [note 03 §9](../../notes/03-oauth-oidc/03-oauth-oidc-deep-dive.md#9-jwt-internals-the-format-under-id-tokens-and-many-access-tokens) and hands-on in `../../../04-cryptography/` Lab 9.
 
 ---
 

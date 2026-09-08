@@ -4,7 +4,7 @@
 
 **Agents to use here:** ask **Mimir** for concepts and to explain the *why*, **Lefler** to build and walk you through labs, **Heimdall** for the defensive and detection side (logging, WAF rules, secure patterns), and **Loki** for the offensive side — attacking apps to understand how they break, **in authorized labs only**.
 
-> 📓 **Deep-dive note:** [**OWASP Top 10 (2021)** — all ten risks in plain English, each with attack → defense](notes/01-owasp-top-10.md) (written to [Lefler's Laws](../LEFLER-LAWS.md)). The identity-specific slice lives next door: [IAM vulnerabilities](../01-identity-access-management/notes/10-iam-vulnerabilities.md).
+> 📓 **Deep-dive note:** [**OWASP Top 10 (2021)** — all ten risks in plain English, each with attack → defense](notes/01-owasp-top-10.md) (written to [Lefler's Laws](../LEFLER-LAWS.md)). The identity-specific slice lives next door: [IAM vulnerabilities](../01-identity-access-management/notes/07-security-and-compliance/10-iam-vulnerabilities.md).
 
 ---
 

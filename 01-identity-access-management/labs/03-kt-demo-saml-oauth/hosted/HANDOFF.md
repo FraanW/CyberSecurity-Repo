@@ -12,7 +12,7 @@
 | **Client** (`cybersecurity-repo-client`) | Landing page, 6 OAuth flows, SAML SP, QR, Resource Server | `https://cybersecurity-repo-client.onrender.com` |
 
 Repo source: `01-identity-access-management/labs/03-kt-demo-saml-oauth/hosted/` → `keycloak/` (Docker) and `client/` (Node).
-Slides: [note 23](../../notes/23-reverse-kt-presentation-guide.md) · Users: [USER-MANAGEMENT.md](USER-MANAGEMENT.md) · Local rehearsal rig: [../PRESENTER-RUNBOOK.md](../PRESENTER-RUNBOOK.md).
+Slides: [note 23](../../../notes/09-presentations-and-kt/23-reverse-kt-presentation-guide.md) · Users: [USER-MANAGEMENT.md](USER-MANAGEMENT.md) · Local rehearsal rig: [../PRESENTER-RUNBOOK.md](../PRESENTER-RUNBOOK.md).
 
 **Login for everything:** `farhaan / Passw0rd!` (also `priya / Passw0rd!`).
 
