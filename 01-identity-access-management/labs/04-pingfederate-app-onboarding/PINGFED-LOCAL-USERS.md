@@ -139,10 +139,16 @@ The Simple Username Password Credential Validator is deliberately minimal. Know 
 
 ## §1 — Before you start
 
-**Check these three things.** Two minutes now saves a confusing hour later.
+**Check these four things.** Two minutes now saves a confusing hour later.
 
 1. **You can reach the admin console** and log in — usually `https://<pf-host>:9999/pingfederate/app`.
-2. **Your runtime base URL is right.** **System → Server → Protocol Settings → Federation Info.**
+2. **The IdP role is switched on.** **System → Server → Protocol Settings → Roles & Protocols** →
+   tick **Enable Identity Provider (IdP) role** and, under it, **SAML 2.0**.
+   > ⚠️ **Do this first on a fresh install.** With the IdP role off, **Applications → Integration →
+   > SP Connections** is either missing from the menu or refuses to save. If you cannot find the
+   > menu §6 tells you to open, this is why — you are not going mad, and nothing else in this doc
+   > will work until it is ticked.
+3. **Your runtime base URL is right.** **System → Server → Protocol Settings → Federation Info.**
    The **Base URL** here is what goes into every URL PingFederate publishes about itself, including
    the SSO endpoint in its metadata. If it says `localhost` and your app is on the internet, the
    redirect will fail later for reasons that look nothing like the cause.
@@ -150,7 +156,7 @@ The Simple Username Password Credential Validator is deliberately minimal. Know 
    |---|---|
    | **Base URL** | `https://pf.example.com:9031` — the **runtime** port (9031), not the admin port (9999) |
    | **SAML 2.0 Entity ID** | PingFederate's own identity, e.g. `https://pf.example.com` — the app will need this |
-3. **You have a signing certificate.** **Security → Certificate & Key Management → Signing &
+4. **You have a signing certificate.** **Security → Certificate & Key Management → Signing &
    Decryption Keys & Certificates.** If the list is empty, **Create New** a self-signed one
    (`CN=pf-lab-signing`, RSA 2048, SHA-256, a few years). **Note its SHA-256 fingerprint** — you
    will compare it against the app in §9, and it is what turns an `Invalid Signature` ticket from
@@ -158,6 +164,38 @@ The Simple Username Password Credential Validator is deliberately minimal. Know 
 
 > ✅ **Checkpoint.** You know your Base URL, your entity ID, and you have one signing certificate
 > with its fingerprint written down.
+
+**One last thing to write down: your runtime endpoints.** Everything users touch is on the
+**runtime** port, and you will need these in §7 and §9.
+
+| Endpoint | URL |
+|---|---|
+| SSO (SP-initiated) | `https://<pf-host>:9031/idp/SSO.saml2` |
+| Single Logout | `https://<pf-host>:9031/idp/SLO.saml2` |
+| **IdP-initiated SSO** | `https://<pf-host>:9031/idp/startSSO.ping?PartnerSpId=<the app's SP entity ID>` |
+| IdP metadata | `https://<pf-host>:9031/pf/federation_metadata.ping?PartnerSpId=<the app's SP entity ID>` |
+
+> 💡 **The IdP-initiated URL is your best test tool.** It starts the login *at PingFederate*, which
+> takes the app's redirect logic out of the picture entirely. When something breaks in §9, trying
+> this URL first tells you in one click whether the problem is your chain or the app.
+
+**✅ Checkpoint — is the runtime actually reachable?**
+
+```bash
+curl -sk https://<pf-host>:9031/pf/federation_metadata.ping | head -20
+```
+```powershell
+# PowerShell (Windows 11)
+curl.exe -sk https://<pf-host>:9031/pf/federation_metadata.ping | Select-Object -First 20
+```
+
+You should get an `<EntityDescriptor entityID="…">` carrying the entity ID you set above. Connection
+refused means the runtime port is wrong or firewalled — fix that now, because every redirect in §9
+depends on it.
+
+> ⚠️ **9031 and 9999 are different servers.** **9999** is the admin console; **9031** is runtime SSO
+> traffic. Users never touch 9999. If your **Base URL** names the admin port, the config all looks
+> right and every login fails somewhere that points nowhere near the cause.
 
 ---
 
@@ -604,6 +642,9 @@ connection and the outcome. `server.log` has the stack trace when you need it.
 | **`Invalid destination` / `Invalid audience`** | The app built an `http://` URL behind a TLS proxy, or Ping's Base URL is wrong | Set the app's `PUBLIC_BASE_URL`; check **Protocol Settings → Federation Info** (§1) |
 | **Assertion rejected as expired** | Clock skew between Ping and the app | Assertions live minutes. Check NTP on both hosts before suspecting anything else |
 | **"Unknown connection"** | The SP connection is saved but **not Active** | §6.5 |
+| **Rejected before any login page appears** | **Require AuthN requests to be signed** is ticked, but the SP does not sign them — or Ping has no copy of the SP's certificate | Untick it, or import the SP's public certificate under **Credentials → Signature Verification Settings**. Note this failure is the *mirror* of `Invalid Signature`: that one is Ping's key at the app, this one is the app's key at Ping |
+| **`SP Connections` menu missing, or refuses to save** | The IdP role is not enabled | §1, step 2 |
+| **Everything looks right; nothing works** | **Base URL** names the admin port (9999) instead of runtime (9031) | §1. Re-run the metadata checkpoint there |
 
 ---
 
@@ -653,6 +694,31 @@ per SSO transaction. Alert on **a burst of failed authentications for one userna
 stuffing) and on **a successful SSO from an adapter that should not be reachable externally**.
 For the signature side, a spike of `invalid_signature` across *many* connections is a rotation gone
 wrong; the same error on *one* connection, repeatedly, from one source, is worth a look.
+
+**The specific thing that goes wrong with *this* build: it gets forgotten.** A validator built for a
+proof-of-concept, never deleted, still wired to a policy an internet-facing connection can reach, is
+a live credential store that **bypasses everything the directory does** — no MFA, no lockout, no
+leaver process, no central audit. It is worse than an ordinary weak password because your monitoring
+is watching AD, and failed logins here never reach it. A side door with no camera on it.
+
+Four places to catch one:
+
+| Where to look | What you are looking for |
+|---|---|
+| **Authentication → Integration → Password Credential Validators** | Any Simple Username Password Credential Validator that is not documented and time-boxed. In production, **any instance at all** is the finding |
+| **`audit.log`** | Successful authentications naming the local adapter or validator. In production the true rate is **zero**, which makes this a rare thing: a high-signal, near-zero-noise alert |
+| **Config archive diff** | An instance present in a real environment but absent from the documented baseline |
+| **Policy tree review** | An orphaned validator is untidy. One wired into an active policy on an active connection is an incident |
+
+And three habits that stop it happening:
+
+1. **Name it so it cannot hide** — a `Lab-` or `POC-` prefix, always. That prefix is what makes a
+   quarterly review catch it.
+2. **Time-box it in the ticket that created it.** "Delete `Lab-Local-Users`" belongs on a checklist,
+   not in someone's memory. §13 is that checklist for this doc.
+3. **Treat the admin console as Tier-0.** Anyone who can add a row to that user table can mint an
+   identity for *every* app behind PingFederate. That is domain-admin blast radius and deserves
+   domain-admin protection — MFA, a jump host, a restricted admin network.
 
 ---
 
