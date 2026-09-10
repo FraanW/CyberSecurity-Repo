@@ -205,6 +205,11 @@ Everything else — Attribute Contract, Authentication Source Mapping, signing s
 
 ### 1.8 Authentication Policies and IdP Adapters — what actually checks the password
 
+> 📘 **This section is the two-minute summary.** The full ground-up build — every screen, every
+> field, why each object exists, the gotchas, the attribute problem, cleanup, and what changes when
+> you swap in real LDAP — is **[`PINGFED-LOCAL-USERS.md`](PINGFED-LOCAL-USERS.md)**. Read that one
+> if you are building this from nothing; read this one if you just need the shape.
+
 **The gap metadata import never fills.** SP metadata tells PingFederate *where to send the
 assertion*. It says nothing about *how to authenticate the user* — that is a separate piece,
 configured once and then reused by every connection. This is the part of the console new IAM
