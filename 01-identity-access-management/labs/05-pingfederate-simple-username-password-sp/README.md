@@ -13,7 +13,7 @@
 - **Platform:** any machine with a browser that can reach your PingFederate. Commands are given for **Windows 11 (PowerShell)** and **Bash**.
 - **Prereqs:**
   - A PingFederate **11.x or 12.x** instance you control, with admin-console access. A trial install on a laptop is perfect.
-  - [note 18 — PingFederate explained](../../notes/18-pingfederate-explained.md) and [note 02 — SAML deep dive](../../notes/02-saml-deep-dive.md). If SAML is brand new to you, read note 02 first — this lab assumes you know what an *assertion* is.
+  - [note 18 — PingFederate explained](../../notes/06-platforms-and-gateways/18-pingfederate-explained.md) and [note 02 — SAML deep dive](../../notes/02-saml/02-saml-deep-dive.md). If SAML is brand new to you, read note 02 first — this lab assumes you know what an *assertion* is.
   - **A test SP to log in to.** Easiest: the `saml-sp` app from [Lab 04](../04-pingfederate-app-onboarding/README.md). §9 gives you two other options if you don't want to deploy anything.
 - **You'll be able to:** stand up an authentication chain end to end — **credential validator → adapter → policy contract → sign-on policy → SP connection** — explain what each of those five objects is *for*, fill an attribute contract when your credential store has no attributes to give you, and say out loud why this setup is fine in a lab and a finding in production.
 
@@ -265,7 +265,7 @@ Write these down — you'll paste them into the SP in §8.
 > `PartnerSpId`. Without it, PingFederate serves its **default** signing certificate. If this
 > connection signs with a different one, the SP imports everything cleanly and then **every login
 > fails** with an invalid-signature error while nothing looks wrong anywhere. This burns people
-> constantly — see [note 34](../../notes/34-saml-invalid-signature-rca.md).
+> constantly — see [note 34](../../notes/02-saml/34-saml-invalid-signature-rca.md).
 
 ---
 
@@ -740,7 +740,7 @@ Work in this order: **which layer broke?** Each row names the layer, so you know
 | No login form — straight to success or straight to error | Policy | The policy never ran | Tick **IdP Authentication Policies** (§6.1); confirm the policy's first source is `LAB-HTML-Form` |
 | Login form appears, correct password rejected | Validator | User row wasn't saved | You didn't click **Update** on the row (§3). Re-add and click **Update** |
 | `Unknown connection` / `Partner not found` | Connection | Entity ID mismatch, or connection inactive | Compare the SP's entity ID character-for-character; set the connection **Active** (§7.6) |
-| SP rejects with `Invalid Signature` | Certificates | The SP has the wrong copy of your signing certificate | §8 — re-export metadata **with `PartnerSpId`**, re-import at the SP, compare SHA-256 fingerprints. Full RCA: [note 34](../../notes/34-saml-invalid-signature-rca.md) |
+| SP rejects with `Invalid Signature` | Certificates | The SP has the wrong copy of your signing certificate | §8 — re-export metadata **with `PartnerSpId`**, re-import at the SP, compare SHA-256 fingerprints. Full RCA: [note 34](../../notes/02-saml/34-saml-invalid-signature-rca.md) |
 | PingFederate rejects the AuthnRequest before any login page | Certificates | You required signed AuthnRequests but Ping has the wrong/no SP certificate | §7.5 Signature Verification, or untick **Require AuthN requests to be signed** (§7.4) |
 | Login works, but SP says "access denied" / "no email" | Contracts | Attribute names don't match what the SP expects | §7.2 — ask the app team for their exact names and rename in the attribute contract |
 | `email` / `firstName` arrive **empty** | Contracts | A gap in one of the three contracts | Walk the chain in §7.3 backwards: attribute contract fulfillment → policy contract mapping → adapter contract mapping. One of the three is unmapped |
@@ -845,9 +845,9 @@ Do this. It's part of the lab, not an afterthought.
 
 - **[Lab 04 — App onboarding with PingFederate](../04-pingfederate-app-onboarding/README.md)** — the
   same connection against a real deployed app, plus the OAuth/OIDC side of the house.
-- **[note 34 — "Invalid Signature": how SAML signature verification really works](../../notes/34-saml-invalid-signature-rca.md)** —
+- **[note 34 — "Invalid Signature": how SAML signature verification really works](../../notes/02-saml/34-saml-invalid-signature-rca.md)** —
   the failure you're most likely to hit next, from first principles.
-- **[note 18 — PingFederate explained](../../notes/18-pingfederate-explained.md)** — the product map
+- **[note 18 — PingFederate explained](../../notes/06-platforms-and-gateways/18-pingfederate-explained.md)** — the product map
   around the five objects you just built.
 - **Then swap the validator for a real directory.** Stand up an LDAP container, create an **LDAP
   Datastore**, add an **LDAP Username Password Credential Validator**, and point `LAB-HTML-Form` at
