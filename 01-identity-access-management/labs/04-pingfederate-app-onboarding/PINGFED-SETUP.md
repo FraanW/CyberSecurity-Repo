@@ -240,6 +240,11 @@ stores users right inside PingFederate — no LDAP needed.
 | Instance Name | `Lab-Local-Users` |
 | Users | **Add a Row** → username `labuser`, password whatever you like, confirm |
 
+> 📘 **Want the long version?** [Lab 05 — a PingFederate SP connection with no LDAP and no
+> database](../05-pingfederate-simple-username-password-sp/README.md) builds this entire chain from
+> an empty server and derives *why* each of the five objects exists, including how to fill an
+> attribute contract when the credential store has no attributes to give you.
+
 > This is a lab-only stand-in for what FinCo really has here: an **LDAP Datastore** or Active
 > Directory bind. The rest of the pipeline below does not care which one feeds it — swap this one
 > instance for a real directory later and nothing downstream changes. That decoupling is the
