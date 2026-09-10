@@ -160,6 +160,14 @@ bindings and certificate by hand, and **§1.8** covers the piece metadata import
 all: building the **IdP Adapter** and **Authentication Policy** that actually check the user's
 credential before the assertion is signed.
 
+> 🧱 **No LDAP, no Active Directory, no database to point at?**
+> **[`PINGFED-LOCAL-USERS.md`](PINGFED-LOCAL-USERS.md)** is the full ground-up build using
+> PingFederate's own **Simple Username Password Credential Validator** — every object in the chain
+> (validator → adapter → policy contract → sign-on policy → SP connection), why each one exists,
+> the `IdP Authentication Policies` checkbox that silently voids your policy, what to do about
+> `email` when there is no directory to read it from, and what a real AD migration would actually
+> cost you afterwards. **Start here if you have a PingFederate but no directory.**
+
 **✅ Checkpoint — you are logged in via SAML.** The dashboard now says *"via PingFederate (SAML)"*,
 and **Step 4** fills in with the attributes, the parsed highlights, and the raw XML.
 
