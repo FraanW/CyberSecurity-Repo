@@ -84,6 +84,38 @@ The user's machine does nothing special. It is all browser redirects and cookies
 **Cookies left behind:** one at Microsoft (the bank session), possibly one at PingFederate, one at
 the app. The app's cookie is the only one the app's frontend cares about.
 
+### What the starting point looks like in real life
+
+Almost nobody opens My Apps. The realistic start is **a link on the bank's own intranet home page**
+— the same kind of page where you find Workday at FinCo. The bank's admin puts a "Commerce Control"
+tile there, and behind the tile is the Entra **user access URL**. Users also bookmark that link.
+
+| User's state when they click | What they see |
+|---|---|
+| **Already signed in** (normal on a work laptop: signing in to Windows or the browser signs them in to Entra) | A second or two of redirects, then the app. No prompt. |
+| **Not signed in** (personal device, expired session) | The bank's Entra login page and MFA, then the same redirects, then the app. |
+
+Either way, the login happens **at the bank**, before our PingFederate sees anything.
+
+### What if the user opens the app's own URL directly?
+
+Then nothing has vouched for them, and the app has no session. The app must choose:
+
+| Option | What happens | Flow type |
+|---|---|---|
+| **"Launch from your organisation's portal" page** | The user goes back to the bank's link. | Stays IdP-initiated only. |
+| **A sign-in button or automatic redirect** | The app sends the browser to PingFederate (`/sp/startSSO.ping`), which sends it to the bank. | **SP-initiated** — a different flow. |
+
+A "Sign in with SSO" button is always SP-initiated, because the *app* starts it. With many banks it
+has an extra problem: **which bank?** The app or PingFederate must work that out (a per-bank URL,
+or asking for the email address first). This is called **IdP discovery**.
+
+> **Why you care.** IdP-initiated-only means two things the app team must design for: a bookmark of
+> the app's own URL does not log anyone in, and when the app session expires the user has to
+> re-launch from the bank's portal. **(ask the service engineer)** whether the "base URL + bank
+> name" entries exist precisely to tell PingFederate which bank to use on a direct hit — that would
+> mean SP-initiated is already supported.
+
 ---
 
 ## 3. RelayState — the sticky note
