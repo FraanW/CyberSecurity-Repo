@@ -9,6 +9,20 @@
 > that README has **never been run**. You are the first to run it, and correcting it is part of
 > the job.
 
+## Lessons from the first run (2026-11-11, PingFederate 13.1.4, WSL 2.6)
+
+The whole runbook passed end to end. These traps cost time; skip them:
+
+| Trap | What to do |
+|---|---|
+| `wsl --manage <distro> --move` | Works on WSL 2.6 and is non-destructive. The fallback (export, unregister, import) was not needed. |
+| `.env` copied from Windows | Strip `\r` (`sed -i 's/\r$//' .env`). Otherwise every value gets a hidden extra character, and the OpenToken password stops matching. |
+| Containers exit with code 255 for no visible reason | WSL stopped the distro because no `wsl.exe` session was attached. Keep one attached (for example a background `wsl.exe -d Ubuntu -- sleep infinity`). `/proc/uptime` is the VM's uptime, not the distro's, so it will mislead you. |
+| Quoting through PowerShell → `wsl.exe` → `bash -lc` | Unreliable. Write a script file and run `wsl.exe -d Ubuntu -- bash /mnt/c/.../script.sh` from **PowerShell** (Git Bash rewrites `/mnt/...` paths). |
+| `/connectionMetadata/convert` | Takes `connectionType`, `expectedProtocol`, `samlMetadata` (base64). It rejects `verifyCertificate`. The result enables every profile and binding plus `signAuthnRequests`: strip it down to `IDP_INITIATED_SSO` and `POST`, remove `artifact`, `ssoServiceEndpoints` and `sloServiceEndpoints`, and set `signAuthnRequests: false`. |
+| `/redirectValidation` | `validPath` cannot contain `*`. Use `/sso/launch/` (it matches as a prefix). |
+| SSO fails with *"Unable to verify the signature"* | `lab05-banks` restarted and has new keys. Re-import each bank's `use="signing"` certificate into `credentials.certs` of its connection. |
+
 ## Ground rules
 
 1. **Authorized-lab-only.** Evaluation licence, dummy users, made-up banks. Never import or copy

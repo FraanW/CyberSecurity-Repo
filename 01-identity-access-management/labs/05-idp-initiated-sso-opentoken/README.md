@@ -45,8 +45,9 @@
 | Both Keycloak realms import, and each one produces a signed IdP-initiated SAML response aimed at `/sp/ACS.saml2` | ✅ Tested (Keycloak 26.6.4) |
 | Partner Bank Portal accepts good tokens and rejects bad ones | ✅ Tested (`npm test`) |
 | The app's OpenToken code agrees with a second, independent OpenToken implementation | ✅ Tested |
-| The PingFederate console steps in §3 | ⚠️ **Written from knowledge of the product, not yet run.** Screen names can differ by version. You are the first to run them. |
-| The app decoding a token minted by a *real* PingFederate | ⚠️ Not yet run — it is the first thing §4 proves. |
+| The PingFederate settings in §3 | ✅ Tested on **PingFederate 13.1.4** (2026-11-11), applied through the admin API. Two corrections from that run are in §3.3 and §3.5. |
+| The console **menu paths** in §3 | ⚠️ Not clicked through yet: the first run used the admin API. Same objects and fields, but a menu name may differ. |
+| The app decoding a token minted by a *real* PingFederate | ✅ Tested: alice (Bank A) and bob (Bank B) both landed signed in, and `/sso/log` shows two `accepted` rows. |
 
 ---
 
@@ -96,6 +97,12 @@ Write it down as **`PF_PUBLIC_URL`**.
 > - The tunnel URL **changes every time the `tunnel` container restarts.** Leave it running for the
 >   whole demo. If it changes, redo §2 step 3 and §3.1.
 > - The tunnel publishes only port 9031 (logins). The admin console stays on your laptop.
+> - **On WSL, Ubuntu stops a few seconds after you close the last Ubuntu terminal**, and Docker
+>   stops with it, even though it is running in the background. Keep one Ubuntu terminal open
+>   for the whole session. The containers use `restart: unless-stopped`, so they come back by
+>   themselves when Ubuntu starts again, but the tunnel then has a **new** URL.
+> - Copied `.env` from Windows? Run `sed -i 's/\r$//' .env`. Windows line endings add an
+>   invisible character to every value, so the OpenToken password silently stops matching.
 > - Already have a lab PingFederate reachable from the internet (as in lab 04)? Use that and skip
 >   this section.
 
@@ -119,15 +126,25 @@ Write it down as **`PF_PUBLIC_URL`**.
 ✅ **Checkpoint:** `APP_URL` shows *"You are not signed in"* with two bank tiles.
 `BANKS_URL/realms/bank-a/protocol/saml/descriptor` returns XML.
 
-> **Gotcha.** Free Render services sleep. The first click after a pause can take about a minute.
-> Open both URLs a few minutes before you present.
+> **Gotchas.**
+> - Free Render services sleep after 15 minutes without traffic, and the first click after that
+>   can take about a minute. The compose file has a `pinger` service that keeps them awake: put
+>   your two URLs in `PING_URLS` in `.env`. Render's free tier gives **750 hours a month** for
+>   all your services together, and two services kept awake 24/7 would use about 1,440. So run
+>   `docker compose stop pinger` when you are not working on the lab.
+> - **The banks get new signing keys every time `lab05-banks` starts.** That includes every
+>   deploy, every restart and every wake from sleep. Keycloak keeps its data inside the
+>   container, and the realm files contain no fixed keys. So after any restart, re-import both
+>   banks' certificates in PingFederate (§3.3, Credentials), or every login fails with a
+>   signature error.
 
 ---
 
 ## 3. Configure PingFederate (what the service engineer does by hand)
 
-Menu names are PingFederate 11.x / 12.x. ⚠️ See the status table above: this section has not been
-run yet, so treat a screen that looks different as a difference in naming, and tell me.
+The settings below were tested on PingFederate 13.1.4. The menu names are from 11.x / 12.x and
+have not been clicked through on 13.1 yet (see the status table). If a screen looks different,
+it is a difference in naming: look for the same field.
 
 ### 3.1 Tell PingFederate its own public name
 
@@ -171,14 +188,14 @@ run yet, so treat a screen that looks different as a difference in naming, and t
 | Connection Options | **Browser SSO** |
 | Import Metadata | **URL** → `BANKS_URL/realms/bank-a/protocol/saml/descriptor` |
 | General Info | Entity ID is imported: `BANKS_URL/realms/bank-a`. Name it `Bank A (org-1001)`. |
-| Browser SSO → SAML Profiles | tick **IdP-Initiated SSO** only |
+| Browser SSO → SAML Profiles | tick **IdP-Initiated SSO** only. ⚠️ The metadata import ticks **all four** profiles, because Keycloak advertises them all. Untick the other three. |
 | User-Session Creation → Identity Mapping | **Account Mapping** |
 | Attribute Contract | `SAML_SUBJECT` plus `email`, `givenName`, `surname` |
 | Target Session Mapping | **Map New Adapter Instance** → `Bank Portal OpenToken` |
 | Adapter Contract Fulfillment | see the mapping table below (source: **Assertion**) |
 | Default Target URL | `APP_URL/sso/launch/org-1001` |
-| Protocol Settings | bindings: **POST**. Signature policy: accept the default (signed assertion or response). |
-| Credentials → Signature Verification | **Unanchored**, using the certificate that came in with the metadata |
+| Protocol Settings | bindings: **POST** only. The import also ticks SOAP, Redirect and Artifact: untick them. If you leave Artifact on, saving demands the SOAP binding and a back-channel login. Signature policy: accept the default (signed assertion or response). |
+| Credentials → Signature Verification | **Unanchored**, using the certificate that came in with the metadata. Keycloak's metadata has one `use="signing"` certificate, and that is the right one. If saving asks for a **signing key pair**, "sign AuthnRequests" is still on. That setting only matters for SP-initiated SSO, so switch it off. |
 | Activation | **Active**, then **Save** |
 
 | Adapter attribute | Bank A's assertion value | Bank B's assertion value |
@@ -205,7 +222,9 @@ Repeat §3.3 with three differences:
 **Security → System Integration → Redirect Validation**
 
 - Tick **Enable Target Resource Validation for SSO**.
-- Add a row: host = the host of `APP_URL`, path = `/sso/launch/*`, tick **Require HTTPS** and **Allow for Target Resource**.
+- Add a row: host = the host of `APP_URL`, path = `/sso/launch/`, tick **Require HTTPS** and **Allow for Target Resource**.
+  PingFederate 13.1 rejects a `*` in the path (*"Wildcards ('\*') are not permitted in the path"*).
+  None is needed: the path works as a prefix. Bank A's `/sso/launch/org-1001` passed this exact row.
 
 **Why:** RelayState comes from outside. Without this list, anyone who can craft a link could make
 PingFederate redirect a freshly signed-in user to a site of their choosing.
@@ -245,7 +264,7 @@ One line per login: the connection (bank), the subject, the adapter, and `succes
 | Symptom | Likely cause |
 |---|---|
 | PingFederate error page straight after the bank login | Base URL or entity ID in §3.1 does not match what the banks were told. Re-check `PF_PUBLIC_URL` on Render and restart `lab05-banks`. |
-| Error mentioning signature | The tunnel URL or realm changed after you imported metadata. Re-import it. See [note 34](../../notes/02-saml/34-saml-invalid-signature-rca.md). |
+| *"Unable to verify the signature"*, and `server.log` says the configured certificate *"does not match the embedded certificate in the signature"* | `lab05-banks` restarted and Keycloak made new keys (see the §2 gotchas). Re-import each bank's `use="signing"` certificate from its metadata URL. Seen on the first run. See [note 34](../../notes/02-saml/34-saml-invalid-signature-rca.md). |
 | Error mentioning target resource | §3.5 allow-list does not cover the URL. |
 | App says *"could not decrypt"* | The adapter password and `OPENTOKEN_PASSWORD` differ. |
 | App says *"token has expired"* straight away | The laptop's clock is wrong. |

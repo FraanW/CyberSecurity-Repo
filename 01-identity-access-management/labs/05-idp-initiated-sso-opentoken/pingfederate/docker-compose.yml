@@ -14,6 +14,7 @@ services:
   pingfederate:
     # The image version must match the version your licence file was issued for (see .env).
     image: pingidentity/pingfederate:${PF_IMAGE_TAG:-latest}
+    restart: unless-stopped   # come back by itself after WSL or Docker restarts
     environment:
       PING_IDENTITY_ACCEPT_EULA: "YES"
       # Only needed if you have NO licence file and use Ping's DevOps evaluation licence instead.
@@ -36,9 +37,32 @@ services:
   # of this container, so leave it running for the whole demo.
   tunnel:
     image: cloudflare/cloudflared:latest
+    restart: unless-stopped   # come back by itself after WSL or Docker restarts
     command: tunnel --no-autoupdate --no-tls-verify --url https://pingfederate:9031
     depends_on:
       - pingfederate
+
+  # Keeps the two free Render services awake. They sleep after 15 minutes without traffic.
+  # Render's free tier gives 750 instance-hours a month for the whole workspace; two services
+  # kept awake 24/7 use ~1,440. So run this only while you work:
+  #   docker compose stop pinger      /      docker compose start pinger
+  pinger:
+    image: curlimages/curl:8.11.1
+    restart: unless-stopped
+    environment:
+      PING_URLS: ${PING_URLS:-}                     # space-separated, set in .env
+      PING_EVERY_SECONDS: ${PING_EVERY_SECONDS:-600}  # 10 min, under Render's 15-min sleep timer
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        [ -z "$$PING_URLS" ] && { echo "PING_URLS is empty in .env; nothing to ping"; exec sleep infinity; }
+        while true; do
+          for u in $$PING_URLS; do
+            code=$$(curl -s -o /dev/null -w '%{http_code}' --max-time 120 "$$u")
+            echo "$$(date -u +%FT%TZ) $$code $$u"
+          done
+          sleep "$$PING_EVERY_SECONDS"
+        done
 
 volumes:
   pf-out:
