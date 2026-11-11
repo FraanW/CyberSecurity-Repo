@@ -11,8 +11,8 @@
 - **Time:** ~45 min first run · **Difficulty:** intermediate
 - **Machine:** a laptop with **Ubuntu (native or WSL on Windows 11)**, Docker and about 4 GB of free memory (commands are Bash).
   The banks and the app run on **Render's free tier**.
-- **You need:** a Render account, and a **Ping DevOps user and key** (free registration from your
-  Ping Identity profile page — use a personal email).
+- **You need:** a Render account, and a **PingFederate trial licence file** (`.lic`, 30 days,
+  generated from your Ping Identity account).
 - **Read first:** [note 35 — IdP-initiated SSO with PingFederate as the SP](../../notes/06-platforms-and-gateways/35-idp-initiated-sso-pingfed-as-sp.md).
 - **You'll be able to:** explain and demo what the bank, the IAM team and the app team each configure.
 
@@ -72,7 +72,8 @@ The two banks differ in exactly the ways real ones do, so PingFederate has real 
 ```bash
 cd 01-identity-access-management/labs/05-idp-initiated-sso-opentoken/pingfederate
 cp env.example .env          # .env is git-ignored
-nano .env                    # paste your Ping DevOps user + key, choose an admin password
+nano .env                    # admin password, OpenToken password, image tag
+cp /path/to/your-file.lic license/pingfederate.lic
 docker compose up -d
 docker compose logs -f pingfederate
 ```
@@ -90,7 +91,8 @@ docker compose logs tunnel | grep -o 'https://[a-z0-9-]*\.trycloudflare\.com' | 
 Write it down as **`PF_PUBLIC_URL`**.
 
 > **Gotchas.**
-> - `Unable to download evaluation product.lic` in the log means the DevOps user or key is wrong.
+> - A licence error in the log usually means the image version and the licence version differ.
+>   Set `PF_IMAGE_TAG` in `.env` to the version named inside the `.lic` file.
 > - The tunnel URL **changes every time the `tunnel` container restarts.** Leave it running for the
 >   whole demo. If it changes, redo §2 step 3 and §3.1.
 > - The tunnel publishes only port 9031 (logins). The admin console stays on your laptop.

@@ -32,3 +32,11 @@ Route work to the right specialist (invoke via the Agent tool or by name):
 - **Never commit secrets.** Use `.gitignore`d files and placeholders; the `.gitignore` already blocks keys, certs, `.env`, and capture files.
 - **Pair attacks with defenses.** When covering an offensive technique, always include how to detect and mitigate it.
 - **Save knowledge.** When a good explanation or lab writeup is produced, store it in the relevant domain's `notes/` or `labs/` folder.
+
+## Lab 05 on Farhaan's laptop — start here
+If this session is running **on Farhaan's own laptop** and he asks to start, set up or resume
+"lab 05", "the PingFederate lab" or "the bank portal lab", follow
+`01-identity-access-management/labs/05-idp-initiated-sso-opentoken/pingfederate/LAPTOP-AGENT-RUNBOOK.md`
+from the top. Run its Phase 0 checks first, even on a resume, to see what is already done.
+He is usually driving from his phone, so ask short, self-contained questions and only when the
+runbook says to stop.

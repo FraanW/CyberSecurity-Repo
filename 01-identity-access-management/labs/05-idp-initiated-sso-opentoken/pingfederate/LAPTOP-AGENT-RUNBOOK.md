@@ -13,8 +13,9 @@
 
 1. **Authorized-lab-only.** Evaluation licence, dummy users, made-up banks. Never import or copy
    any FinCo/work configuration, certificate, hostname or credential.
-2. **Secrets stay out of git and out of chat.** The Ping DevOps key, the admin password and the
-   OpenToken password live only in `pingfederate/.env` (git-ignored). Never print them, never
+2. **Secrets stay out of git and out of chat.** The admin password and the OpenToken password
+   live only in `pingfederate/.env`; the licence lives only in `pingfederate/license/`. Both are
+   git-ignored. Never print them, never
    commit them, never put them in a commit message or a report. Run `git status` before any commit.
 3. **Stop and ask before anything destructive.** In particular: `wsl --unregister`, deleting a
    `.vhdx`, `docker system prune`, removing volumes, or changing Windows settings outside what
@@ -24,13 +25,33 @@
 5. **The admin console (port 9999) is never exposed.** Only the runtime port 9031 goes through
    the tunnel.
 
-## What Farhaan must have done before leaving
+## What should already be on the laptop
 
 - Laptop on, signed in, not set to sleep (Settings → System → Power → Sleep: Never while plugged in).
-- This repo cloned on the laptop, on branch `claude/idp-initiated-saml-sso-lab-iaki4j`.
-- `pingfederate/.env` created from `env.example` with his Ping DevOps user and key and an admin
-  password. **If `.env` is missing, stop and ask him to create it** — do not ask him to paste the
-  key into the chat unless he chooses to.
+- This repo cloned inside Ubuntu, on the lab branch (or `main` once merged).
+- A PingFederate **trial licence file** (`.lic`) that Farhaan generated from his Ping Identity
+  account, and the PingFederate **`.zip`** he downloaded. They are probably in his Windows
+  Downloads folder.
+
+**Your first job is to finish this setup, without asking for anything you can find yourself:**
+
+```bash
+cd 01-identity-access-management/labs/05-idp-initiated-sso-opentoken/pingfederate
+ls /mnt/c/Users/*/Downloads/*.lic /mnt/d/*.lic /mnt/d/*/*.lic 2>/dev/null     # find the licence
+ls /mnt/c/Users/*/Downloads/pingfederate*.zip /mnt/d/pingfederate*.zip 2>/dev/null
+```
+
+1. Copy the licence to `license/pingfederate.lic`. If there are several `.lic` files, or none,
+   ask him which one.
+2. Read the licence (it is a text file) and note its **product**, **version** and **expiry
+   date**. Do not print its signature block. If it is not for PingFederate or has expired, stop
+   and tell him.
+3. If `.env` is missing: copy `env.example` to `.env`, generate `PF_ADMIN_PASSWORD` and
+   `OPENTOKEN_PASSWORD` with `openssl rand -base64 32`, and tell him the values are in the file.
+   He will need to read both from the file later.
+4. Set `PF_IMAGE_TAG` in `.env` to a Docker tag of the **same major.minor version as the
+   licence**. List real tags first; do not guess:
+   `curl -s 'https://hub.docker.com/v2/repositories/pingidentity/pingfederate/tags?page_size=100' | grep -o '"name":"[^"]*"'`
 
 ---
 
@@ -115,6 +136,7 @@ or file access will be slow.
 
 ```bash
 test -f .env || { echo "STOP: .env missing"; exit 1; }
+test -f license/pingfederate.lic || { echo "STOP: licence file missing"; exit 1; }
 docker compose pull
 docker compose up -d
 docker compose logs -f pingfederate        # wait for the server to finish starting (2-4 min)
@@ -122,8 +144,27 @@ docker compose logs -f pingfederate        # wait for the server to finish start
 
 | Log line | Meaning |
 |---|---|
-| `Unable to download evaluation product.lic` | DevOps user/key wrong → stop and tell Farhaan |
+| Licence invalid / wrong version / expired | The image version and the licence version differ, or the trial ended. Fix `PF_IMAGE_TAG`, or tell Farhaan to generate a new licence. |
+| `license/pingfederate.lic` is a *directory* | `up` ran before the file existed. `docker compose down`, delete the empty folder, copy the file, start again. |
 | Out-of-memory or the container restarts in a loop | Give WSL more memory: `%UserProfile%\.wslconfig` → `[wsl2]` / `memory=6GB`, then `wsl --shutdown` |
+| Cannot sign in to the admin API as `administrator` | The image's start-up profile did not create the account. Read the container log for the first-run steps it took, and check the image documentation before trying anything else. |
+
+### Fallback — no Docker image matches the licence
+
+Run the `.zip` Farhaan downloaded instead. It is the exact version the licence was issued for.
+
+1. Install a supported Java (17 or 21) in Ubuntu and set `JAVA_HOME`.
+2. Unzip under the distro's home folder (which is on D: after Phase 1), copy the licence to
+   `pingfederate/server/default/conf/pingfederate.lic`, and start `pingfederate/bin/run.sh` in the
+   background with its output in a log file.
+3. A fresh install needs first-run setup (accept the licence agreement, create the first
+   administrator). Check the admin API docs for doing this without the browser; if it can only be
+   done in the console, ask Farhaan to do that one step when he is back.
+4. Start only the tunnel from compose, pointed at the host:
+   `docker run -d --name lab05-tunnel --network host cloudflare/cloudflared:latest tunnel --no-autoupdate --no-tls-verify --url https://localhost:9031`
+5. Logs are then under `pingfederate/log/` in the unzipped folder, not `/opt/out/instance/log/`.
+
+Tell Farhaan which path you took and why.
 
 Get the public URL:
 

@@ -7,6 +7,7 @@
 *.csr
 *.p12
 *.pfx
+*.lic
 credentials*
 secrets*
 *_rsa

@@ -1,7 +1,8 @@
 # Lab 05 — a real PingFederate on your laptop, plus a tunnel so the browser can reach it
 # from anywhere. LAB ONLY: evaluation licence, dummy users, never FinCo configuration.
 #
-#   cp env.example .env      # then fill in your Ping DevOps user and key
+#   cp env.example .env                        # then fill it in
+#   cp <your file>.lic license/pingfederate.lic   # your 30-day licence file (git-ignored)
 #   docker compose up -d
 #   docker compose logs -f pingfederate     # wait for "PingFederate is up"  (2-4 minutes)
 #   docker compose logs tunnel | grep trycloudflare.com      # your public runtime URL
@@ -11,11 +12,13 @@
 
 services:
   pingfederate:
-    image: pingidentity/pingfederate:latest   # evaluation licences only work with recent images
+    # The image version must match the version your licence file was issued for (see .env).
+    image: pingidentity/pingfederate:${PF_IMAGE_TAG:-latest}
     environment:
       PING_IDENTITY_ACCEPT_EULA: "YES"
-      PING_IDENTITY_DEVOPS_USER: ${PING_IDENTITY_DEVOPS_USER:?set it in .env}
-      PING_IDENTITY_DEVOPS_KEY: ${PING_IDENTITY_DEVOPS_KEY:?set it in .env}
+      # Only needed if you have NO licence file and use Ping's DevOps evaluation licence instead.
+      PING_IDENTITY_DEVOPS_USER: ${PING_IDENTITY_DEVOPS_USER:-}
+      PING_IDENTITY_DEVOPS_KEY: ${PING_IDENTITY_DEVOPS_KEY:-}
       # Ping's "getting started" profile: an admin account and sensible defaults.
       SERVER_PROFILE_URL: https://github.com/pingidentity/pingidentity-server-profiles.git
       SERVER_PROFILE_PATH: getting-started/pingfederate
@@ -26,6 +29,8 @@ services:
       - "127.0.0.1:9031:9031"   # runtime engine
     volumes:
       - pf-out:/opt/out         # keeps your configuration across restarts
+      # Your licence file. It must exist BEFORE `up`, or Docker creates a folder in its place.
+      - ./license/pingfederate.lic:/opt/in/instance/server/default/conf/pingfederate.lic:ro
 
   # Publishes ONLY the runtime port (9031). The URL is random and changes on every restart
   # of this container, so leave it running for the whole demo.
