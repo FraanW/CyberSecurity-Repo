@@ -182,7 +182,7 @@ services:
       # Must equal PingFederate's SAML 2.0 entity ID.
       - key: PF_SP_ENTITY_ID
         value: lab05:finco:pingfederate:sp
-      # Commerce Control's public URL, e.g. https://lab05-commerce-control.onrender.com
+      # Partner Bank Portal's public URL, e.g. https://lab05-bank-portal.onrender.com
       - key: APP_ORIGIN
         sync: false
       # Password shared by the dummy users alice, carol and bob.
@@ -193,13 +193,13 @@ services:
       - key: KC_BOOTSTRAP_ADMIN_PASSWORD
         generateValue: true
 
-  # ---------------------------------------------------------------- Commerce Control (the app)
+  # ---------------------------------------------------------------- Partner Bank Portal (the app)
   - type: web
-    name: lab05-commerce-control
+    name: lab05-bank-portal
     runtime: docker
     plan: free
     region: singapore
-    rootDir: 01-identity-access-management/labs/05-idp-initiated-sso-opentoken/commerce-control
+    rootDir: 01-identity-access-management/labs/05-idp-initiated-sso-opentoken/bank-portal
     dockerfilePath: ./Dockerfile
     healthCheckPath: /api/health
     autoDeploy: false

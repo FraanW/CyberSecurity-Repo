@@ -17,7 +17,7 @@ PF_PUBLIC_URL="${PF_PUBLIC_URL:-https://pf-not-configured.invalid}"
 PF_PUBLIC_URL="${PF_PUBLIC_URL%/}"
 # PingFederate's SAML 2.0 entity ID (System > Server > Protocol Settings > Federation Info).
 PF_SP_ENTITY_ID="${PF_SP_ENTITY_ID:-lab05:finco:pingfederate:sp}"
-# Commerce Control's public URL. Only Bank A uses it (as its RelayState).
+# Partner Bank Portal's public URL. Only Bank A uses it (as its RelayState).
 APP_ORIGIN="${APP_ORIGIN:-https://app-not-configured.invalid}"
 APP_ORIGIN="${APP_ORIGIN%/}"
 # One shared password for the dummy bank users (LAB ONLY).
@@ -26,7 +26,7 @@ LAB_USER_PASSWORD="${LAB_USER_PASSWORD:-Passw0rd!}"
 echo "Keycloak public origin : ${PUBLIC_ORIGIN}"
 echo "PingFederate ACS       : ${PF_PUBLIC_URL}/sp/ACS.saml2"
 echo "PingFederate entity ID : ${PF_SP_ENTITY_ID}"
-echo "Commerce Control       : ${APP_ORIGIN}"
+echo "Partner Bank Portal       : ${APP_ORIGIN}"
 
 mkdir -p /opt/keycloak/data/import
 for f in /opt/keycloak/data/import-templates/*.json; do

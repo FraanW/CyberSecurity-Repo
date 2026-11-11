@@ -1,5 +1,5 @@
 {
-  "name": "commerce-control-lab",
+  "name": "bank-portal-lab",
   "version": "1.0.0",
   "private": true,
   "description": "Lab 05 stand-in app: receives an OpenToken from PingFederate's SP adapter",

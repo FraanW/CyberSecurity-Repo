@@ -1,7 +1,7 @@
 # Lab 05 — IdP-initiated SSO: many banks, one PingFederate, one app (OpenToken)
 
 > **Lefler built it, Janus specified it.** Two pretend banks sign their own users in, hand them to
-> *your* PingFederate, and PingFederate hands them to one app — **Commerce Control** — with an
+> *your* PingFederate, and PingFederate hands them to one app — **Partner Bank Portal** — with an
 > **OpenToken**. It mirrors what the service engineers configure by hand today, so you can show the
 > team every moving part before anyone automates it.
 >
@@ -9,7 +9,7 @@
 > banks. No FinCo configuration, certificates, passwords or real bank names go anywhere near this.
 
 - **Time:** ~45 min first run · **Difficulty:** intermediate
-- **Machine:** an **Ubuntu laptop** with Docker and about 4 GB of free memory (commands are Bash).
+- **Machine:** a laptop with **Ubuntu (native or WSL on Windows 11)**, Docker and about 4 GB of free memory (commands are Bash).
   The banks and the app run on **Render's free tier**.
 - **You need:** a Render account, and a **Ping DevOps user and key** (free registration from your
   Ping Identity profile page — use a personal email).
@@ -25,14 +25,14 @@
 | Keycloak realm `bank-a` | Bank A's login server (their **IdP**). **Sends** RelayState. | Render | `banks/` |
 | Keycloak realm `bank-b` | Bank B's login server. Sends **no** RelayState, and names its attributes the way Entra does. | Render | `banks/` |
 | PingFederate | FinCo's federation server, acting as **SP** to both banks | Your laptop + tunnel | `pingfederate/` |
-| Commerce Control | The app team's app. One URL base for every bank. | Render | `commerce-control/` |
+| Partner Bank Portal | The app team's app. One URL base for every bank. | Render | `bank-portal/` |
 
 ```
  Bank A tile ─► Keycloak bank-a ─┐  SAML response (+ RelayState)
                                  ├─► PingFederate /sp/ACS.saml2 ─► OpenToken SP adapter
  Bank B tile ─► Keycloak bank-b ─┘  SAML response (no RelayState)          │
                                                                            ▼
-                    Commerce Control   /sso/launch/org-1001   (Bank A)
+                    Partner Bank Portal   /sso/launch/org-1001   (Bank A)
                                        /sso/launch/org-2002   (Bank B)
 ```
 
@@ -43,7 +43,7 @@
 | Part | Status |
 |---|---|
 | Both Keycloak realms import, and each one produces a signed IdP-initiated SAML response aimed at `/sp/ACS.saml2` | ✅ Tested (Keycloak 26.6.4) |
-| Commerce Control accepts good tokens and rejects bad ones | ✅ Tested (`npm test`) |
+| Partner Bank Portal accepts good tokens and rejects bad ones | ✅ Tested (`npm test`) |
 | The app's OpenToken code agrees with a second, independent OpenToken implementation | ✅ Tested |
 | The PingFederate console steps in §3 | ⚠️ **Written from knowledge of the product, not yet run.** Screen names can differ by version. You are the first to run them. |
 | The app decoding a token minted by a *real* PingFederate | ⚠️ Not yet run — it is the first thing §4 proves. |
@@ -64,6 +64,10 @@ The two banks differ in exactly the ways real ones do, so PingFederate has real 
 ---
 
 ## 1. Start PingFederate on the laptop
+
+> **Doing this remotely through a Claude session on the laptop?** Hand it
+> [`pingfederate/LAPTOP-AGENT-RUNBOOK.md`](pingfederate/LAPTOP-AGENT-RUNBOOK.md). It covers moving WSL and Docker
+> storage to the D: drive, starting PingFederate, and configuring it through the admin API.
 
 ```bash
 cd 01-identity-access-management/labs/05-idp-initiated-sso-opentoken/pingfederate
@@ -98,7 +102,7 @@ Write it down as **`PF_PUBLIC_URL`**.
 ## 2. Deploy the banks and the app to Render
 
 1. Render dashboard → **New → Blueprint** → this repo. It offers `lab05-banks` and
-   `lab05-commerce-control` (and the lab 04 services, which you can skip).
+   `lab05-bank-portal` (and the lab 04 services, which you can skip).
 2. Deploy both. Note their URLs: **`BANKS_URL`** and **`APP_URL`**.
 3. Set the environment variables, then **restart** each service:
 
@@ -107,8 +111,8 @@ Write it down as **`PF_PUBLIC_URL`**.
 | `lab05-banks` | `PF_PUBLIC_URL` | the tunnel URL from §1 |
 | `lab05-banks` | `APP_ORIGIN` | `APP_URL` |
 | `lab05-banks` | `LAB_USER_PASSWORD` | a password for alice, carol and bob |
-| `lab05-commerce-control` | `OPENTOKEN_PASSWORD` | a long random string. **You will type the same value into PingFederate in §3.2.** |
-| `lab05-commerce-control` | `BANKS_ORIGIN` | `BANKS_URL` |
+| `lab05-bank-portal` | `OPENTOKEN_PASSWORD` | a long random string. **You will type the same value into PingFederate in §3.2.** |
+| `lab05-bank-portal` | `BANKS_ORIGIN` | `BANKS_URL` |
 
 ✅ **Checkpoint:** `APP_URL` shows *"You are not signed in"* with two bank tiles.
 `BANKS_URL/realms/bank-a/protocol/saml/descriptor` returns XML.
@@ -141,7 +145,7 @@ run yet, so treat a screen that looks different as a difference in naming, and t
 
 | Field | Value |
 |---|---|
-| Instance Name / ID | `Commerce Control OpenToken` / `ccOpenToken` |
+| Instance Name / ID | `Bank Portal OpenToken` / `bankPortalOpenToken` |
 | Type | OpenToken SP Adapter |
 | Password (twice) | the same value as `OPENTOKEN_PASSWORD` on Render |
 | Transport Mode | **Query Parameter** to start (the app also accepts Form POST) |
@@ -168,7 +172,7 @@ run yet, so treat a screen that looks different as a difference in naming, and t
 | Browser SSO → SAML Profiles | tick **IdP-Initiated SSO** only |
 | User-Session Creation → Identity Mapping | **Account Mapping** |
 | Attribute Contract | `SAML_SUBJECT` plus `email`, `givenName`, `surname` |
-| Target Session Mapping | **Map New Adapter Instance** → `Commerce Control OpenToken` |
+| Target Session Mapping | **Map New Adapter Instance** → `Bank Portal OpenToken` |
 | Adapter Contract Fulfillment | see the mapping table below (source: **Assertion**) |
 | Default Target URL | `APP_URL/sso/launch/org-1001` |
 | Protocol Settings | bindings: **POST**. Signature policy: accept the default (signed assertion or response). |
@@ -289,7 +293,7 @@ position would not be a clone of the real setup. Bring back these three facts an
 Useful while the laptop is off, or to show the app team their part in isolation.
 
 ```bash
-cd ../commerce-control
+cd ../bank-portal
 npm test                                      # expected: pass 4, fail 0
 OPENTOKEN_PASSWORD=lab-only node server.js &  # the app on http://localhost:3000
 OPENTOKEN_PASSWORD=lab-only node scripts/mint-token.js alice@bank-a.example org-1001
@@ -306,7 +310,7 @@ cd ../pingfederate
 docker compose down          # add -v to also delete the PingFederate configuration
 ```
 
-On Render, suspend or delete `lab05-banks` and `lab05-commerce-control`. Delete `.env`. Rotate
+On Render, suspend or delete `lab05-banks` and `lab05-bank-portal`. Delete `.env`. Rotate
 nothing else — every credential here was lab-only.
 
 ---

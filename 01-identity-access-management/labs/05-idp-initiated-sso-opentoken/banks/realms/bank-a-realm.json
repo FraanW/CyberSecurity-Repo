@@ -43,8 +43,8 @@
   "clients": [
     {
       "clientId": "__PF_SP_ENTITY_ID__",
-      "name": "Commerce Control (via FinCo PingFederate)",
-      "description": "IdP-initiated only. ACS = PingFederate /sp/ACS.saml2. Launch URL: /realms/bank-a/protocol/saml/clients/commerce-control",
+      "name": "Partner Bank Portal (via FinCo PingFederate)",
+      "description": "IdP-initiated only. ACS = PingFederate /sp/ACS.saml2. Launch URL: /realms/bank-a/protocol/saml/clients/bank-portal",
       "enabled": true,
       "protocol": "saml",
       "frontchannelLogout": false,
@@ -59,7 +59,7 @@
         "saml.authnstatement": "true",
         "saml_name_id_format": "email",
         "saml_force_name_id_format": "true",
-        "saml_idp_initiated_sso_url_name": "commerce-control",
+        "saml_idp_initiated_sso_url_name": "bank-portal",
         "saml_assertion_consumer_url_post": "__PF_ORIGIN__/sp/ACS.saml2",
         "saml_signature_canonicalization_method": "http://www.w3.org/2001/10/xml-exc-c14n#",
         "saml.signature.algorithm": "RSA_SHA256",

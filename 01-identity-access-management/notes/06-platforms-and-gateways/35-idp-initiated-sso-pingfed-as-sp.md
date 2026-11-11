@@ -87,7 +87,7 @@ the app. The app's cookie is the only one the app's frontend cares about.
 ### What the starting point looks like in real life
 
 Almost nobody opens My Apps. The realistic start is **a link on the bank's own intranet home page**
-— the same kind of page where you find Workday at FinCo. The bank's admin puts a "Commerce Control"
+— the same kind of page where you find Workday at FinCo. The bank's admin puts a "Partner Bank Portal"
 tile there, and behind the tile is the Entra **user access URL**. Users also bookmark that link.
 
 | User's state when they click | What they see |

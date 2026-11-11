@@ -1,5 +1,5 @@
 'use strict';
-// Commerce Control — the lab's stand-in for the app team's application.
+// Partner Bank Portal — the lab's stand-in for the app team's application.
 //
 // One app, many banks. It has NO login page. The only way in is the SSO landing endpoint
 //     /sso/launch/<org-id>
@@ -37,7 +37,7 @@ const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&
 function page(title, body) {
   return `<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${esc(title)} · Commerce Control (lab)</title>
+<title>${esc(title)} · Partner Bank Portal (lab)</title>
 <style>
   :root { color-scheme: light dark; --bg:#f6f7f9; --card:#fff; --ink:#1b2430; --mute:#5b6675; --line:#d9dee5; --ok:#0b7a43; --bad:#b3261e; --accent:#1f4fbf; }
   @media (prefers-color-scheme: dark) { :root { --bg:#12161c; --card:#1b212a; --ink:#e7ebf0; --mute:#9aa6b4; --line:#2e3742; --ok:#5fd39a; --bad:#ff8a80; --accent:#8fb0ff; } }
@@ -51,7 +51,7 @@ function page(title, body) {
   .ok { color:var(--ok); font-weight:600; } .bad { color:var(--bad); font-weight:600; }
   a { color:var(--accent); } .btn { display:inline-block; padding:8px 14px; border:1px solid var(--accent); border-radius:8px; text-decoration:none; margin:4px 8px 4px 0; }
 </style></head><body><main>
-<h1>Commerce Control</h1><div class="lab">Lab stand-in for the app team's application · dummy users only</div>
+<h1>Partner Bank Portal</h1><div class="lab">Lab stand-in for the app team's application · dummy users only</div>
 ${body}
 <p class="lab"><a href="/">Home</a> · <a href="/sso/log">SSO attempt log</a> · <a href="/logout">Sign out</a></p>
 </main></body></html>`;
@@ -63,11 +63,11 @@ function send(res, status, html, headers = {}) {
 }
 
 function cookieHeader(value, maxAgeSeconds) {
-  return `cc_session=${value}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${maxAgeSeconds}${SECURE_COOKIES ? '; Secure' : ''}`;
+  return `bp_session=${value}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${maxAgeSeconds}${SECURE_COOKIES ? '; Secure' : ''}`;
 }
 
 function currentSession(req) {
-  const m = /(?:^|;\s*)cc_session=([a-f0-9]{64})/.exec(req.headers.cookie || '');
+  const m = /(?:^|;\s*)bp_session=([a-f0-9]{64})/.exec(req.headers.cookie || '');
   if (!m) return null;
   const s = sessions.get(m[1]);
   if (!s || s.expires < Date.now()) { sessions.delete(m[1]); return null; }
@@ -135,7 +135,7 @@ async function ssoLanding(req, res, url, orgId) {
   // 7. Find the EXISTING user by organisation + subject together. No auto-create.
   if (!subject) return fail(401, 'The token has no subject.');
   const profile = Object.hasOwn(org.users, subject.toLowerCase()) ? org.users[subject.toLowerCase()] : null;
-  if (!profile) return fail(403, `${subject} is not provisioned in Commerce Control for ${org.name}.`, subject);
+  if (!profile) return fail(403, `${subject} is not provisioned in Partner Bank Portal for ${org.name}.`, subject);
 
   // 8. Swap the token for the app's own session, then redirect so the token leaves the address bar.
   const sid = crypto.randomBytes(32).toString('hex');
@@ -151,12 +151,12 @@ function home(req, res) {
   if (!s) {
     const tiles = BANKS_ORIGIN
       ? `<h2>Lab shortcut: what each bank's intranet tile links to</h2><div class="card">
-          <a class="btn" href="${esc(BANKS_ORIGIN)}/realms/bank-a/protocol/saml/clients/commerce-control">Bank A portal tile</a>
-          <a class="btn" href="${esc(BANKS_ORIGIN)}/realms/bank-b/protocol/saml/clients/commerce-control">Bank B portal tile</a>
+          <a class="btn" href="${esc(BANKS_ORIGIN)}/realms/bank-a/protocol/saml/clients/bank-portal">Bank A portal tile</a>
+          <a class="btn" href="${esc(BANKS_ORIGIN)}/realms/bank-b/protocol/saml/clients/bank-portal">Bank B portal tile</a>
           <p class="lab">In real life these links sit on each bank's own intranet, not here.</p></div>`
       : '';
     return send(res, 200, page('Not signed in', `<div class="card"><p><strong>You are not signed in.</strong></p>
-      <p>Commerce Control has no login page. Open it from your organisation's portal, and your organisation will sign you in.</p></div>${tiles}`));
+      <p>Partner Bank Portal has no login page. Open it from your organisation's portal, and your organisation will sign you in.</p></div>${tiles}`));
   }
   const rows = Object.entries(s.attributes).map(([k, v]) => `<tr><th>${esc(k)}</th><td><code>${esc([].concat(v).join(', '))}</code></td></tr>`).join('');
   send(res, 200, page('Welcome', `<div class="card"><p class="ok">Signed in through single sign-on</p>
@@ -186,7 +186,7 @@ const server = http.createServer(async (req, res) => {
     if (url.pathname === '/') return home(req, res);
     if (url.pathname === '/sso/log') return log(req, res);
     if (url.pathname === '/logout') {
-      const m = /(?:^|;\s*)cc_session=([a-f0-9]{64})/.exec(req.headers.cookie || '');
+      const m = /(?:^|;\s*)bp_session=([a-f0-9]{64})/.exec(req.headers.cookie || '');
       if (m) sessions.delete(m[1]);
       res.writeHead(303, { Location: '/', 'Set-Cookie': cookieHeader('', 0) });
       return res.end();
@@ -200,7 +200,7 @@ const server = http.createServer(async (req, res) => {
 
 if (require.main === module) {
   server.listen(PORT, () => {
-    console.log(`Commerce Control listening on ${PORT} (public origin ${PUBLIC_ORIGIN})`);
+    console.log(`Partner Bank Portal listening on ${PORT} (public origin ${PUBLIC_ORIGIN})`);
     if (!OPENTOKEN_PASSWORD) console.log('WARNING: OPENTOKEN_PASSWORD is not set, so every token will be rejected.');
   });
 }
