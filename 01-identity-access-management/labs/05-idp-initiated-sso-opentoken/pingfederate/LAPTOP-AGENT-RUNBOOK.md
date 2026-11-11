@@ -21,7 +21,7 @@ The whole runbook passed end to end. These traps cost time; skip them:
 | Quoting through PowerShell → `wsl.exe` → `bash -lc` | Unreliable. Write a script file and run `wsl.exe -d Ubuntu -- bash /mnt/c/.../script.sh` from **PowerShell** (Git Bash rewrites `/mnt/...` paths). |
 | `/connectionMetadata/convert` | Takes `connectionType`, `expectedProtocol`, `samlMetadata` (base64). It rejects `verifyCertificate`. The result enables every profile and binding plus `signAuthnRequests`: strip it down to `IDP_INITIATED_SSO` and `POST`, remove `artifact`, `ssoServiceEndpoints` and `sloServiceEndpoints`, and set `signAuthnRequests: false`. |
 | `/redirectValidation` | `validPath` cannot contain `*`. Use `/sso/launch/` (it matches as a prefix). |
-| SSO fails with *"Unable to verify the signature"* | `lab05-banks` restarted and has new keys. Re-import each bank's `use="signing"` certificate into `credentials.certs` of its connection. |
+| SSO fails with *"Unable to verify the signature"* | `lab05-banks` restarted without `BANK_*_SAML_SIGNING` and has new keys. Prefer setting those env vars (README §2). Otherwise re-import each bank's `use="signing"` certificate into `credentials.certs` of its connection. To switch keys without downtime, add the new certificate as `secondaryVerificationCert` first. |
 
 ## Ground rules
 

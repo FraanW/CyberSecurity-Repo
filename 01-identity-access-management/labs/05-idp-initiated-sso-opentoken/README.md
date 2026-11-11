@@ -120,11 +120,26 @@ Write it down as **`PF_PUBLIC_URL`**.
 | `lab05-banks` | `PF_PUBLIC_URL` | the tunnel URL from §1 |
 | `lab05-banks` | `APP_ORIGIN` | `APP_URL` |
 | `lab05-banks` | `LAB_USER_PASSWORD` | a password for alice, carol and bob |
+| `lab05-banks` | `BANK_A_SAML_SIGNING`, `BANK_B_SAML_SIGNING` | a **fixed lab signing key** per bank (recommended; see the gotcha below). Make them with the commands under the table. |
 | `lab05-bank-portal` | `OPENTOKEN_PASSWORD` | a long random string. **You will type the same value into PingFederate in §3.2.** |
 | `lab05-bank-portal` | `BANKS_ORIGIN` | `BANKS_URL` |
 
+**Make the two signing keys** (each value is `<key>.<certificate>` on one line):
+
+```bash
+cd banks
+for b in a b; do
+  openssl req -x509 -newkey rsa:2048 -nodes -days 30 -subj "/CN=bank-$b lab signing" \
+    -keyout /tmp/$b.key -out /tmp/$b.crt 2>/dev/null
+  echo "BANK_${b^^}_SAML_SIGNING=$(grep -v -- ----- /tmp/$b.key | tr -d '\n').$(grep -v -- ----- /tmp/$b.crt | tr -d '\n')"
+done > .env.render-bank-keys     # git-ignored (.env*). Copy each value into Render.
+rm /tmp/a.key /tmp/b.key /tmp/a.crt /tmp/b.crt
+```
+
 ✅ **Checkpoint:** `APP_URL` shows *"You are not signed in"* with two bank tiles.
-`BANKS_URL/realms/bank-a/protocol/saml/descriptor` returns XML.
+`BANKS_URL/realms/bank-a/protocol/saml/descriptor` returns XML, with one `use="signing"`
+certificate whose subject is `CN=bank-a lab signing`. The `lab05-banks` log says
+`signing key for bank-a-realm.json: FIXED (from env var)`.
 
 > **Gotchas.**
 > - Free Render services sleep after 15 minutes without traffic, and the first click after that
@@ -132,11 +147,12 @@ Write it down as **`PF_PUBLIC_URL`**.
 >   your two URLs in `PING_URLS` in `.env`. Render's free tier gives **750 hours a month** for
 >   all your services together, and two services kept awake 24/7 would use about 1,440. So run
 >   `docker compose stop pinger` when you are not working on the lab.
-> - **The banks get new signing keys every time `lab05-banks` starts.** That includes every
->   deploy, every restart and every wake from sleep. Keycloak keeps its data inside the
->   container, and the realm files contain no fixed keys. So after any restart, re-import both
->   banks' certificates in PingFederate (§3.3, Credentials), or every login fails with a
->   signature error.
+> - **Without `BANK_*_SAML_SIGNING`, the banks get new signing keys every time `lab05-banks`
+>   starts.** That includes every deploy, every restart and every wake from sleep. Keycloak
+>   keeps its data inside the container, so nothing survives. PingFederate's stored certificate
+>   then stops matching, and every login fails with a signature error. The fixed keys stop this.
+>   A real bank does the same thing: it keeps its signing key and rotates it on a schedule,
+>   announcing the change in advance.
 
 ---
 
@@ -264,7 +280,7 @@ One line per login: the connection (bank), the subject, the adapter, and `succes
 | Symptom | Likely cause |
 |---|---|
 | PingFederate error page straight after the bank login | Base URL or entity ID in §3.1 does not match what the banks were told. Re-check `PF_PUBLIC_URL` on Render and restart `lab05-banks`. |
-| *"Unable to verify the signature"*, and `server.log` says the configured certificate *"does not match the embedded certificate in the signature"* | `lab05-banks` restarted and Keycloak made new keys (see the §2 gotchas). Re-import each bank's `use="signing"` certificate from its metadata URL. Seen on the first run. See [note 34](../../notes/02-saml/34-saml-invalid-signature-rca.md). |
+| *"Unable to verify the signature"*, and `server.log` says the configured certificate *"does not match the embedded certificate in the signature"* | `lab05-banks` restarted **without** `BANK_*_SAML_SIGNING` and Keycloak made new keys (see the §2 gotchas). Set the env vars, or re-import each bank's `use="signing"` certificate from its metadata URL. Seen on the first run. See [note 34](../../notes/02-saml/34-saml-invalid-signature-rca.md). |
 | Error mentioning target resource | §3.5 allow-list does not cover the URL. |
 | App says *"could not decrypt"* | The adapter password and `OPENTOKEN_PASSWORD` differ. |
 | App says *"token has expired"* straight away | The laptop's clock is wrong. |

@@ -36,6 +36,38 @@ for f in /opt/keycloak/data/import-templates/*.json; do
   content="${content//__PF_SP_ENTITY_ID__/${PF_SP_ENTITY_ID}}"
   content="${content//__APP_ORIGIN__/${APP_ORIGIN}}"
   content="${content//__LAB_USER_PASSWORD__/${LAB_USER_PASSWORD}}"
+
+  # Fixed SAML signing key, passed as a Render env var: "<private-key-base64>.<certificate-base64>"
+  # (PKCS#8 key and X.509 certificate, PEM bodies with no header lines and no line breaks).
+  # Without it, Keycloak makes a NEW key at every start, and PingFederate's stored certificate
+  # stops matching after every deploy, restart or wake from sleep.
+  case "$(basename "$f")" in
+    bank-a-*) signing="${BANK_A_SAML_SIGNING:-}" ;;
+    bank-b-*) signing="${BANK_B_SAML_SIGNING:-}" ;;
+    *)        signing="" ;;
+  esac
+  key_components='{}'
+  if [ -n "${signing}" ]; then
+    sig_key="${signing%%.*}"
+    sig_cert="${signing#*.}"
+    b64='^[A-Za-z0-9+/=]+$'
+    if [[ "${signing}" != *.* || ! "${sig_key}" =~ ${b64} || ! "${sig_cert}" =~ ${b64} ]]; then
+      echo "FATAL: the signing value for $(basename "$f") must be <key-base64>.<cert-base64>" >&2
+      exit 1
+    fi
+    # Our RSA key signs (priority 200). HMAC and AES keys are listed too, because a realm that
+    # brings its own key providers does not get Keycloak's defaults.
+    key_components=$(printf '{"org.keycloak.keys.KeyProvider":[%s,%s,%s]}' \
+      "{\"name\":\"lab-fixed-rsa-signing\",\"providerId\":\"rsa\",\"subComponents\":{},\"config\":{\"privateKey\":[\"${sig_key}\"],\"certificate\":[\"${sig_cert}\"],\"priority\":[\"200\"],\"enabled\":[\"true\"],\"active\":[\"true\"],\"algorithm\":[\"RS256\"]}}" \
+      '{"name":"hmac-generated","providerId":"hmac-generated","subComponents":{},"config":{"priority":["100"],"algorithm":["HS512"]}}' \
+      '{"name":"aes-generated","providerId":"aes-generated","subComponents":{},"config":{"priority":["100"]}}')
+    echo "signing key for $(basename "$f"): FIXED (from env var)"
+  else
+    echo "signing key for $(basename "$f"): generated at start (no env var set)"
+  fi
+  placeholder='"__SIGNING_KEY_COMPONENTS__"'
+  content="${content//"${placeholder}"/"${key_components}"}"
+
   printf '%s' "${content}" > "${out}"
   echo "prepared realm: $(basename "$f")"
 done

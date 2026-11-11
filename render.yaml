@@ -188,6 +188,12 @@ services:
       # Password shared by the dummy users alice, carol and bob.
       - key: LAB_USER_PASSWORD
         sync: false
+      # Fixed SAML signing key per bank, "<key-base64>.<cert-base64>". A lab-only secret.
+      # Leave blank and the bank makes a new key at every start (PingFederate must then re-import).
+      - key: BANK_A_SAML_SIGNING
+        sync: false
+      - key: BANK_B_SAML_SIGNING
+        sync: false
       - key: KC_BOOTSTRAP_ADMIN_USERNAME
         value: admin
       - key: KC_BOOTSTRAP_ADMIN_PASSWORD
