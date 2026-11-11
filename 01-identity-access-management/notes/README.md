@@ -67,6 +67,7 @@ Interactive companion: [`../saml-complete-guide.html`](../saml-complete-guide.ht
 
 1. [`18-pingfederate-explained.md`](06-platforms-and-gateways/18-pingfederate-explained.md) — SP vs IdP connections, adapters, policy trees, attribute contracts, the audit.log playbook.
 2. [`20-reverse-proxies-in-iam.md`](06-platforms-and-gateways/20-reverse-proxies-in-iam.md) — the gate that logs users in for your apps: PingAccess, nginx forward-auth, Envoy `ext_authz`.
+3. [`35-idp-initiated-sso-pingfed-as-sp.md`](06-platforms-and-gateways/35-idp-initiated-sso-pingfed-as-sp.md) — many external banks into one app: RelayState, attribute flow, OpenToken vs. SAML through a policy contract, who configures what.
 
 ## 07-security-and-compliance — attack surface and audit
 
@@ -134,13 +135,14 @@ Every note kept its filename; only its folder changed. If an old link `notes/<fi
 | `32-cloud-to-container-hierarchy-and-reachability.md` | `08-infrastructure-and-platform/` |
 | `33-istio-service-mesh-explained.md` | `08-infrastructure-and-platform/` |
 | `34-saml-invalid-signature-rca.md` | `02-saml/` |
+| `35-idp-initiated-sso-pingfed-as-sp.md` | `06-platforms-and-gateways/` |
 
 ---
 
 ## Adding a new note
 
 1. Pick the folder whose topic it belongs to. If nothing fits, that's a signal you may need a new folder — say so rather than dumping it in `01-foundations/`.
-2. Name it `<next global number>-<slug>.md` — keep counting up from **34**, repo-wide, not per folder. The number is the note's permanent ID.
+2. Name it `<next global number>-<slug>.md` — keep counting up from **35**, repo-wide, not per folder. The number is the note's permanent ID.
 3. Add it to its folder's list above, in reading order, with a one-line description.
 4. Write it to **[Lefler's Laws](../../LEFLER-LAWS.md)** and run the 20-second checklist before saving.
 
