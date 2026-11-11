@@ -1,0 +1,14 @@
+{
+  "org-1001": {
+    "name": "Bank A",
+    "users": {
+      "alice@bank-a.example": { "displayName": "Alice Anand", "role": "Payments approver" }
+    }
+  },
+  "org-2002": {
+    "name": "Bank B",
+    "users": {
+      "bob@bank-b.example": { "displayName": "Bob Bose", "role": "Read-only analyst" }
+    }
+  }
+}

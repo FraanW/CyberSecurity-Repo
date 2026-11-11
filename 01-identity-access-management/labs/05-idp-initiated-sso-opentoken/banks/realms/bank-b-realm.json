@@ -1,0 +1,93 @@
+{
+  "realm": "bank-b",
+  "enabled": true,
+  "displayName": "Bank B \u2014 corporate sign-in (lab)",
+  "sslRequired": "none",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "ssoSessionIdleTimeout": 1800,
+  "ssoSessionMaxLifespan": 36000,
+  "users": [
+    {
+      "username": "bob",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "bob@bank-b.example",
+      "firstName": "Bob",
+      "lastName": "Bose",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "__LAB_USER_PASSWORD__",
+          "temporary": false
+        }
+      ]
+    }
+  ],
+  "clients": [
+    {
+      "clientId": "__PF_SP_ENTITY_ID__",
+      "name": "Commerce Control (via FinCo PingFederate)",
+      "description": "IdP-initiated only. ACS = PingFederate /sp/ACS.saml2. Launch URL: /realms/bank-b/protocol/saml/clients/commerce-control",
+      "enabled": true,
+      "protocol": "saml",
+      "frontchannelLogout": false,
+      "redirectUris": [
+        "__PF_ORIGIN__/sp/ACS.saml2"
+      ],
+      "attributes": {
+        "saml.assertion.signature": "true",
+        "saml.server.signature": "true",
+        "saml.client.signature": "false",
+        "saml.force.post.binding": "true",
+        "saml.authnstatement": "true",
+        "saml_name_id_format": "email",
+        "saml_force_name_id_format": "true",
+        "saml_idp_initiated_sso_url_name": "commerce-control",
+        "saml_assertion_consumer_url_post": "__PF_ORIGIN__/sp/ACS.saml2",
+        "saml_signature_canonicalization_method": "http://www.w3.org/2001/10/xml-exc-c14n#",
+        "saml.signature.algorithm": "RSA_SHA256"
+      },
+      "fullScopeAllowed": false,
+      "protocolMappers": [
+        {
+          "name": "emailaddress",
+          "protocol": "saml",
+          "protocolMapper": "saml-user-property-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "email",
+            "friendly.name": "emailaddress",
+            "attribute.name": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress",
+            "attribute.nameformat": "URI Reference"
+          }
+        },
+        {
+          "name": "givenname",
+          "protocol": "saml",
+          "protocolMapper": "saml-user-property-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "firstName",
+            "friendly.name": "givenname",
+            "attribute.name": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname",
+            "attribute.nameformat": "URI Reference"
+          }
+        },
+        {
+          "name": "surname",
+          "protocol": "saml",
+          "protocolMapper": "saml-user-property-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "lastName",
+            "friendly.name": "surname",
+            "attribute.name": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname",
+            "attribute.nameformat": "URI Reference"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,109 @@
+{
+  "realm": "bank-a",
+  "enabled": true,
+  "displayName": "Bank A \u2014 corporate sign-in (lab)",
+  "sslRequired": "none",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "ssoSessionIdleTimeout": 1800,
+  "ssoSessionMaxLifespan": 36000,
+  "users": [
+    {
+      "username": "alice",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "alice@bank-a.example",
+      "firstName": "Alice",
+      "lastName": "Anand",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "__LAB_USER_PASSWORD__",
+          "temporary": false
+        }
+      ]
+    },
+    {
+      "username": "carol",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "carol@bank-a.example",
+      "firstName": "Carol",
+      "lastName": "Chen",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "__LAB_USER_PASSWORD__",
+          "temporary": false
+        }
+      ]
+    }
+  ],
+  "clients": [
+    {
+      "clientId": "__PF_SP_ENTITY_ID__",
+      "name": "Commerce Control (via FinCo PingFederate)",
+      "description": "IdP-initiated only. ACS = PingFederate /sp/ACS.saml2. Launch URL: /realms/bank-a/protocol/saml/clients/commerce-control",
+      "enabled": true,
+      "protocol": "saml",
+      "frontchannelLogout": false,
+      "redirectUris": [
+        "__PF_ORIGIN__/sp/ACS.saml2"
+      ],
+      "attributes": {
+        "saml.assertion.signature": "true",
+        "saml.server.signature": "true",
+        "saml.client.signature": "false",
+        "saml.force.post.binding": "true",
+        "saml.authnstatement": "true",
+        "saml_name_id_format": "email",
+        "saml_force_name_id_format": "true",
+        "saml_idp_initiated_sso_url_name": "commerce-control",
+        "saml_assertion_consumer_url_post": "__PF_ORIGIN__/sp/ACS.saml2",
+        "saml_signature_canonicalization_method": "http://www.w3.org/2001/10/xml-exc-c14n#",
+        "saml.signature.algorithm": "RSA_SHA256",
+        "saml_idp_initiated_sso_relay_state": "__APP_ORIGIN__/sso/launch/org-1001"
+      },
+      "fullScopeAllowed": false,
+      "protocolMappers": [
+        {
+          "name": "email",
+          "protocol": "saml",
+          "protocolMapper": "saml-user-property-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "email",
+            "friendly.name": "email",
+            "attribute.name": "email",
+            "attribute.nameformat": "Basic"
+          }
+        },
+        {
+          "name": "givenName",
+          "protocol": "saml",
+          "protocolMapper": "saml-user-property-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "firstName",
+            "friendly.name": "givenName",
+            "attribute.name": "givenName",
+            "attribute.nameformat": "Basic"
+          }
+        },
+        {
+          "name": "surname",
+          "protocol": "saml",
+          "protocolMapper": "saml-user-property-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "lastName",
+            "friendly.name": "surname",
+            "attribute.name": "surname",
+            "attribute.nameformat": "Basic"
+          }
+        }
+      ]
+    }
+  ]
+}

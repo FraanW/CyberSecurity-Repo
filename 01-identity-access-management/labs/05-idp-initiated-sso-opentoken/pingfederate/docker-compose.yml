@@ -1,0 +1,39 @@
+# Lab 05 — a real PingFederate on your laptop, plus a tunnel so the browser can reach it
+# from anywhere. LAB ONLY: evaluation licence, dummy users, never FinCo configuration.
+#
+#   cp env.example .env      # then fill in your Ping DevOps user and key
+#   docker compose up -d
+#   docker compose logs -f pingfederate     # wait for "PingFederate is up"  (2-4 minutes)
+#   docker compose logs tunnel | grep trycloudflare.com      # your public runtime URL
+#
+# Admin console : https://localhost:9999/pingfederate/app   (self-signed cert: accept the warning)
+# Runtime       : https://localhost:9031   and the public tunnel URL
+
+services:
+  pingfederate:
+    image: pingidentity/pingfederate:latest   # evaluation licences only work with recent images
+    environment:
+      PING_IDENTITY_ACCEPT_EULA: "YES"
+      PING_IDENTITY_DEVOPS_USER: ${PING_IDENTITY_DEVOPS_USER:?set it in .env}
+      PING_IDENTITY_DEVOPS_KEY: ${PING_IDENTITY_DEVOPS_KEY:?set it in .env}
+      # Ping's "getting started" profile: an admin account and sensible defaults.
+      SERVER_PROFILE_URL: https://github.com/pingidentity/pingidentity-server-profiles.git
+      SERVER_PROFILE_PATH: getting-started/pingfederate
+      # Console sign-in is user "administrator" with this password.
+      PING_IDENTITY_PASSWORD: ${PF_ADMIN_PASSWORD:?set it in .env}
+    ports:
+      - "127.0.0.1:9999:9999"   # admin console: this laptop only, never through the tunnel
+      - "127.0.0.1:9031:9031"   # runtime engine
+    volumes:
+      - pf-out:/opt/out         # keeps your configuration across restarts
+
+  # Publishes ONLY the runtime port (9031). The URL is random and changes on every restart
+  # of this container, so leave it running for the whole demo.
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate --no-tls-verify --url https://pingfederate:9031
+    depends_on:
+      - pingfederate
+
+volumes:
+  pf-out:

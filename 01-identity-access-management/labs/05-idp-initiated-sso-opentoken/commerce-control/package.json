@@ -1,0 +1,9 @@
+{
+  "name": "commerce-control-lab",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Lab 05 stand-in app: receives an OpenToken from PingFederate's SP adapter",
+  "main": "server.js",
+  "scripts": { "start": "node server.js", "test": "node --test" },
+  "engines": { "node": ">=20" }
+}

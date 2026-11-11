@@ -1,4 +1,5 @@
-# Render Blueprint — deploys the two PingFederate onboarding lab apps.
+# Render Blueprint — deploys the lab 04 PingFederate onboarding apps and the lab 05 services
+# (see the Lab 05 block at the bottom of this file).
 #
 # Lab: 01-identity-access-management/labs/04-pingfederate-app-onboarding/
 #
@@ -156,3 +157,59 @@ services:
 
       - key: LAB_OAUTH_LOG_LEVEL
         value: INFO
+
+  # ============================================================================================
+  # Lab 05 — IdP-initiated SSO, many banks into one app (OpenToken)
+  # Lab: 01-identity-access-management/labs/05-idp-initiated-sso-opentoken/
+  # PingFederate itself is NOT here: it runs on your laptop (see the lab's pingfederate/ folder).
+  # ============================================================================================
+
+  # ---------------------------------------------------------------- the two pretend banks (IdPs)
+  - type: web
+    name: lab05-banks
+    runtime: docker
+    plan: free
+    region: singapore
+    rootDir: 01-identity-access-management/labs/05-idp-initiated-sso-opentoken/banks
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /realms/bank-a
+    autoDeploy: false
+    envVars:
+      # Your PingFederate runtime's public URL (the tunnel URL), no trailing slash.
+      # Changing it needs a restart of this service; the realms are re-imported at boot.
+      - key: PF_PUBLIC_URL
+        sync: false
+      # Must equal PingFederate's SAML 2.0 entity ID.
+      - key: PF_SP_ENTITY_ID
+        value: lab05:finco:pingfederate:sp
+      # Commerce Control's public URL, e.g. https://lab05-commerce-control.onrender.com
+      - key: APP_ORIGIN
+        sync: false
+      # Password shared by the dummy users alice, carol and bob.
+      - key: LAB_USER_PASSWORD
+        sync: false
+      - key: KC_BOOTSTRAP_ADMIN_USERNAME
+        value: admin
+      - key: KC_BOOTSTRAP_ADMIN_PASSWORD
+        generateValue: true
+
+  # ---------------------------------------------------------------- Commerce Control (the app)
+  - type: web
+    name: lab05-commerce-control
+    runtime: docker
+    plan: free
+    region: singapore
+    rootDir: 01-identity-access-management/labs/05-idp-initiated-sso-opentoken/commerce-control
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health
+    autoDeploy: false
+    envVars:
+      # The password you type into the OpenToken SP adapter in PingFederate. A secret.
+      - key: OPENTOKEN_PASSWORD
+        sync: false
+      # The adapter's Token Name.
+      - key: OPENTOKEN_TOKEN_NAME
+        value: opentoken
+      # The lab05-banks public URL. Only used to show the "bank portal tile" shortcuts.
+      - key: BANKS_ORIGIN
+        sync: false

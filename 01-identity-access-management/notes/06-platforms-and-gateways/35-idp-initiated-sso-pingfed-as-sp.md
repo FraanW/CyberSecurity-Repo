@@ -3,7 +3,7 @@
 > **Janus's design note.** External banks log their users in at *their own* login server, then hand
 > them to *our* PingFederate, which hands them to *one* internal app. This note explains every hop,
 > the two ways PingFederate can do the last mile (OpenToken vs. SAML through a policy contract), and
-> who configures what. It is the theory for lab 05 (not built yet).
+> who configures what. It is the theory for [lab 05](../../labs/05-idp-initiated-sso-opentoken/README.md).
 >
 > **Prereqs:** [SAML deep dive](../02-saml/02-saml-deep-dive.md) (assertion, ACS, RelayState) and
 > [PingFederate explained](18-pingfederate-explained.md) (connections, adapters, policies).
@@ -287,5 +287,5 @@ IdP (us), one certificate, one metadata file. No Ping agent, no shared secret.
 ## Next
 
 - Take the three selector questions in section 5 to the service engineer.
-- Lab 05 will prove every **(prove in lab)** claim here with a local PingFederate, two stand-in
-  banks, and one target app — authorized-lab-only, dummy users, no FinCo configuration or secrets.
+- Run [lab 05](../../labs/05-idp-initiated-sso-opentoken/README.md): a local PingFederate, two stand-in banks and one target
+  app — authorized-lab-only, dummy users, no FinCo configuration or secrets.
